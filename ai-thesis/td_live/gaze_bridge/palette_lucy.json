@@ -1,0 +1,105 @@
+{
+  "说明": "琴键 -> Lucy 隐藏层的乐器清单。note 是琴键编号（C4=60，白键 60,62,64,65,67,69,71,72）。每个乐器用不同的层（同一层同时只能改一个通道，后面的会顶掉前面的）；U3 留给目光，别用。fmax 是按到最重(力度127)时改多大；Lucy 是阈值式：小于约 100 几乎没变化，大于约 300 会崩成噪点，所以 fmax 往往要设得比较大。mode: even(整体加)/random(随机纹理加)。t0/t1: 擦雾的哪一段（0=开头，越早越戏剧）。tested=true 表示用你收藏里或之前测过的设置，false 表示还没测、只是占位，请试了再改。 note_offset：琴实际发出的编号比标准多多少（你的琴最低键发 37，所以是 1；如果你在琴上调了八度或移调，改这个）。new_face_controls：这些控件一动就换新脸（ch1ctrl65=踏板，ch11n45=第 1 个打击垫）。",
+  "new_face_notes": [
+    36
+  ],
+  "new_face_pedal": false,
+  "attack_sec": 0.4,
+  "release_sec": 3.0,
+  "instruments": [
+    {
+      "name": "D0 轮廓",
+      "note": 60,
+      "layer": "D0",
+      "channel": 30,
+      "fmax": 54.5,
+      "mode": "even",
+      "t0": 0.27,
+      "t1": 1.0,
+      "tested": true
+    },
+    {
+      "name": "D2 随机纹理",
+      "note": 62,
+      "layer": "D2",
+      "channel": 90,
+      "fmax": 111.2,
+      "mode": "random",
+      "t0": 0.78,
+      "t1": 1.0,
+      "tested": true
+    },
+    {
+      "name": "D3 溶解",
+      "note": 64,
+      "layer": "D3",
+      "channel": 96,
+      "fmax": 100,
+      "mode": "even",
+      "t0": 0.0,
+      "t1": 1.0,
+      "tested": true
+    },
+    {
+      "name": "MID 扭曲",
+      "note": 65,
+      "layer": "MID",
+      "channel": 231,
+      "fmax": 300,
+      "mode": "even",
+      "t0": 0.0,
+      "t1": 1.0,
+      "tested": true
+    },
+    {
+      "name": "U4 细节",
+      "note": 67,
+      "layer": "U4",
+      "channel": 67,
+      "fmax": 302,
+      "mode": "even",
+      "t0": 0.27,
+      "t1": 1.0,
+      "tested": true
+    },
+    {
+      "name": "U2 占位",
+      "note": 69,
+      "layer": "U2",
+      "channel": 50,
+      "fmax": 100,
+      "mode": "even",
+      "t0": 0.0,
+      "t1": 1.0,
+      "tested": false
+    },
+    {
+      "name": "U1 占位",
+      "note": 71,
+      "layer": "U1",
+      "channel": 10,
+      "fmax": 100,
+      "mode": "even",
+      "t0": 0.0,
+      "t1": 1.0,
+      "tested": false
+    },
+    {
+      "name": "D4 占位",
+      "note": 72,
+      "layer": "D4",
+      "channel": 20,
+      "fmax": 100,
+      "mode": "even",
+      "t0": 0.0,
+      "t1": 1.0,
+      "tested": false
+    }
+  ],
+  "velocity_floor": 0.5,
+  "note_offset": 1,
+  "new_face_controls": [
+    "ch1ctrl65",
+    "ch11n45"
+  ]
+}

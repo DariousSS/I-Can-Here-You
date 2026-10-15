@@ -1,0 +1,13 @@
+.DS_Store
+__pycache__/
+*.pyc
+# 运行时自动生成的文件（每次运行都会变）
+ai-thesis/td_live/gaze_bridge/params.json
+ai-thesis/td_live/gaze_bridge/status.json
+ai-thesis/td_live/gaze_bridge/*.png
+ai-thesis/td_live/gaze_bridge/calibration_test.json
+# 第三方 MediaPipe 插件（172MB，太大；请从其官方仓库下载）
+toxes/MediaPipe.tox
+# TouchDesigner 自动备份
+Backup/
+*.toe.bak

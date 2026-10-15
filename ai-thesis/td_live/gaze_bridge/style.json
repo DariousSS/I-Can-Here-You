@@ -1,0 +1,4 @@
+{
+  "说明": "童核滤镜开关（下次画脸时生效，不用重启）。preset 可选：off=不处理 | candy=糖果粉彩 | crayon=蜡笔纸感 | dream=奶油梦幻。",
+  "preset": "candy"
+}
