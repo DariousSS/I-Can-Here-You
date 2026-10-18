@@ -1,0 +1,1017 @@
+
+
+##### ui/renderpick/Keyboard #####
+"""
+Extension classes enhance TouchDesigner component networks with python
+functionality. An extension can be accessed via ext.ExtensionClassName from
+any operator within the extended component. If the extension is "promoted", all
+its attributes with capitalized names can be accessed directly through the
+extended component, e.g. op('yourComp').ExtensionMethod()
+"""
+
+class Keyboard:
+	"""
+	Keyboard description
+	"""
+	def __init__(self, ownerComp):
+		# The component to which this extension is attached
+		self.ownerComp = ownerComp
+
+	def KeyboardEvent(self, dat, key, character, alt, lAlt, rAlt, ctrl, lCtrl, rCtrl, shift, lShift, rShift, state, time):
+
+		if (key == 'delete' or key == 'backspace') and state == 1:
+			if not parent.Ui.ext.Uistate.editField:
+				parent.mottoKantan.op('project').DeleteSelected()
+		elif key == 'l' and state == 1:
+			newState = parent.mottoKantan.op('project').ToggleLock()
+			parent.Ui.op('main/gadgets').Set(defDict={'parameters':{'Handlelock':newState}})
+		elif key == 'tab' and state == 1:
+			if not parent.Ui.ext.Uistate.editField:
+				parent.mottoKantan.op('project').SelectNext()
+		elif key in ['left','right','up','down'] and state == 1:
+			state = parent.mottoKantan.op('project').ext.Selector.getState()
+			if not parent.Ui.ext.Uistate.editField:
+				tx = 0
+				ty = 0
+				multi = 1
+				if parent.Ui.ext.Uistate.shiftKey:
+					multi = 10
+				if key == 'left':
+					tx = -1 * multi
+				elif key == 'right':
+					tx = 1 * multi
+				elif key == 'up':
+					ty = 1 * multi
+				elif key == 'down':
+					ty = -1 * multi
+				if state[0] == 'transform':
+					parent.mottoKantan.op('project').ShapeTransformKey(tx=tx,ty=ty,translate=True)
+				elif state[1] == 'XformKey':
+					parent.mottoKantan.op('project').RectTranslateKey()
+					parent.mottoKantan.op('project').FreeTranslateKey()
+					parent.mottoKantan.op('project').RectTranslateKey(tx=tx,ty=ty)
+					parent.mottoKantan.op('project').FreeTranslateKey(tx=tx,ty=ty)
+					parent.mottoKantan.op('project').RectTranslateKey(stop=True)
+					parent.mottoKantan.op('project').FreeTranslateKey(stop=True)
+				elif state[1] == 'rectWarp':
+					parent.mottoKantan.op('project').RectWarpKey()
+					parent.mottoKantan.op('project').RectWarpKey(tx=tx,ty=ty)
+					parent.mottoKantan.op('project').RectWarpKey(stop=True)
+		elif key == 'shift':
+			parent.Ui.ext.Uistate.shiftKey = state
+		elif key == 'alt':
+			parent.Ui.ext.Uistate.altKey = state
+		return
+
+##### project/Selector #####
+"""
+Extension classes enhance TouchDesigner component networks with python
+functionality. An extension can be accessed via ext.ExtensionClassName from
+any operator within the extended component. If the extension is "promoted", all
+its attributes with capitalized names can be accessed directly through the
+extended component, e.g. op('yourComp').ExtensionMethod()
+"""
+
+class Selector:
+	"""
+	Selector description
+	"""
+	def __init__(self, ownerComp):
+		# The component to which this extension is attached
+		self.ownerComp = ownerComp
+		self.undoStep = 0
+
+
+	def RollOn(self, rollType=None, shapeId=None, rollId=None):
+		selectedShape = self.ownerComp.op('tools/selectedShape')
+		rollKey = self.ownerComp.op('tools/rolloverKey')
+		rollKeyHandle = self.ownerComp.op('tools/rolloverKeyHandle')
+		rollWarpKey = self.ownerComp.op('tools/rolloverWarpKey')
+		rollWarpHandle = self.ownerComp.op('tools/rolloverWarpHandle')
+		rollScale = self.ownerComp.op('tools/rolloverScale')
+		rollRotate = self.ownerComp.op('tools/rolloverRotate')
+		rollFreeKey = self.ownerComp.op('tools/rolloverFreeKey')
+		rollFreeHandle = self.ownerComp.op('tools/rolloverFreeHandle')
+		rollEdgeKey = self.ownerComp.op('tools/rolloverEdgeKey')
+		rollEdgeHandle = self.ownerComp.op('tools/rolloverEdgeHandle')
+		rollRowCol = self.ownerComp.op('tools/rolloverRowCol')
+		rollRectEdgeKey = self.ownerComp.op('tools/rolloverRectEdgeKey')
+
+		rollUvKey = self.ownerComp.op('tools/uvRolloverKey')
+		rollUvScale = self.ownerComp.op('tools/uvRolloverScale')
+		rollUvRotate = self.ownerComp.op('tools/uvRolloverRotate')
+
+		if 'keyWidget' in rollType:
+			rollKey.clear()
+			rollKey.appendRow(int(rollId))
+		elif 'rectEdgeWidget' in rollType:
+			rollRectEdgeKey.clear()
+			rollRectEdgeKey.appendRow(int(rollId))
+		elif 'shapeScaleWidget' in rollType:
+			rollScale.clear()
+			rollScale.appendRow(int(rollId))
+		elif 'shapeRotateWidget' in rollType:
+			rollRotate.clear()
+			rollRotate.appendRow(int(rollId))
+		elif 'warpKeyWidget' in rollType:
+			rollWarpKey.clear()
+			rollWarpKey.appendRow(int(rollId))
+		elif 'warpHandleWidget' in rollType:
+			rollWarpHandle.clear()
+			rollWarpHandle.appendRow(int(rollId))
+		elif 'freeKeyWidget' in rollType:
+			rollFreeKey.clear()
+			rollFreeKey.appendRow(int(rollId))
+		elif 'freeHandleWidget' in rollType:
+			rollFreeHandle.clear()
+			rollFreeHandle.appendRow(int(rollId))
+		elif 'edgeKeyWidget' in rollType:
+			rollEdgeKey.clear()
+			rollEdgeKey.appendRow(int(rollId))
+		elif 'edgeHandleWidget' in rollType:
+			rollEdgeHandle.clear()
+			rollEdgeHandle.appendRow(int(rollId))
+		elif 'shapeDisplay' in rollType:
+			if selectedShape.col(0):
+				if shapeId not in selectedShape.col(0):
+					rollShape = self.ownerComp.op('tools/rolloverShape')
+					rollShape.clear()
+					rollShape.appendRow(shapeId)
+			else:
+				rollShape = self.ownerComp.op('tools/rolloverShape')
+				rollShape.appendRow(shapeId)
+		elif 'rowColWidget' in rollType:
+			rollRowCol.clear()
+			rollRowCol.appendRow(int(rollId))
+
+		# texture edit
+		elif 'uvKeyWidget' in rollType:
+			rollUvKey.clear()
+			rollUvKey.appendRow(int(rollId))
+		elif 'uvScaleWidget' in rollType:
+			rollUvScale.clear()
+			rollUvScale.appendRow(int(rollId))
+		elif 'uvRotateWidget' in rollType:
+			rollUvRotate.clear()
+			rollUvRotate.appendRow(int(rollId))
+		return
+
+	def RollOff(self, rollType=None):
+		selectedShape = self.ownerComp.op('tools/selectedShape')
+		rollShape = self.ownerComp.op('tools/rolloverShape')
+		rollKey = self.ownerComp.op('tools/rolloverKey')
+		rollKeyHandle = self.ownerComp.op('tools/rolloverKeyHandle')
+		rollWarpKey = self.ownerComp.op('tools/rolloverWarpKey')
+		rollWarpHandle = self.ownerComp.op('tools/rolloverWarpHandle')
+		rollScale = self.ownerComp.op('tools/rolloverScale')
+		rollRotate = self.ownerComp.op('tools/rolloverRotate')
+		rollFreeKey = self.ownerComp.op('tools/rolloverFreeKey')
+		rollFreeHandle = self.ownerComp.op('tools/rolloverFreeHandle')
+		rollEdgeKey = self.ownerComp.op('tools/rolloverEdgeKey')
+		rollEdgeHandle = self.ownerComp.op('tools/rolloverEdgeHandle')
+		rollRowCol = self.ownerComp.op('tools/rolloverRowCol')
+		rollRectEdgeKey = self.ownerComp.op('tools/rolloverRectEdgeKey')
+
+		rollUvKey = self.ownerComp.op('tools/uvRolloverKey')
+		rollUvScale = self.ownerComp.op('tools/uvRolloverScale')
+		rollUvRotate = self.ownerComp.op('tools/uvRolloverRotate')
+
+		if 'keyWidget' in rollType:
+			rollKey.clear()
+		elif 'rectEdgeWidget' in rollType:
+			rollRectEdgeKey.clear()
+		elif 'shapeScaleWidget' in rollType:
+			rollScale.clear()
+		elif 'shapeRotateWidget' in rollType:
+			rollRotate.clear()
+		elif 'warpKeyWidget' in rollType:
+			rollWarpKey.clear()
+		elif 'warpHandleWidget' in rollType:
+			rollWarpHandle.clear()
+		elif 'freeKeyWidget' in rollType:
+			rollFreeKey.clear()
+		elif 'freeHandleWidget' in rollType:
+			rollFreeHandle.clear()
+		elif 'edgeKeyWidget' in rollType:
+			rollEdgeKey.clear()
+		elif 'edgeHandleWidget' in rollType:
+			rollEdgeHandle.clear()
+		elif 'shapeDisplay' in rollType:
+			rollShape.clear()
+		elif 'outline' in rollType:
+			self.SetInsertPointPos()
+		elif 'rowColWidget' in rollType:
+			rollRowCol.clear()
+
+		# texture edit
+		elif 'uvKeyWidget' in rollType:
+			rollUvKey.clear()
+		elif 'uvScaleWidget' in rollType:
+			rollUvScale.clear()
+		elif 'uvRotateWidget' in rollType:
+			rollUvRotate.clear()
+
+		return
+
+	def SelectNext(self):
+		allShapes = op('sorted')
+		tools = op('tools')
+		selectedShape = tools.op('selectedShape')
+		selectedKey = tools.op('selectedKey')
+		selectedWarpKey = tools.op('selectedWarpKey')
+		selectedFreeKey = tools.op('selectedFreeKey')
+		selectedEdgeKey = tools.op('selectedEdgeKey')
+		selectedRowCol = tools.op('selectedRowCol')
+		
+		currState = self.getState()
+		realIdCol = allShapes.col('realId')[0].col
+		typeCol = allShapes.col('type')[0].col
+		nextShape = [x[realIdCol].val for x in allShapes.rows() if x[typeCol].val == 'shape']
+			
+		if currState[0] == 'transform':
+			# we just rotate through all shapes
+			if selectedShape.col(0):
+				currSelected = [x for x in selectedShape.col(0)][-1]
+				index = nextShape.index(currSelected)
+				nextShape = nextShape[(index+1)%len(nextShape)]
+			else:
+				nextShape = nextShape[0]
+			infoDict = self.SelectShape(itemId=nextShape)
+			return infoDict
+		elif currState[0] == 'shapetool':
+			if not selectedShape.col(0):
+				nextShape = nextShape[0]
+				infoDict = self.SelectShape(itemId=nextShape)
+				return infoDict
+			else:
+				currSelected = [x for x in selectedShape.col(0)][-1]
+				shapePath = self.getShape(itemId=[currSelected])
+				shapeType = shapePath[0].ext.Shape.Type
+
+				if currState[1] == 'XformKey':
+					if shapeType == 'Rectangle':
+						keyId = 0
+						if selectedKey.col(0):
+							keyId = (selectedKey[selectedKey.numRows-1,0]+1)%4
+						self.SelectRectKey(itemId=keyId)
+					elif shapeType == 'Freeform':
+						keyId = 1
+						if selectedFreeKey.col(0):
+							totalKeys = shapePath[0].op('points').numRows-1
+							keyId = (selectedFreeKey[selectedFreeKey.numRows-1,0]+3)%totalKeys
+						self.SelectFreeKey(itemId=keyId)
+				elif currState[1] == 'rectWarp':
+					keyId = 0
+					if selectedWarpKey.col(0):
+						totalKeys = shapePath[0].ext.Shape.Rows * shapePath[0].ext.Shape.Cols
+						keyId = (selectedWarpKey[selectedWarpKey.numRows-1,0]+1)%totalKeys
+					self.SelectRectWarpKey(itemId=keyId)
+		return
+	
+	def SelectNextShape(self, direction=1):
+		allShapes = op('sorted')
+		tools = op('tools')
+		selectedShape = tools.op('selectedShape')
+		realIdCol = allShapes.col('realId')[0].col
+		typeCol = allShapes.col('type')[0].col
+		nextShape = [x[realIdCol].val for x in allShapes.rows() if x[typeCol].val == 'shape']
+		# we just rotate through all shapes
+		if selectedShape.col(0):
+			currSelected = [x for x in selectedShape.col(0)][-1]
+			index = nextShape.index(currSelected)
+			nextShape = nextShape[(index+direction)%len(nextShape)]
+		else:
+			nextShape = nextShape[0]
+		infoDict = self.SelectShape(itemId=nextShape)
+		return infoDict
+
+	def SelectNextTexture(self):
+		currState = self.getUVState()
+		selected = self.getSelected()
+		if currState[0] == 'XformKey':
+			currKey = selected['uvKey'][-1]
+			nextKey = (currKey+1)%4
+			self.SelectUVKey(itemId=nextKey)
+
+		return
+
+	def SelectLayer(self, itemId=None, add=False):
+		self.SetSelectType(selType=0)
+
+		shapeSelectDAT = self.ownerComp.op('tools/selectedShape')
+		layerSelectDAT = self.ownerComp.op('tools/selectedLayer')
+		treeDAT = self.ownerComp.op('tree')
+
+		self.ownerComp.ResetMulti(start=False)
+		changeTool = True
+
+		#if not layer:
+		if not add:
+			if shapeSelectDAT.rows():
+				if str(itemId) not in shapeSelectDAT.col(0):
+					shapeSelectDAT.clear()
+				else:
+					changeTool = False
+
+		if not add:
+			layerSelectDAT.clear()
+			layerSelectDAT.appendRow(itemId)
+
+		layerOp = op('allShapes').findChildren(name='item{0}'.format(itemId))
+		allChilds = layerOp[0].findChildren(type=COMP,tags=['shape'])
+		infoDict = {'multiple':False}
+		shapeList = []
+		shapePath = layerOp[0]
+		shapeList.append(shapePath.GetDefinition())
+		infoDict['shapes'] = shapeList
+		for i in allChilds:
+			self.SelectShape(itemId=i.digits, add=True, layer=True)
+		return infoDict
+
+	def SelectShape(self, itemId=None, add=False, layer=False):
+		if not layer:
+			self.SetSelectType(selType=1)
+		shapeSelectDAT = self.ownerComp.op('tools/selectedShape')
+		layerSelectDAT = self.ownerComp.op('tools/selectedLayer')
+		treeDAT = self.ownerComp.op('tree')
+		fullPathDAT = self.ownerComp.op('fullPath')
+
+		self.ownerComp.ResetMulti(start=False)
+		changeTool = True
+
+		#if not layer:
+		if not add:
+			if shapeSelectDAT.rows():
+				if str(itemId) not in shapeSelectDAT.col(0):
+					shapeSelectDAT.clear()
+				else:
+					shapeSelectDAT.clear()
+					changeTool = False
+
+
+		# is this a layer or a shape
+		if fullPathDAT[str(itemId),'type'] == '0':
+			if not add:
+				layerSelectDAT.clear()
+				layerSelectDAT.appendRow(itemId)
+			layerOp = op('allShapes').findChildren(name='item{0}'.format(itemId))
+			allChilds = layerOp[0].findChildren(type=COMP,tags=['shape'])
+			infoDict = {'multiple':False}
+			shapeList = []
+			shapePath = layerOp[0]
+			shapeList.append(shapePath.GetDefinition())
+			infoDict['shapes'] = shapeList
+			for i in allChilds:
+				self.SelectShape(itemId=i.digits, add=True, layer=True)
+			return infoDict
+			
+		else:
+			self.ClearSelects(tag='KeysAndHandles')
+
+			if not shapeSelectDAT.col(0):
+				shapeSelectDAT.appendRow(itemId)
+			elif str(itemId) not in shapeSelectDAT.col(0):
+				shapeSelectDAT.appendRow(itemId)
+
+			if shapeSelectDAT.numRows == 1:
+				state = self.getState()
+				if changeTool:
+					if state[0] == 'shapetool':
+						self.State(newState='tool', shapeTool='transKey')
+
+			#self.writeMatrix(path=self.ownerComp.op('tools/shapeTransform'))
+
+			# gather shape info and send to ui
+			fullPath = self.ownerComp.op('fullPath')
+			infoDict = {'multiple':False}
+			shapeList = []
+			for i in shapeSelectDAT.rows():
+				shapePath = op(fullPath[i[0].val,'path'])
+				shapeList.append(shapePath.GetDefinition())
+				# adding a shape so we'll have to save the points for editing
+				shapePath.ext.Transform.storePoints()
+
+			if len(shapeList)>1:
+				infoDict['multiple'] = True
+			infoDict['shapes'] = shapeList
+			return infoDict
+
+	def SelectRectKey(self, itemId=None, add=False):
+		keySelectDAT = self.ownerComp.op('tools/selectedKey')
+		if not keySelectDAT.col(0):
+			keySelectDAT.appendRow(int(itemId))
+		elif str(int(itemId)) not in keySelectDAT.col(0):
+			if not add:
+				keySelectDAT.clear()
+			keySelectDAT.appendRow(int(itemId))
+
+	def SelectRectEdgeKey(self, itemId=None, add=False):
+		keySelectDAT = self.ownerComp.op('tools/selectedRectEdgeKey')
+		if not keySelectDAT.col(0):
+			keySelectDAT.appendRow(int(itemId))
+		elif str(int(itemId)) not in keySelectDAT.col(0):
+			if not add:
+				keySelectDAT.clear()
+			keySelectDAT.appendRow(int(itemId))
+
+	def SelectRectWarpKey(self, itemId=None, add=False):
+		keySelectDAT = self.ownerComp.op('tools/selectedWarpKey')
+		if not keySelectDAT.col(0):
+			keySelectDAT.appendRow(int(itemId))
+		elif str(int(itemId)) not in keySelectDAT.col(0):
+			if not add:
+				keySelectDAT.clear()
+			keySelectDAT.appendRow(int(itemId))
+
+	def SelectRectWarpHandle(self, itemId=None, add=False):
+		keySelectDAT = self.ownerComp.op('tools/selectedWarpHandle')
+		if not keySelectDAT.col(0):
+			keySelectDAT.appendRow(int(itemId))
+		elif str(int(itemId)) not in keySelectDAT.col(0):
+			if not add:
+				keySelectDAT.clear()
+			keySelectDAT.appendRow(int(itemId))
+
+	def SelectFreeKey(self, itemId=None, add=False):
+		self.SetSelectType(selType=2)
+		keySelectDAT = self.ownerComp.op('tools/selectedFreeKey')
+		if not keySelectDAT.col(0):
+			keySelectDAT.appendRow(int(itemId))
+		elif str(int(itemId)) not in keySelectDAT.col(0):
+			if not add:
+				keySelectDAT.clear()
+			keySelectDAT.appendRow(int(itemId))
+
+	def SelectFreeHandle(self, itemId=None, keyId=None ,add=False):
+		if itemId != None or keyId != None:
+			if itemId != None:
+				key = math.floor(itemId/3)*3+1
+				handlePartner = key+1
+				if itemId == key+1:
+					handlePartner = key-1
+			elif keyId != None:
+				key = keyId
+				handlePartner = key + 1
+				itemId = key - 1
+
+			keySelectDAT = self.ownerComp.op('tools/selectedFreeHandle')
+
+			if not keySelectDAT.col(0):
+				keySelectDAT.appendRow([int(itemId),int(handlePartner)])
+			elif str(int(itemId)) not in keySelectDAT.col(0):
+				if not add:
+					keySelectDAT.clear()
+				keySelectDAT.appendRow([int(itemId),int(handlePartner)])
+
+	def SelectEdgeKey(self, itemId=None, add=False):
+		self.SetSelectType(selType=2)
+		keySelectDAT = self.ownerComp.op('tools/selectedEdgeKey')
+		if not keySelectDAT.col(0):
+			keySelectDAT.appendRow(int(itemId))
+		elif str(int(itemId)) not in keySelectDAT.col(0):
+			if not add:
+				keySelectDAT.clear()
+			keySelectDAT.appendRow(int(itemId))
+
+	def SelectEdgeHandle(self, itemId=None, keyId=None ,add=False):
+		if itemId != None or keyId != None:
+			if itemId != None:
+				key = math.floor(itemId/3)*3+1
+				handlePartner = key+1
+				if itemId == key+1:
+					handlePartner = key-1
+			elif keyId != None:
+				key = keyId
+				handlePartner = key + 1
+				itemId = key - 1
+
+			keySelectDAT = self.ownerComp.op('tools/selectedEdgeHandle')
+
+			if not keySelectDAT.col(0):
+				keySelectDAT.appendRow([int(itemId),int(handlePartner)])
+			elif str(int(itemId)) not in keySelectDAT.col(0):
+				if not add:
+					keySelectDAT.clear()
+				keySelectDAT.appendRow([int(itemId),int(handlePartner)])
+
+	def SelectShapeScaleKey(self, itemId=None):
+		keySelectDAT = self.ownerComp.op('tools/selectedScale')
+		pivotSOP = self.ownerComp.op('tools/shapeTransform/pivots')
+		keySOP = self.ownerComp.op('tools/shapeTransform/keys')
+		transform = self.ownerComp.op('tools/shapeTransform').localTransform
+		pivot = pivotSOP.center
+		keyPos = keySOP.points[int(itemId)].P
+		keyPos *= transform
+		keySelectDAT.clear()
+		keySelectDAT.appendRow([int(itemId),pivot.x,pivot.y,keyPos.x,keyPos.y])
+
+	def SelectShapeRotateKey(self, itemId=None):
+		keySelectDAT = self.ownerComp.op('tools/selectedRotate')
+		pivotSOP = self.ownerComp.op('tools/shapeTransform/pivots')
+		keySOP = self.ownerComp.op('tools/shapeTransform/keys')
+		transform = self.ownerComp.op('tools/shapeTransform').localTransform
+		pivot = pivotSOP.center
+		keyPos = keySOP.points[int(itemId)].P
+		keyPos *= transform
+		keySelectDAT.clear()
+		keySelectDAT.appendRow([int(itemId),pivot.x,pivot.y,keyPos.x,keyPos.y])
+
+	def SelectRowCol(self, itemId=None, add=False):
+		self.SetSelectType(selType=3)
+		rowColSelectDAT = self.ownerComp.op('tools/selectedRowCol')
+
+		if not rowColSelectDAT.col(0):
+			rowColSelectDAT.appendRow(int(itemId))
+		elif str(int(itemId)) not in rowColSelectDAT.col(0):
+			if not add:
+				rowColSelectDAT.clear()
+			rowColSelectDAT.appendRow(int(itemId))
+
+	def SelectUVKey(self, itemId=None, add=False):
+		keySelectDAT = self.ownerComp.op('tools/uvSelectedKey')
+		if not keySelectDAT.col(0):
+			keySelectDAT.appendRow(int(itemId))
+		elif str(int(itemId)) not in keySelectDAT.col(0):
+			if not add:
+				keySelectDAT.clear()
+			keySelectDAT.appendRow(int(itemId))
+
+	def SelectUVScaleKey(self, itemId=None):
+		keySelectDAT = self.ownerComp.op('tools/uvSelectedScale')
+		pivotSOP = self.ownerComp.op('tools/textureEdit/shapeTransform/pivots')
+		keySOP = self.ownerComp.op('tools/textureEdit/shapeTransform/keys')
+		transform = self.ownerComp.op('tools/textureEdit/shapeTransform').localTransform
+		pivot = pivotSOP.center
+		keyPos = keySOP.points[int(itemId)].P
+		keyPos *= transform
+		keySelectDAT.clear()
+		keySelectDAT.appendRow([int(itemId),pivot.x,pivot.y,keyPos.x,keyPos.y])
+
+	def SelectUVRotateKey(self, itemId=None):
+		keySelectDAT = self.ownerComp.op('tools/uvSelectedRotate')
+		pivotSOP = self.ownerComp.op('tools/textureEdit/shapeTransform/pivots')
+		keySOP = self.ownerComp.op('tools/textureEdit/shapeTransform/keys')
+		transform = self.ownerComp.op('tools/textureEdit/shapeTransform').localTransform
+		pivot = pivotSOP.center
+		keyPos = keySOP.points[int(itemId)].P
+		keyPos *= transform
+		keySelectDAT.clear()
+		keySelectDAT.appendRow([int(itemId),pivot.x,pivot.y,keyPos.x,keyPos.y])
+
+	def SetPivot(self, pivot=None, pos={'pivotX':None,'pivotY':None}):
+		pivotSOP = self.ownerComp.op('tools/shapeTransform/pivotScript')
+
+		if pivot != None:
+			setPivotVal = pivot
+			pivotSOP.par.Pivot = pivot
+
+		pivotX = pos.get('pivotX', None)
+		pivotY = pos.get('pivotY', None)
+		if pivotX:
+			pivotSOP.par.Pivotpos1 = pivotX
+		if pivotY:
+			pivotSOP.par.Pivotpos2 = pivotY
+		pivotSOP.par.Pivotpos3 = 0
+
+
+	def SetInsertPointPos(self, tx=-9999999, ty=-9999999):
+		geo = self.ownerComp.op('tools/insertPoint')
+		geo.par.tx = tx
+		geo.par.ty = ty
+
+	def DeleteSelected(self, layer=False):
+		selected = self.getSelected()
+
+		shapeSelectDAT = self.ownerComp.op('tools/selectedShape')
+		layerSelectDAT = self.ownerComp.op('tools/selectedLayer')
+		freeKeySelectDAT = self.ownerComp.op('tools/selectedFreeKey')
+		rowColSelectDAT = self.ownerComp.op('tools/selectedRowCol')
+		# we can delete all kinds of things:
+		deleteTypes = ['layer','shape','point','rowCol']
+		selectType = op('tools/selectedType')[0,0]
+		selectType = deleteTypes[selectType]
+		# layers
+		if selectType == 'layer':
+			layer = layerSelectDAT[0,0]
+			self.ownerComp.ext.Layerizer.DeleteShape(shapeId=int(layer))
+			self.ClearSelects()
+		# shapes
+		elif selectType == 'shape':
+			shapeDefList = []
+			for i in shapeSelectDAT.rows():
+				shapeDefList += self.ownerComp.ext.Layerizer.DeleteShape(shapeId=int(i[0]), undo=False)
+				defDict = {}
+				defDict['action'] = 'deleteShape'
+				defDict['shapeDefList'] = shapeDefList
+				self.ownerComp.SaveUndo(defDict=defDict)
+			self.ClearSelects()
+		# freeform points
+		elif selectType == 'point':
+			parent().FreeDeleteKey()
+		# rows or columns
+		elif selectType == 'rowCol':
+			itemId = shapeSelectDAT[0,0]
+			rowColNr = rowColSelectDAT[0,0]
+			a = self.ownerComp.DeleteRowCol(itemId=int(itemId), rowColNr=int(rowColNr))
+			return a
+
+	def ToggleLock(self):
+		shape = self.getSelected()['shape']
+		if shape:
+			shapeList = [int(x.val) for x in shape]
+			shapeOPs = self.getShape(itemId=shapeList)
+			for i in shapeOPs:
+				handleLock = i.ext.Shape.owner.pars("Handlelock")
+				if handleLock:
+					newVal = (handleLock[0]+1)%2
+					handleLock[0].val = newVal
+		return newVal
+
+	def LockShape(self, itemId=None):
+		if itemId:
+			tree = op('tree')
+			tree[str(itemId),'lock'] = (tree[str(itemId),'lock']+1)%2
+
+	def ShowShape(self, itemId=None):
+		if itemId:
+			tree = op('tree')
+			tree[str(itemId),'visible'] = (tree[str(itemId),'visible']+1)%2
+
+	def ResetUndo(self):
+		self.undoStep = 0
+		parent.KanProj.op('undo').clear()
+
+
+	def SaveUndo(self, defDict=None, end=False):
+		if defDict:
+			undoDAT = parent.KanProj.op('undo')
+			undoDAT.par.rows = self.undoStep
+			if end:
+				oldDefDict = eval(undoDAT[self.undoStep-1,0].val)
+				oldDefDict['after'] = defDict['after']
+				undoDAT[self.undoStep-1,0] = oldDefDict
+			else:
+				# delete all rows that are greater than undostep
+				extraRows = range(self.undoStep, undoDAT.numRows-1)
+				#debug(list(extraRows))
+				#undoDAT.deleteRows()
+				undoDAT.appendRow(defDict)
+			if undoDAT.numRows > 50:
+				undoDAT.deleteRow(0)
+			self.undoStep = undoDAT.numRows
+
+	def Undo(self, level=1):
+		undoDAT = parent.KanProj.op('undo')
+		undoStep = self.undoStep
+		if undoDAT.row(undoStep-1):
+			lastAction = eval(undoDAT[undoStep-1,0].val)
+			action = lastAction.get('action',None)
+			############################
+			# Adding and Deleting Shapes
+			############################
+			# deleting a shape
+			if action == 'deleteShape':
+				shapeDefList = lastAction.get('shapeDefList',None)
+				sortList = sorted(shapeDefList, key=lambda k: k['path'])
+				for i in sortList:
+					path = i['path']
+					owner = op(path.split('/')[-2])
+					if owner == 'allShapes':
+						owner = -1
+					else:
+						owner = tdu.digits(owner)
+					shapeType = i['parameters']['Type']
+					layer = -i['layer']
+					if shapeType == 'Rectangle':
+						shapeDef = self.ownerComp.AddRect(owner=owner,end=True,undo=False,layer=layer)
+					elif shapeType == 'Freeform':
+						shapeDef = self.ownerComp.AddFree(owner=owner,end=True,undo=False,layer=layer)
+					elif shapeType == 'Layer':
+						shapeDef = self.ownerComp.AddLayer(owner=owner,undo=False,layer=layer)
+					shapePath = shapeDef['path']
+					op(shapePath).SetDefinition(defDict=i, undo=False)
+			# adding a layer
+			elif action == 'addLayer':
+				shapeDef = lastAction.get('shapeDef',None)
+				if shapeDef:
+					path = shapeDef['path']
+					self.ownerComp.DeleteShape(shapeId=tdu.digits(path),undo=False)
+			# adding a shape
+			elif action == 'addShape':
+				shapeDef = lastAction.get('shapeDef',None)
+				if shapeDef:
+					path = shapeDef['path']
+					self.ownerComp.DeleteShape(shapeId=tdu.digits(path),undo=False)
+			############################
+			# moving shapes and layers
+			############################
+			elif action == 'moveShape':
+				tree = op('tree')
+				before = lastAction['before']
+				after = lastAction['after']
+				for b, a in zip(before,after):
+					shapeId = int(b['id'])
+					oldLayer = int(b['layer'])
+					oldOwner = int(b['owner'])
+					newOwner = int(a['owner'])
+					first=False
+					if oldLayer == 0:
+						first = True
+						destId = oldOwner
+					else:
+						oldOwnerOp = self.ownerComp.ext.Selector.getShape(itemId=[oldOwner])
+
+						elements = oldOwnerOp[0].op('elements')
+						allLayers = elements.col('layer')
+
+						if oldLayer in allLayers:
+							destId = elements[allLayers.index(oldLayer)-1,'id'].val
+					reorder = False		
+					if oldOwner == newOwner:
+						reorder = True
+
+					self.ownerComp.MoveShape(shapeId=shapeId, destId=destId, reorder=reorder, first=first, undo=False)
+
+			# changeing a parameter
+			elif action in ['parChange','shapeTransform','rectTransKey','rectWarpKey','rectWarpHandle','addRow','addCol','deleteRowCol','resetRect','freeTranslateKey','freeTranslateHandle','edgeTranslateKey','edgeTranslateHandle','freeInsertKey','freeDeleteKey','uvTransKey','uvTransform']:
+				before = lastAction['before']
+				shapeDict = {}
+				if len(before) > 1:
+					shapeDict['multiple'] = True
+				shapeDict['shapes'] = []
+				for b in before:
+					shapePath = b['path']
+					op(shapePath).SetDefinition(defDict=b, undo=False)
+					shapeDict['shapes'].append(b)
+				parent.mottoKantan.op('ui/main/gadgets').Read(shapeDict=shapeDict, undo=False)
+				parent.mottoKantan.op('ui/textureEdit/gadgets').Read(shapeDict=shapeDict)
+			self.undoStep = max(self.undoStep-1, 1)
+
+	def Redo(self, level=1):
+		undoDAT = parent.KanProj.op('undo')
+		undoStep = self.undoStep
+		if undoDAT.row(undoStep):
+			lastAction = eval(undoDAT[undoStep,0].val)
+			action = lastAction.get('action',None)
+
+			if action == 'deleteShape':
+				shapeDefList = lastAction.get('shapeDefList',None)
+				sortList = sorted(shapeDefList, key=lambda k: k['path'])
+				for i in sortList:
+					path = i['path']
+					self.ownerComp.DeleteShape(shapeId=tdu.digits(path),undo=False)
+
+			elif action == 'addLayer' or action == 'addShape':
+				reShapeDef = lastAction.get('shapeDef',None)
+				path = reShapeDef['path']
+				owner = op(path.split('/')[-2])
+				if owner == 'allShapes':
+					owner = -1
+				else:
+					owner = tdu.digits(owner)
+				shapeType = reShapeDef['parameters']['Type']
+				layer = -reShapeDef['layer']
+				if shapeType == 'Rectangle':
+					shapeDef = self.ownerComp.AddRect(owner=owner,end=True,undo=False,layer=layer)
+				elif shapeType == 'Freeform':
+					shapeDef = self.ownerComp.AddFree(owner=owner,end=True,undo=False,layer=layer)
+				elif shapeType == 'Layer':
+					shapeDef = self.ownerComp.AddLayer(owner=owner,undo=False,layer=layer)
+				shapePath = shapeDef['path']
+				op(shapePath).SetDefinition(defDict=reShapeDef,undo=False)
+
+			############################
+			# moving shapes and layers
+			############################
+			elif action == 'moveShape':
+				tree = op('tree')
+				before = lastAction['before']
+				after = lastAction['after']
+				for b, a in zip(before,after):
+					shapeId = int(a['id'])
+					oldLayer = int(a['layer'])
+					oldOwner = int(a['owner'])
+					newOwner = int(b['owner'])
+					first=False
+					if oldLayer == 0:
+						first = True
+						destId = oldOwner
+					else:
+						oldOwnerOp = self.ownerComp.ext.Selector.getShape(itemId=[oldOwner])
+
+						elements = oldOwnerOp[0].op('elements')
+						allLayers = elements.col('layer')
+
+						if oldLayer in allLayers:
+							destId = elements[allLayers.index(oldLayer)-1,'id'].val
+					reorder = False		
+					if oldOwner == newOwner:
+						reorder = True
+
+					self.ownerComp.MoveShape(shapeId=shapeId, destId=destId, reorder=reorder, first=first, undo=False)
+
+
+			# changeing a parameter
+			elif action in ['parChange','shapeTransform','rectTransKey','rectWarpKey','rectWarpHandle','addRow','addCol','deleteRowCol','rectReset','freeTranslateKey','freeTranslateHandle','edgeTranslateKey','edgeTranslateHandle','freeInsertKey','freeDeleteKey','uvTransKey','uvTransform']:
+				after = lastAction['after']
+				shapeDict = {}
+				if len(after) > 1:
+					shapeDict['multiple'] = True
+				shapeDict['shapes'] = []
+				for a in after:
+					shapePath = a['path']
+					op(shapePath).SetDefinition(defDict=a, undo=False)
+					shapeDict['shapes'].append(a)
+				parent.mottoKantan.op('ui/main/gadgets').Read(shapeDict=shapeDict)
+				parent.mottoKantan.op('ui/textureEdit/gadgets').Read(shapeDict=shapeDict)
+			self.undoStep += 1
+	###############################
+	# conveniencr functions
+	###############################
+
+	def SetSelectType(self, selType=-1):
+		op('tools/selectedType')[0,0] = selType
+
+	# clears out Table DATs with specified tag
+	def ClearSelects(self, tag='selectorDAT'):
+		relevant = self.ownerComp.op('tools').findChildren(tags=[tag])
+		for i in relevant:
+			i.clear()
+		return
+
+	def ClearUVSelects(self, tag='uvSelectorDAT'):
+		relevant = self.ownerComp.op('tools').findChildren(tags=[tag])
+		for i in relevant:
+			i.clear()
+		return
+
+	# writes a matrix into the pretransform matrix parameter of a given Geo COMP
+	def writeMatrix(self, path=None, matrix=tdu.Matrix()):
+		matrix[2,3] = 0
+		mat = []
+		for i in range(4):
+			for j in range(4):
+				mat.append(matrix[j,i])
+		debug(self)
+		op(path).par.xformmatrixop.expr = 'tdu.Matrix({0})'.format(mat)
+
+	# change the state of the ui - what is possible depends on what is selected
+	def State(self, newState=None, shapeTool=None):
+		mainStates = self.ownerComp.op('tools/uiStates/main')
+		shapeTools = self.ownerComp.op('tools/uiStates/shapeTool')
+		currMainState = self.getState()[0]
+		if newState == 'createRect':
+			mainStates.op('createRect').click()
+			#shapeTools.clickChild(0)
+			self.ownerComp.op('tools/rectCreate').par.Reset.pulse()
+		elif newState == 'createFree':
+			mainStates.op('createFree').click()
+			#shapeTools.clickChild(0)
+		elif newState == 'xform':
+			#debug(currMainState)
+			mainStates.op('transform').click()
+			shapeTools.op('shapeTranslate').click()
+			if currMainState == 'cFree':
+				self.ownerComp.AddFree(end=True)
+		elif newState == 'tool':
+			mainStates.op('shapeManipulate').click()
+			shapeTools.op(shapeTool).click()
+			if currMainState == 'cFree':
+				self.ownerComp.AddFree(end=True)
+
+	def getState(self):
+		uiStates = parent.mottoKantan.op('project/tools/uiStates')
+		mainState = uiStates.op('fan1').par.channame.eval().split(' ')
+		toolState = uiStates.op('fan2').par.channame.eval().split(' ')
+		mainRadioState = int(uiStates.op('main').panel.radio)
+		toolRadioState = int(uiStates.op('shapeTool').panel.radio)
+		return [mainState[mainRadioState],toolState[toolRadioState]]
+
+	# change the state of the texture ui
+	def UVState(self, newState=None):
+		mainStates = self.ownerComp.op('tools/textureEdit/uiStates')
+		if newState == 'xform':
+			mainStates.op('transform').click()
+		elif newState == 'tool':
+			mainStates.op('shapeManipulate').click()
+
+	def getUVState(self):
+		uiStates = parent.mottoKantan.op('project/tools/textureEdit/uiStates')
+		mainState = uiStates.op('fan1').par.channame.eval().split(' ')
+		uiRadioState = int(mainState[uiStates.panel.radio])
+		return [uiRadioState]
+
+	def getShape(self, itemId=None, shapeType=None):
+		shapeComp = self.ownerComp.op('allShapes')
+		if itemId == [-1]:
+			return [shapeComp]
+		if itemId:
+			if shapeType:
+				shapes = shapeComp.findChildren(tags=['shape'], key=lambda x: x.digits in itemId and x.ext.Shape.Type in shapeType)
+			else:
+				shapes = shapeComp.findChildren(tags=['shape'], key=lambda x: x.digits in itemId)
+		else:
+			if shapeType:
+				shapes = shapeComp.findChildren(tags=['shape'], key=lambda x: x.ext.Shape.Type in shapeType)
+			else:
+				shapes = shapeComp.findChildren(tags=['shape'])
+		return shapes
+
+	def getChildren(self, layerOp=None):
+		allChildren = layerOp.findChildren(type=COMP, tags=['shape'])
+		return allChildren
+
+	def getSelected(self):
+		tools = self.ownerComp.op('tools')
+		sType = tools.op('selectedType')
+		sLayer = tools.op('selectedLayer')
+		sShape = tools.op('selectedShape')
+		sKey = tools.op('selectedKey')
+		sKeyHandle = tools.op('selectedKeyHandle')
+		sWarpKey = tools.op('selectedWarpKey')
+		sWarpHandle = tools.op('selectedWarpHandle')
+		sScale = tools.op('selectedScale')
+		sRotate = tools.op('selectedRotate')
+		sFreeKey = tools.op('selectedFreeKey')
+		sFreeHandle = tools.op('selectedFreeHandle')
+		sEdgeKey = tools.op('selectedEdgeKey')
+		sEdgeHandle = tools.op('selectedEdgeHandle')
+		sRectEdgeKey = tools.op('selectedRectEdgeKey')
+		sRowCol = tools.op('selectedRowCol')
+		sUVKey = self.ownerComp.op('tools/uvSelectedKey')
+		sUVScale = self.ownerComp.op('tools/uvSelectedScale')
+		sUVRotate = self.ownerComp.op('tools/uvSelectedRotate')
+
+		selectDict = {'type':-1,'layer':[],'shape':[],'key':[],'handle':[],'warpKey':[],'warpHandle':[],'scale':[],'rotate':[],'freeKey':[],'freeHandle':[],'edgeKey':[],'edgeHandle':[],'rectEdgeKey':[],'rowCol':[], 'uvKey':[]}
+		selectDict['type'] = sType[0,0]
+		if sLayer.col(0):
+			selectDict['layer'] = [x for x in sLayer.col(0)]
+		if sShape.col(0):
+			selectDict['shape'] = [x for x in sShape.col(0)]
+		if sKey.col(0):
+			selectDict['key'] = [x for x in sKey.col(0)]
+		if sKeyHandle.col(0):
+			selectDict['handle'] = [x for x in sKeyHandle.col(0)]
+		if sWarpKey.col(0):
+			selectDict['warpKey'] = [x for x in sWarpKey.col(0)]
+		if sWarpHandle.col(0):
+			selectDict['warpHandle'] = [x for x in sWarpHandle.col(0)]
+		if sScale.col(0):
+			selectDict['scale'] = [[x[0],x[1],x[2],x[3],x[4]] for x in sScale.rows()]
+		if sRotate.col(0):
+			selectDict['rotate'] = [[x[0],x[1],x[2],x[3],x[4]] for x in sRotate.rows()]
+		if sFreeKey.col(0):
+			selectDict['freeKey'] = [x for x in sFreeKey.col(0)]
+		if sFreeHandle.col(0):
+			selectDict['freeHandle'] = [[x[0],x[1]] for x in sFreeHandle.rows()]
+		if sEdgeKey.col(0):
+			selectDict['edgeKey'] = [x for x in sEdgeKey.col(0)]
+		if sEdgeHandle.col(0):
+			selectDict['edgeHandle'] = [[x[0],x[1]] for x in sEdgeHandle.rows()]
+		if sRectEdgeKey.col(0):
+			selectDict['rectEdgeKey'] = [x for x in sRectEdgeKey.col(0)]
+		if sRowCol.col(0):
+			selectDict['rowCol'] = [x for x in sRowCol.col(0)]
+		if sUVKey.col(0):
+			selectDict['uvKey'] = [x for x in sUVKey.col(0)]
+		if sUVScale.col(0):
+			selectDict['uvScale'] = [[x[0],x[1],x[2],x[3],x[4]] for x in sUVScale.rows()]
+		if sUVRotate.col(0):
+			selectDict['uvRotate'] = [[x[0],x[1],x[2],x[3],x[4]] for x in sUVRotate.rows()]
+
+		return selectDict
+
+	def GetRowAsDict(self, dat=None, row=None):
+		returnDict = {}
+		header = [x.val for x in dat.row(0)]
+		values = [x.val for x in dat.row(row)]
+		for c,x in enumerate(header):
+			returnDict[x] = values[c]
+		return returnDict
+
+
+##### ui/renderpick/keyboardin1_callbacks #####
+# me - this DAT
+# 
+# dat - the DAT that received the key event
+# key - the name of the key attached to the event
+# character - the ASCII value of the pressed key as a string
+# alt - True if the alt modifier is pressed
+# ctrl - True if the ctrl modifier is pressed
+# shift - True if the shift modifier is pressed
+# state - True if the event is a key press event
+# time - the time when the event came in milliseconds
+
+def keyEvent(dat, key, character, alt, lAlt, rAlt, ctrl, lCtrl, rCtrl, shift, lShift, rShift, state, time):
+	parent().KeyboardEvent(dat, key, character, alt, lAlt, rAlt, ctrl, lCtrl, rCtrl, shift, lShift, rShift, state, time)
+	return
+
+# shortcutName is the name of the shortcut
+
+def shortcutEvent(dat, shortcutName, time):
+	if shortcutName == 'ctrl.z':
+		parent.mottoKantan.op('project').Undo()
+	elif shortcutName == 'ctrl.y':
+		parent.mottoKantan.op('project').Redo()
+	return
+	

@@ -1,0 +1,70 @@
+monitor 0: w=2294 h=1490 scaledW=1147 scaledH=745 x=None y=None isPrimary=True
+num monitors: 1
+size crowd_bg: 1147x745
+size cf0: 1147x745
+size crowd_comp: 1147x745
+size gz_mode: 1147x745
+size gz_xfade: 1147x745
+size gz_xfade2: 512x512
+size gz_tile: 1147x745
+size gz_switch: 512x512
+gz_fit: type=fit w=1147 h=745
+   gz_fit.fit = fill
+   gz_fit.justifyh = center
+   gz_fit.justifyv = center
+   gz_fit.outputresolution = custom
+   gz_fit.resolutionw = 1147
+   gz_fit.resolutionh = 745
+   gz_fit.resmult = True
+   gz_fit.outputaspect = resolution
+   gz_fit.aspect1 = 1.0
+   gz_fit.aspect2 = 1.0
+   gz_fit.fillmode = best
+gz_win: type=window w=1147 h=745
+   gz_win.winop = /project1/gz_fit
+   gz_win.justifyoffsetto = specifydisplay
+   gz_win.justifyh = left
+   gz_win.justifyv = bottom
+   gz_win.winoffsetx = 0
+   gz_win.winoffsety = 0
+   gz_win.size = automatic
+   gz_win.winw = 900
+   gz_win.winh = 900
+   gz_win.borders = False
+   gz_win.bordersinsize = False
+   gz_win.windowpixelformat = sdr8fixed
+   gz_win.drawwindow = True
+   gz_win.winopen = False
+   gz_win.winclose = False
+   gz_win.opendialog = False
+gz_tile: type=transform w=1147 h=745
+   gz_tile.outputresolution = custom
+   gz_tile.resolutionw = 1147
+   gz_tile.resolutionh = 745
+   gz_tile.resmult = True
+   gz_tile.outputaspect = useinput
+   gz_tile.aspect1 = 1.0
+   gz_tile.aspect2 = 1.0
+   gz_tile.fillmode = best
+gz_mode: type=switch w=1147 h=745
+   gz_mode.outputresolution = useinput
+   gz_mode.resolutionw = 256
+   gz_mode.resolutionh = 256
+   gz_mode.resmult = True
+   gz_mode.outputaspect = useinput
+   gz_mode.aspect1 = 1.0
+   gz_mode.aspect2 = 1.0
+   gz_mode.fillmode = best
+gz_xfade: type=cross w=1147 h=745
+   gz_xfade.size = input2
+   gz_xfade.prefit = fill
+   gz_xfade.justifyh = center
+   gz_xfade.justifyv = center
+   gz_xfade.outputresolution = useinput
+   gz_xfade.resolutionw = 256
+   gz_xfade.resolutionh = 256
+   gz_xfade.resmult = True
+   gz_xfade.outputaspect = useinput
+   gz_xfade.aspect1 = 1.0
+   gz_xfade.aspect2 = 1.0
+   gz_xfade.fillmode = best

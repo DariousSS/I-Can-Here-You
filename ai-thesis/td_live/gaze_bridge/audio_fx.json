@@ -1,5 +1,5 @@
 {
-  "说明": "TD 声音效果调节（保存后约 2 秒生效，不用重装）。gain_lo/gain_hi：手低/手高时的放大倍数（越大越脏）；vol_lo/vol_hi：手低/手高时的总音量（别超过 0.8，小心耳朵）；clip_type：失真种类 clamp=硬削波(粗糙过载) / zigzag=折叠(金属、合成器味) / loop=环绕(故障、破碎)。 拍手换脸：clap_on 开关；clap_min 最小响度（0~1，拍手峰值要超过它，房间很吵就调大）；clap_ratio 要比平时响几倍才算拍手（调大=更不容易误触发）；clap_gap_frames 两次拍手之间至少隔几帧（30 帧≈1 秒）。 握拳换脸：fist_on 开关；手越张开『指尖到手腕的距离÷手掌大小』越大(约 1.8~2.2)，握拳时变小(约 1.0~1.3)；ratio 低于 fist_enter 算握拳，高于 fist_exit 才算重新张开（两个数之间是缓冲，防抖）；fist_mutes=握拳时停声音；fist_gap_frames=两次换脸至少隔几帧(30≈1 秒)。clap_on 拍手(麦克风)默认关。 fist_frames：需要连续多少帧都像握拳才算（默认 5 帧≈0.17 秒；调大=更不容易误触发，但反应更慢）。 画面模式：visual_mode = crowd(大小不一的脸群像) 或 mirror(镜像万花筒)；crowd_max 最多几张脸(≤20)；crowd_min 手最低时有几张；crowd_big 最大那张脸的高度占屏幕高度的比例(0.7=70%，可以超过 1 让它出画)。 场景系统：visual_mode = auto(自动轮换+捏合切换) / crowd / mirror(固定一个场景)；scenes=轮换的场景顺序；scene_auto_sec=每隔几秒自动换下一个(0=不自动)；xfade_speed=淡入淡出速度(越小越慢，0.06≈1.5 秒)；捏合手势(拇指尖碰食指尖)=切下一个场景：pinch_enter=拇指尖到食指尖的距离÷手掌大小 低于它算捏合(越大越容易触发)，pinch_frames=需连续几帧，pinch_gap_frames=两次之间至少隔几帧。 attn=纯黑白的 AI 注意力图场景（没有脸），已加入 scenes 轮换；visual_mode 也可设成 attn 固定。 空气乐器音高：air_pitch_from=x(左右决定音高，左低右高，像琴) 或 y(旧：高度决定音高)；air_scale=pentatonic(五声)/major(大调)/minor(小调)/chromatic(每个半音)；air_base=最低音的 MIDI 号(48=C3,60=中央 C)；air_octaves=几个八度；air_x_lo/air_x_hi=手在画面左右的有效范围(0~1，固定不变，像琴键位置)；air_flip_x=左右反了就改 true；air_margin=换音的粘滞(0~0.5，越大越不容易在两音交界抖)。手的高度仍然控制力度和失真。",
+  "说明": "TD 声音效果调节（保存后约 2 秒生效，不用重装）。gain_lo/gain_hi：手低/手高时的放大倍数（越大越脏）；vol_lo/vol_hi：手低/手高时的总音量（别超过 0.8，小心耳朵）；clip_type：失真种类 clamp=硬削波(粗糙过载) / zigzag=折叠(金属、合成器味) / loop=环绕(故障、破碎)。 拍手换脸：clap_on 开关；clap_min 最小响度（0~1，拍手峰值要超过它，房间很吵就调大）；clap_ratio 要比平时响几倍才算拍手（调大=更不容易误触发）；clap_gap_frames 两次拍手之间至少隔几帧（30 帧≈1 秒）。 握拳换脸：fist_on 开关；手越张开『指尖到手腕的距离÷手掌大小』越大(约 1.8~2.2)，握拳时变小(约 1.0~1.3)；ratio 低于 fist_enter 算握拳，高于 fist_exit 才算重新张开（两个数之间是缓冲，防抖）；fist_mutes=握拳时停声音；fist_gap_frames=两次换脸至少隔几帧(30≈1 秒)。clap_on 拍手(麦克风)默认关。 fist_frames：需要连续多少帧都像握拳才算（默认 5 帧≈0.17 秒；调大=更不容易误触发，但反应更慢）。 画面模式：visual_mode = crowd(大小不一的脸群像) 或 mirror(镜像万花筒)；crowd_max 最多几张脸(≤20)；crowd_min 手最低时有几张；crowd_big 最大那张脸的高度占屏幕高度的比例(0.7=70%，可以超过 1 让它出画)。 场景系统：visual_mode = auto(自动轮换+捏合切换) / crowd / mirror(固定一个场景)；scenes=轮换的场景顺序；scene_auto_sec=每隔几秒自动换下一个(0=不自动)；xfade_speed=淡入淡出速度(越小越慢，0.06≈1.5 秒)；捏合手势(拇指尖碰食指尖)=切下一个场景：pinch_enter=拇指尖到食指尖的距离÷手掌大小 低于它算捏合(越大越容易触发)，pinch_frames=需连续几帧，pinch_gap_frames=两次之间至少隔几帧。 attn=纯黑白的 AI 注意力图场景（没有脸），已加入 scenes 轮换；visual_mode 也可设成 attn 固定。 空气乐器音高：air_pitch_from=x(左右决定音高，左低右高，像琴) 或 y(旧：高度决定音高)；air_scale=pentatonic(五声)/major(大调)/minor(小调)/chromatic(每个半音)；air_base=最低音的 MIDI 号(48=C3,60=中央 C)；air_octaves=几个八度；air_x_lo/air_x_hi=手在画面左右的有效范围(0~1，固定不变，像琴键位置)；air_flip_x=左右反了就改 true；air_margin=换音的粘滞(0~0.5，越大越不容易在两音交界抖)。手的高度仍然控制力度和失真。 屏幕大小：screen_w/screen_h 设成 0=自动按当前主屏幕大小适应（换投影仪或回到电脑自己的屏幕都会自动调整，约 1 秒）；想强制某个大小就写具体数字，比如 1920 和 1080。 投影映射：mapping_on=true 时，表演窗口显示 Kantan Mapper 对准纸箱后的画面（false=原画面铺满）；win_display=表演窗口显示在第几块屏幕（0=主屏幕，接了投影仪并设为扩展后可能是 1）；auto_open_window=true 时，打开 TD 约 8 秒后自动打开表演窗口。 城堡底部的海洋球：castle_ball_w / castle_ball_h 是给 Kantan 里那个长方形用的球画面的比例（1920x640=三个并排的方块；三个方块各放一个就用 1000 和 1000）。 海洋球触发：ball_auto_min/ball_auto_max=隔多少秒随机来一次（秒，两个数之间随机；都设 0=不自动）；ball_with_flash=true 时诡异声音出现也会触发球；ball_sfx_vol=球的音效音量（0=没有音效）；ball_on=总开关。 场景（新）：mirror=万花筒（主场景，停留最久）；face=纯人脸（偶尔，只影响城堡方块）；attn=黑白注意力图。scene_hold=每个场景停留多少秒（mirror 60 / face 12 / attn 25）；从别的场景一律先回到 mirror，从 mirror 出去时按 scene_weights 随机选（face 1 : attn 2）。海洋球：ball_every_switches=每切换几次场景在切换中间涌一次球（0=不这样）；ball_need_hand=true 时摄像头里要看到手才触发；ball_hand_sec=最近几秒内看到过手就算有手；ball_auto_min/max 都为 0=不随机触发；castle_ball_phys_aspect=纸箱实物长条的 宽/高（比如三个并排的方块填 3；0=按 Kantan 里画的形状自动算）。 城堡万花筒：castle_tiles_min=最少平铺几张脸（1=只有一张，3=一行三张，越大越碎越像万花筒）；castle_spin_deg_s=每秒旋转多少度（0=不转）。",
   "gain_lo": 15,
   "gain_hi": 300,
   "vol_lo": 0.12,
@@ -20,8 +20,8 @@
   "crowd_min": 3,
   "crowd_big": 0.7,
   "scenes": [
-    "crowd",
     "mirror",
+    "face",
     "attn"
   ],
   "scene_auto_sec": 45,
@@ -37,5 +37,33 @@
   "air_x_lo": 0.12,
   "air_x_hi": 0.88,
   "air_flip_x": false,
-  "air_margin": 0.25
+  "air_margin": 0.25,
+  "screen_w": 0,
+  "screen_h": 0,
+  "mapping_on": true,
+  "win_display": 0,
+  "auto_open_window": false,
+  "castle_ball_w": 1920,
+  "castle_ball_h": 640,
+  "ball_with_flash": false,
+  "ball_auto_min": 0,
+  "ball_auto_max": 0,
+  "ball_sfx_vol": 0.6,
+  "scene_hold": {
+    "mirror": 60,
+    "face": 12,
+    "attn": 25,
+    "crowd": 30
+  },
+  "scene_weights": {
+    "face": 1,
+    "attn": 2,
+    "crowd": 1
+  },
+  "ball_every_switches": 3,
+  "ball_need_hand": true,
+  "ball_hand_sec": 4.0,
+  "castle_ball_phys_aspect": 0,
+  "castle_tiles_min": 5,
+  "castle_spin_deg_s": 6.0
 }

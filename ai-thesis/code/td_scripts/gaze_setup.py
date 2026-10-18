@@ -4,7 +4,7 @@
 BRIDGE = '/Users/shanzeyang/Desktop/I can Here You/ai-thesis/td_live/gaze_bridge'
 
 EXEC_CODE = '''
-import json, os, time, re, random
+import json, os, time, re, random, math
 BRIDGE = %r
 
 FLIP_X = False        # 目光左右反了就改 True
@@ -384,7 +384,7 @@ def _fx_cfg(st):
                'scenes': ['crowd', 'mirror', 'attn'], 'scene_auto_sec': 45, 'xfade_speed': 0.06,
                'pinch_on': True, 'pinch_enter': 0.35, 'pinch_frames': 4, 'pinch_gap_frames': 60,
                'air_pitch_from': 'x', 'air_scale': 'pentatonic', 'air_base': 48, 'air_octaves': 3,
-               'air_x_lo': 0.12, 'air_x_hi': 0.88, 'air_flip_x': False, 'air_margin': 0.25}
+               'air_x_lo': 0.12, 'air_x_hi': 0.88, 'air_flip_x': False, 'air_margin': 0.25, 'screen_w': 0, 'screen_h': 0, 'ball_on': True, 'ball_rise': 0.5, 'ball_hold': 2.2, 'ball_fall': 1.0, 'mapping_on': False, 'win_display': 0, 'auto_open_window': False, 'castle_ball_w': 1920, 'castle_ball_h': 640, 'ball_with_flash': False, 'castle_ball_auto': True, 'ball_auto_min': 0, 'ball_auto_max': 0, 'ball_every_switches': 3, 'ball_need_hand': True, 'ball_hand_sec': 4.0, 'castle_ball_phys_aspect': 0, 'castle_tiles_min': 3, 'castle_spin_deg_s': 6.0, 'scene_hold': {'mirror': 60, 'face': 12, 'attn': 25, 'crowd': 30}, 'scene_weights': {'face': 1, 'attn': 2, 'crowd': 1}, 'ball_sfx_vol': 0.6}
         try:
             with open(BRIDGE + '/audio_fx.json', encoding='utf-8') as fh:
                 j = json.load(fh)
@@ -480,33 +480,48 @@ def _crowd_layout(seed, n):
 
 
 def _update_scene(st):
-    """场景系统：auto=自动轮换(每隔 N 秒) + 捏合手势切下一个；也可固定 crowd/mirror/attn。
-    gz_xfade(Cross) 管 镜像<->群像，gz_xfade2(Cross) 再管 (它们)<->黑白 AI 注意力图。"""
+    """场景系统：镜像(万花筒)是主场景，停留最久；纯人脸(face)和黑白注意力图(attn)偶尔插进来，然后回到镜像。
+    gz_xfade(Cross) 管 镜像<->群像，gz_xfade2(Cross) 再管 (它们)<->黑白图；castle_mix 管城堡方块上 万花筒<->纯人脸。"""
     cfg = _fx_cfg(st)
     mode = cfg.get('visual_mode', 'auto')
-    valid = ('crowd', 'mirror', 'attn')
-    scenes = [x_ for x_ in (cfg.get('scenes') or ['crowd', 'mirror']) if x_ in valid] or ['crowd']
+    valid = ('crowd', 'mirror', 'attn', 'face')
+    scenes = [x_ for x_ in (cfg.get('scenes') or ['mirror']) if x_ in valid] or ['mirror']
     now = time.time()
+    cur = st.get('scene')
     if mode == 'auto':
-        i = st.get('scene_i', 0)
+        if cur not in scenes:
+            cur = 'mirror' if 'mirror' in scenes else scenes[0]
+            st['scene_t'] = now
         if st.get('scene_t') is None:
             st['scene_t'] = now
-        sec = float(cfg.get('scene_auto_sec', 45))
-        if sec > 0 and now - st['scene_t'] > sec:
-            i += 1
+        holds = cfg.get('scene_hold') or {}
+        hold = float(holds.get(cur, cfg.get('scene_auto_sec', 45)))
+        go = st.pop('scene_next', False)
+        if hold > 0 and now - st['scene_t'] > hold:
+            go = True
+        if go and len(scenes) > 1:
+            others = [x_ for x_ in scenes if x_ != cur]
+            if 'mirror' in scenes and cur != 'mirror':
+                nxt = 'mirror'                                  # 从别的场景一律先回到镜像
+            else:
+                wts = cfg.get('scene_weights') or {}
+                nxt = random.choices(others, weights=[float(wts.get(x_, 1)) for x_ in others])[0]
+            cur = nxt
             st['scene_t'] = now
-        if st.pop('scene_next', False):
-            i += 1
-            st['scene_t'] = now
-        st['scene_i'] = i
-        scene = scenes[i %% len(scenes)]
+            st['scene_i'] = st.get('scene_i', 0) + 1
+            st['switches'] = st.get('switches', 0) + 1
+            every = int(cfg.get('ball_every_switches', 3))
+            if cfg.get('ball_on', True) and every > 0 and st['switches'] %% every == 0:
+                st['ball_pending'] = now + 0.5                    # 夹在切换中间：切换开始半秒后，海洋球涌出来（要有手才触发）
+        scene = cur
     else:
         st.pop('scene_next', None)
-        scene = mode if mode in valid else 'crowd'
+        scene = mode if mode in valid else 'mirror'
     st['scene'] = scene
     speed = float(cfg.get('xfade_speed', 0.06))
-    # 镜像<->群像：只有在 mirror/crowd 时才改目标；切到 attn 时保持不动（被 attn 盖住）
-    if scene in ('crowd', 'mirror'):
+    if 'crowd' not in scenes:
+        tx_ = 0.0                                 # 轮换里没有脸群：始终停在镜像，不让脸群在黑白图切换时透出来
+    elif scene in ('crowd', 'mirror', 'face'):
         tx_ = 1.0 if scene == 'crowd' else 0.0
     else:
         tx_ = st.get('xf', 1.0)
@@ -521,6 +536,12 @@ def _update_scene(st):
     if abs(ta_ - xa) < 0.002:
         xa = ta_
     st['xa'] = xa
+    tm_ = 1.0 if scene == 'face' else 0.0
+    cm = st.get('cm', tm_)
+    cm += (tm_ - cm) * speed
+    if abs(tm_ - cm) < 0.002:
+        cm = tm_
+    st['cm'] = cm
     node = op('gz_xfade')
     if node is not None and abs(xf - st.get('xf_set', -1.0)) > 0.002:
         node.par.cross = xf
@@ -529,6 +550,14 @@ def _update_scene(st):
     if node2 is not None and abs(xa - st.get('xa_set', -1.0)) > 0.002:
         node2.par.cross = xa
         st['xa_set'] = xa
+    cx = op('castle_xf')
+    if cx is not None and abs(xa - st.get('cx_set', -1.0)) > 0.002:
+        cx.par.cross = xa
+        st['cx_set'] = xa
+    cmix = op('castle_mix')
+    if cmix is not None and abs(cm - st.get('cm_set', -1.0)) > 0.002:
+        cmix.par.cross = cm
+        st['cm_set'] = cm
 
 
 def _update_crowd(st):
@@ -604,6 +633,19 @@ def _update_tiles(st):
             t.par.sx = sc
             t.par.sy = sc
             st['tile_s'] = sc
+    ct = op('castle_tile')
+    if ct is not None:
+        cfg_ = _fx_cfg(st)
+        sc_c = 1.0 / max(float(cfg_.get('castle_tiles_min', 3)), tc)      # 城堡万花筒：至少平铺这么多张，琴键/手让它更多
+        if abs(sc_c - st.get('ctile_s', -1.0)) > 0.002:
+            ct.par.sx = sc_c
+            ct.par.sy = sc_c
+            st['ctile_s'] = sc_c
+        spin = float(cfg_.get('castle_spin_deg_s', 6.0))
+        rot = (time.time() * spin) %% 360.0
+        if abs(rot - st.get('ctile_r', -9.0)) > 0.3:
+            ct.par.rotate = rot
+            st['ctile_r'] = rot
 
 
 def _update_view(st):
@@ -619,6 +661,226 @@ def _update_view(st):
         if sw is not None:
             sw.par.index = idx
         st['sw_idx'] = idx
+
+
+def _update_screen(st):
+    """自动适应屏幕：每约 1 秒看一次主屏幕大小（或 audio_fx.json 里手动指定的 screen_w/screen_h），变了就更新所有跟屏幕大小有关的节点。"""
+    st['scr_age'] = st.get('scr_age', 999) + 1
+    if st['scr_age'] < 30:
+        return
+    st['scr_age'] = 0
+    cfg = _fx_cfg(st)
+    try:
+        W, H = int(cfg.get('screen_w', 0)), int(cfg.get('screen_h', 0))
+        if W <= 0 or H <= 0:
+            m = monitors[0]
+            W, H = int(m.scaledWidth), int(m.scaledHeight)
+    except Exception:
+        return
+    if W < 64 or H < 64 or (W, H) == st.get('scr_wh'):
+        return
+    st['scr_wh'] = (W, H)
+    names = ['gz_fit', 'gz_tile', 'crowd_bg', 'ball_fit', 'map_fit'] + ['cf' + str(i_) for i_ in range(CROWD_N)]
+    for nm in names:
+        o = op(nm)
+        if o is None:
+            continue
+        try:
+            o.par.outputresolution = 'custom'
+            o.par.resolutionw = W
+            o.par.resolutionh = H
+        except Exception:
+            pass
+    st['crowd_layout'] = None            # 屏幕比例变了，脸群重新排一次
+    print('gz_exec 屏幕大小变为', W, 'x', H, '，已自动调整')
+
+
+_BOOT = {'t': None, 'opened': False}      # 只在这次启动里有效（不存进 .toe），所以每次打开 TD 都会重新判断
+
+
+def _update_output(st):
+    """输出：mapping_on=true 时窗口显示 Kantan Mapper 对准后的画面，否则显示原画面；win_display 选哪块屏幕；auto_open_window=true 时打开 TD 后约 8 秒自动打开表演窗口。"""
+    st['out_age'] = st.get('out_age', 99) + 1
+    if st['out_age'] < 30:
+        return
+    st['out_age'] = 0
+    cfg = _fx_cfg(st)
+    w = op('gz_win')
+    if w is None:
+        return
+    want = '/project1/gz_over'
+    if cfg.get('mapping_on', False):
+        k = op('map_fit')
+        if k is not None:
+            want = k.path
+    if str(w.par.winop.eval()) != want:
+        w.par.winop = want
+        print('gz_exec 输出已切换为', want)
+    try:
+        disp = int(cfg.get('win_display', 0))
+        if int(w.par.display.eval()) != disp:
+            w.par.display = disp
+    except Exception:
+        pass
+    if _BOOT['t'] is None:
+        _BOOT['t'] = time.time()
+    if cfg.get('auto_open_window', False) and not _BOOT['opened'] and time.time() - _BOOT['t'] > 8.0:
+        _BOOT['opened'] = True
+        w.par.winopen.pulse()
+        print('gz_exec 已自动打开表演窗口')
+
+
+BALL_FRAMES = 96                       # 海洋球动画一共多少帧（make_ballseq.py 生成）
+BALL_FPS = 30
+
+
+def _ball_go(st, cfg):
+    """开始一次海洋球（从第 0 帧播），并放音效。"""
+    st['ball_t0'] = time.time()
+    st['ball_idx'] = -1
+    try:
+        vol = float(cfg.get('ball_sfx_vol', 0.6))
+        sfx = os.path.normpath(os.path.join(BRIDGE, '..', 'ballpit', 'ball_sfx.wav'))
+        if vol > 0 and os.path.exists(sfx):
+            import subprocess
+            subprocess.Popen(['afplay', '-v', str(min(1.0, vol)), sfx], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    except Exception:
+        pass
+
+
+def _update_ballsize(st):
+    """让城堡底部的海洋球画面自动匹配 Kantan 里"球形状"的长宽比：找纹理是 castle_ball_tf 的形状，读它四个角的坐标算比例。"""
+    st['bs_age'] = st.get('bs_age', 99) + 1
+    if st['bs_age'] < 30:
+        return
+    st['bs_age'] = 0
+    cfg = _fx_cfg(st)
+    if not cfg.get('castle_ball_auto', True):
+        return
+    f2 = op('castle_ball_fit')
+    root = op('kantanMapper/project/allShapes')
+    if f2 is None or root is None:
+        return
+    for c in root.children:
+        pr = c.op('parameters')
+        if pr is None or not hasattr(pr.par, 'Texture'):
+            continue
+        v = pr.par.Texture.eval()
+        if str(getattr(v, 'path', v)) != '/project1/castle_ball_tf':
+            continue
+        sc = c.op('script1')
+        if sc is None:
+            continue
+        pts = [(q.x, q.y) for q in sc.points]
+        if len(pts) < 4:
+            continue
+        def _d(a_, b_):
+            return ((a_[0] - b_[0]) ** 2 + (a_[1] - b_[1]) ** 2) ** 0.5
+        w_ = (_d(pts[0], pts[1]) + _d(pts[3], pts[2])) / 2.0
+        h_ = (_d(pts[0], pts[3]) + _d(pts[1], pts[2])) / 2.0
+        if w_ < 4 or h_ < 4:
+            continue
+        asp = w_ / h_
+        phys = float(cfg.get('castle_ball_phys_aspect', 0))
+        if phys > 0:
+            asp = phys                                    # 手动指定：纸箱实物的 宽/高（比如三个并排的方块就是 3）
+        if st.get('cb_asp') is not None and abs(asp - st['cb_asp']) / st['cb_asp'] < 0.02:
+            return
+        st['cb_asp'] = asp
+        longside = 1280
+        if asp >= 1.0:
+            rw, rh = longside, max(64, int(round(longside / asp)))
+        else:
+            rw, rh = max(64, int(round(longside * asp))), longside
+        f2.par.resolutionw = rw
+        f2.par.resolutionh = rh
+        st['cb_wh'] = (rw, rh)
+        print('gz_exec 海洋球画面已按长方形比例调整:', rw, 'x', rh)
+        return
+
+
+def _hands_recent(st, cfg):
+    """最近 ball_hand_sec 秒内，摄像头是不是看到过手（空气琴开不开都算）。"""
+    now = time.time()
+    try:
+        for n in _hand_nodes():
+            if n is not None and len(list(n.points)) > 20:
+                st['hand_t'] = now
+                break
+    except Exception:
+        pass
+    return now - st.get('hand_t', -999.0) <= float(cfg.get('ball_hand_sec', 4.0))
+
+
+def _update_ball(st):
+    """海洋球：1) 切换场景时每隔几次（ball_every_switches）在切换中间涌出来，而且要有手在摄像头里才触发；
+    2) 可选：诡异声音一起触发(ball_with_flash)、随机触发(ball_auto_min/max)。
+    主画面用整屏版动画(seq)，城堡底部长方形用长条版动画(seq_strip)。"""
+    cfg = _fx_cfg(st)
+    tf = op('ball_tf')
+    img = op('ball_img')
+    if tf is None or img is None:
+        return
+    st['ball_age'] = st.get('ball_age', 99) + 1
+    if st['ball_age'] >= 6:
+        st['ball_age'] = 0
+        t_new = None
+        try:
+            with open(BRIDGE + '/flash.json', encoding='utf-8') as fh:
+                t_new = float(json.load(fh).get('t', 0.0))
+        except Exception:
+            t_new = None
+        if st.get('flash_seen') is None:
+            st['flash_seen'] = t_new if t_new is not None else 0.0       # 第一次只记下旧事件，不触发
+        elif t_new is not None and t_new > st['flash_seen']:
+            st['flash_seen'] = t_new
+            if cfg.get('ball_on', True) and cfg.get('ball_with_flash', False):
+                _ball_go(st, cfg)
+        hands = _hands_recent(st, cfg)
+        pend = st.get('ball_pending')
+        if pend is not None and time.time() >= pend:
+            st['ball_pending'] = None
+            if cfg.get('ball_on', True) and st.get('ball_t0') is None and (hands or not cfg.get('ball_need_hand', True)):
+                _ball_go(st, cfg)
+        lo_, hi_ = float(cfg.get('ball_auto_min', 0)), float(cfg.get('ball_auto_max', 0))
+        if cfg.get('ball_on', True) and lo_ > 0 and hi_ >= lo_:
+            if st.get('ball_next') is None:
+                st['ball_next'] = time.time() + random.uniform(lo_, hi_)
+            elif time.time() >= st['ball_next'] and st.get('ball_t0') is None:
+                st['ball_next'] = time.time() + random.uniform(lo_, hi_)
+                if hands or not cfg.get('ball_need_hand', True):
+                    _ball_go(st, cfg)
+    t0 = st.get('ball_t0')
+    show = False
+    if t0 is not None and cfg.get('ball_on', True):
+        idx = int((time.time() - t0) * BALL_FPS)
+        if idx >= BALL_FRAMES:
+            st['ball_t0'] = None
+        else:
+            show = True
+            if idx != st.get('ball_idx'):
+                fn = 'ball_' + str(idx).zfill(4) + '.png'
+                img.par.file = os.path.normpath(os.path.join(BRIDGE, '..', 'ballpit', 'seq', fn))
+                img2 = op('castle_ball_img')
+                if img2 is not None:
+                    img2.par.file = os.path.normpath(os.path.join(BRIDGE, '..', 'ballpit', 'seq_strip', fn))
+                st['ball_idx'] = idx
+    ty = 0.0 if show else -1.05
+    if ty != st.get('ball_ty'):
+        tf.par.ty = ty
+        st['ball_ty'] = ty
+    tf2 = op('castle_ball_tf')
+    if tf2 is not None:
+        if ty != st.get('ball_ty2'):
+            tf2.par.ty = ty
+            st['ball_ty2'] = ty
+        cw, ch = int(cfg.get('castle_ball_w', 1920)), int(cfg.get('castle_ball_h', 640))
+        if (not cfg.get('castle_ball_auto', True)) and (cw, ch) != st.get('cb_wh') and cw >= 64 and ch >= 64:
+            f2 = op('castle_ball_fit')
+            if f2 is not None:
+                f2.par.resolutionw = cw
+                f2.par.resolutionh = ch
+                st['cb_wh'] = (cw, ch)
 
 
 def onFrameEnd(frame):
@@ -676,6 +938,30 @@ def onFrameEnd(frame):
         if not st.get('crowd_err'):
             st['crowd_err'] = 1
             print('gz_exec 脸群像出错（只打印一次）:', repr(e))
+    try:
+        _update_ballsize(st)
+    except Exception as e:
+        if not st.get('ballsize_err'):
+            st['ballsize_err'] = 1
+            print('gz_exec 球比例出错（只打印一次）:', repr(e))
+    try:
+        _update_ball(st)
+    except Exception as e:
+        if not st.get('ball_err'):
+            st['ball_err'] = 1
+            print('gz_exec 海洋球出错（只打印一次）:', repr(e))
+    try:
+        _update_output(st)
+    except Exception as e:
+        if not st.get('output_err'):
+            st['output_err'] = 1
+            print('gz_exec 输出切换出错（只打印一次）:', repr(e))
+    try:
+        _update_screen(st)
+    except Exception as e:
+        if not st.get('screen_err'):
+            st['screen_err'] = 1
+            print('gz_exec 屏幕适应出错（只打印一次）:', repr(e))
     try:
         _update_clap(st)
     except Exception as e:
@@ -819,12 +1105,84 @@ try:
     fit.par.fit = 'fill'
 except Exception as e:
     print('gz_fit 的 Fit 设置失败，请手动选 Fill:', e)
+try:
+    tile.par.outputresolution = 'custom'
+    tile.par.resolutionw = W
+    tile.par.resolutionh = H
+except Exception as e:
+    print('gz_tile 分辨率设置失败:', e)
 sw.nodeX, sw.nodeY = 250, -800
 fit.nodeX, fit.nodeY = 500, -800
+ball_img = p.op('ball_img') or p.create(moviefileinTOP, 'ball_img')
+import os as _os
+ball_img.par.file = _os.path.normpath(_os.path.join(BRIDGE, '..', 'ballpit', 'seq', 'ball_0000.png'))
+ball_fit = p.op('ball_fit') or p.create(fitTOP, 'ball_fit')
+ball_fit.inputConnectors[0].connect(ball_img)
+ball_tf = p.op('ball_tf') or p.create(transformTOP, 'ball_tf')
+ball_tf.inputConnectors[0].connect(ball_fit)
+try:
+    ball_fit.par.outputresolution = 'custom'
+    ball_fit.par.resolutionw = W
+    ball_fit.par.resolutionh = H
+    ball_fit.par.fit = 'fill'
+    ball_tf.par.extend = 'zero'
+    ball_tf.par.ty = -1.05
+except Exception as e:
+    print('海洋球节点设置失败:', e)
+castle_ball_img = p.op('castle_ball_img') or p.create(moviefileinTOP, 'castle_ball_img')
+castle_ball_img.par.file = _os.path.normpath(_os.path.join(BRIDGE, '..', 'ballpit', 'seq_strip', 'ball_0000.png'))
+castle_ball_img.nodeX, castle_ball_img.nodeY = 750, -1450
+castle_ball_fit = p.op('castle_ball_fit') or p.create(fitTOP, 'castle_ball_fit')
+castle_ball_fit.inputConnectors[0].connect(castle_ball_img)
+castle_ball_tf = p.op('castle_ball_tf') or p.create(transformTOP, 'castle_ball_tf')
+castle_ball_tf.inputConnectors[0].connect(castle_ball_fit)
+try:
+    castle_ball_fit.par.outputresolution = 'custom'
+    castle_ball_fit.par.resolutionw = 1280
+    castle_ball_fit.par.resolutionh = 427
+    castle_ball_fit.par.fit = 'fill'
+    _jv = [m_ for m_ in castle_ball_fit.par.justifyv.menuNames if 'bottom' in m_.lower()]
+    if _jv:
+        castle_ball_fit.par.justifyv = _jv[0]        # 球从底部喷出，裁剪时保住底部
+    castle_ball_tf.par.extend = 'zero'
+    castle_ball_tf.par.ty = -1.05
+except Exception as e:
+    print('castle_ball 节点设置失败:', e)
+castle_ball_fit.nodeX, castle_ball_fit.nodeY = 900, -1250
+castle_ball_tf.nodeX, castle_ball_tf.nodeY = 1050, -1250
+print('castle_ball_tf 就绪：城堡底部长方形专用的海洋球（比例在 audio_fx.json 的 castle_ball_w / castle_ball_h 里改）')
+gz_over = p.op('gz_over') or p.create(overTOP, 'gz_over')
+gz_over.inputConnectors[0].connect(ball_tf)       # 球在上面
+gz_over.inputConnectors[1].connect(fit)           # 画面在下面
+ball_img.nodeX, ball_img.nodeY = 750, -1100
+ball_fit.nodeX, ball_fit.nodeY = 900, -1100
+ball_tf.nodeX, ball_tf.nodeY = 1050, -1100
+gz_over.nodeX, gz_over.nodeY = 750, -800
+_km = p.op('kantanMapper')
+if _km is not None and _km.op('out1') is not None:
+    map_sel = p.op('map_sel') or p.create(selectTOP, 'map_sel')
+    map_fit = p.op('map_fit') or p.create(fitTOP, 'map_fit')
+    try:
+        map_sel.par.top = _km.op('out1').path          # Kantan 对准后的输出
+        map_fit.inputConnectors[0].connect(map_sel)
+        map_fit.par.outputresolution = 'custom'
+        map_fit.par.resolutionw = W
+        map_fit.par.resolutionh = H
+        _fm = [m_ for m_ in map_fit.par.fit.menuNames]
+        _best = [m_ for m_ in _fm if 'best' in m_.lower()]
+        if _best:
+            map_fit.par.fit = _best[0]                  # 不拉伸，按比例放进屏幕（不够的地方留黑边）
+        print('map_fit 已建立（Kantan 输出会自动按屏幕大小缩放），fit 选项:', _fm)
+    except Exception as e:
+        print('map_fit 设置失败:', e)
+    map_sel.nodeX, map_sel.nodeY = 1200, -1100
+    map_fit.nodeX, map_fit.nodeY = 1350, -1100
+else:
+    print('没找到 kantanMapper/out1，跳过映射输出节点')
 win = p.op('gz_win')
 if win is not None:
-    win.par.winop = fit.path
-    print('gz_win 已改成读取 gz_fit')
+    win.par.winop = gz_over.path
+    print('gz_win 已改成读取 gz_over（画面 + 海洋球）')
 else:
     print('没找到 gz_win，请手动把 gz_win 的 Window Operator 设成', fit.path)
 
@@ -929,6 +1287,33 @@ except Exception as e:
     print('gz_xfade2 的 cross 设置失败:', e)
 fit.inputConnectors[0].connect(_xf2)
 _xf2.nodeX, _xf2.nodeY = 950, -1100
+castle_tile = p.op('castle_tile') or p.create(transformTOP, 'castle_tile')     # 城堡用的方形万花筒（脸镜像平铺）
+castle_tile.inputConnectors[0].connect(sw)
+try:
+    castle_tile.par.extend = 'mirror'
+    castle_tile.par.outputresolution = 'custom'
+    castle_tile.par.resolutionw = 1024
+    castle_tile.par.resolutionh = 1024
+except Exception as e:
+    print('castle_tile 设置失败:', e)
+castle_mix = p.op('castle_mix') or p.create(crossTOP, 'castle_mix')              # 万花筒 <-> 纯人脸
+castle_mix.inputConnectors[0].connect(castle_tile)
+castle_mix.inputConnectors[1].connect(sw)
+try:
+    castle_mix.par.cross = 0.0
+except Exception as e:
+    print('castle_mix 的 cross 设置失败:', e)
+castle_tile.nodeX, castle_tile.nodeY = 750, -1250
+castle_mix.nodeX, castle_mix.nodeY = 900, -1350
+castle_xf = p.op('castle_xf') or p.create(crossTOP, 'castle_xf')
+castle_xf.inputConnectors[0].connect(castle_mix)       # 万花筒/纯人脸（给纸箱每个面用）
+castle_xf.inputConnectors[1].connect(_at)      # 黑白 AI 注意力图（方形）
+try:
+    castle_xf.par.cross = 0.0
+except Exception as e:
+    print('castle_xf 的 cross 设置失败:', e)
+castle_xf.nodeX, castle_xf.nodeY = 950, -1250
+print('castle_xf 就绪：纸箱/城堡用的方形画面（脸 <-> 黑白注意力图，随场景切换）')
 _xf.nodeX, _xf.nodeY = 700, -1100
 _gm.nodeX, _gm.nodeY = 700, -950
 print('脸群像就绪：audio_fx.json 里 visual_mode 可切换 crowd / mirror')

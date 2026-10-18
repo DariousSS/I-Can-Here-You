@@ -1,0 +1,4 @@
+gz_over size=1920x1080 mean rgba=[0.378, 0.437, 0.436, 0.999]
+SHAPE /project1/kantanMapper/project/allShapes/item1/parameters {'Name': 'Rectangle1', 'Colorr': 0.3702431973751186, 'Type': 'Rectangle', 'Showtexture': False, 'Texture': type:overTOP path:/project1/gz_over, 'Fliptexture': False, 'Textureorientation': '0', 'Textureid': 1}
+out1 size=1280x720 mean rgb=[0.155, 0.209, 0.107]
+out2 size=1280x720 mean rgb=[-0.372, -0.372, -0.162]

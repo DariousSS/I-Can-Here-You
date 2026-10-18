@@ -1,0 +1,13 @@
+ball_img: type=moviefilein size=1280x720 inputs=[]
+ball_fit: NOT FOUND
+ball_tf: NOT FOUND
+gz_over: NOT FOUND
+gz_fit: type=fit size=1147x745 inputs=['gz_tile']
+gz_win: type=window size=1147x745 inputs=[]
+gz_exec: type=execute inputs=[]
+ball_img.file = /Applications/TouchDesigner.app/Contents/Resources/tfs/Samples/Map/Banana.tif
+ball_img alpha max=1.0 mean=0.11275056004524231
+ball_tf par error AttributeError("'NoneType' object has no attribute 'par'")
+gz_win.winop = /project1/gz_fit
+flash_seen=None ball_t0=None ball_ty=None ball_err=None screen_err=None
+has _update_ball in exec code: True

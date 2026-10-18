@@ -26,6 +26,7 @@ import math
 import random
 import re
 import subprocess
+import threading
 import sys
 import time
 
@@ -150,7 +151,7 @@ def save_atomic(im, path):
 
 WHISPER_DIR = os.path.join(os.path.dirname(os.path.abspath(args.dir)), "whispers")
 WHISPER_CFG = os.path.join(args.dir, "whisper.json")
-_wh = {"proc": None, "last": None, "t_last": 0.0, "cfg": {"on": True, "vol": 0.35, "ambient_sec": 0, "min_gap_sec": 2.0, "flash_prob": 0.2}, "t_cfg": 0.0, "t_amb": time.time()}
+_wh = {"proc": None, "last": None, "t_last": 0.0, "cfg": {"on": True, "vol": 0.35, "ambient_sec": 0, "min_gap_sec": 2.0, "flash_prob": 0.2, "ball_sfx_vol": 0.6}, "t_cfg": 0.0, "t_amb": time.time()}
 
 
 def _wh_cfg():
@@ -159,10 +160,34 @@ def _wh_cfg():
         try:
             with open(WHISPER_CFG, encoding="utf-8") as fh:
                 j = json.load(fh)
-            _wh["cfg"].update({k: j[k] for k in ("on", "vol", "ambient_sec", "min_gap_sec", "flash_prob") if k in j})
+            _wh["cfg"].update({k: j[k] for k in ("on", "vol", "ambient_sec", "min_gap_sec", "flash_prob", "ball_sfx_vol") if k in j})
         except Exception:
             pass
     return _wh["cfg"]
+
+
+def _audio_sec(path):
+    """用 afinfo 读音频时长（秒），读不到按 1.5 秒算。"""
+    try:
+        out = subprocess.run(["afinfo", path], capture_output=True, text=True, timeout=3).stdout
+        for ln in out.splitlines():
+            if "estimated duration" in ln:
+                return float(ln.split(":")[1].split()[0])
+    except Exception:
+        pass
+    return 1.5
+
+
+def _flash_event():
+    """诡异声音开始了：把计数 +1 写进 flash.json（TD 看到计数变了就放海洋球）。"""
+    try:
+        _wh["flash_n"] = _wh.get("flash_n", 0) + 1
+        tmp = os.path.join(args.dir, "flash.json.tmp")
+        with open(tmp, "w", encoding="utf-8") as fh:
+            json.dump({"n": _wh["flash_n"], "t": time.time()}, fh)
+        os.replace(tmp, os.path.join(args.dir, "flash.json"))
+    except Exception as e:
+        print("[闪现事件出错]", repr(e)[:80])
 
 
 def whisper(reason=""):
@@ -196,6 +221,9 @@ def whisper(reason=""):
             _wh["proc"] = subprocess.Popen(["sh", "-c", 'afplay -v "$0" "$1"; afplay -v "$0" "$2"', str(vol), seq[0], seq[1]], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         _wh["last"], _wh["t_last"] = f, now
         print("低语：", " + ".join(os.path.basename(x) for x in seq), reason)
+        if len(seq) == 2:                                    # 有诡异的 _flash：通知 TD 让海洋球出现（_flash 在后面就等前一句念完）
+            delay = 0.0 if seq[0].endswith("_flash.aiff") else _audio_sec(seq[0])
+            threading.Timer(delay, _flash_event).start()
     except Exception as e:
         print("[低语出错]", repr(e)[:80])
 
@@ -240,6 +268,7 @@ seed = args.seed
 params = read_params({})
 last_new, last_reset = params.get("new_face", 0), params.get("reset", 0)
 new_event = False
+last_scene = None
 last_D = None
 last_levels = {}
 extra = {}
@@ -257,6 +286,11 @@ try:
         if float(_c.get("ambient_sec", 0)) > 0 and time.time() - _wh["t_amb"] > float(_c["ambient_sec"]):
             _wh["t_amb"] = time.time()
             whisper("(随机)")
+        _sc = (params.get("scene") or {}).get("now")
+        if _sc is not None:
+            if last_scene is not None and _sc != last_scene:
+                whisper("(换场景)")
+            last_scene = _sc
         if params.get("new_face", 0) != last_new:
             last_new = params.get("new_face", 0)
             seed = random.randint(1, 10 ** 6)

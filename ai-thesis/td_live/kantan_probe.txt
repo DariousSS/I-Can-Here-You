@@ -1,0 +1,8 @@
+type=container family=COMP
+inputs=[] numInputs=0
+outputs=2
+PAGE Kantan: ['Open', 'Close', 'Project', 'Loadproject', 'Saveproject']
+PAGE About: ['Help', 'Version', 'Toxsavebuild']
+children: [('ui', 'containerCOMP'), ('out1', 'outTOP'), ('out2', 'outTOP'), ('cache1', 'cacheTOP'), ('project', 'baseCOMP'), ('parexec1', 'parameterexecuteDAT'), ('Projecter', 'textDAT'), ('docsHelper', 'containerCOMP'), ('editWindow', 'windowCOMP'), ('projectJson', 'textDAT'), ('masterShapes', 'baseCOMP')]
+has out1 type=out
+par Size from window: ['sizefromwindow', 'resizel', 'resizer', 'resizeb', 'resizet', 'resizecomp', 'resizewmin', 'resizewmax', 'resizehmin', 'resizehmax']

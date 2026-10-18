@@ -1,0 +1,236 @@
+
+
+##### Projecter (text) #####
+"""
+Extension classes enhance TouchDesigner components with python. An
+extension is accessed via ext.ExtensionClassName from any operator
+within the extended component. If the extension is promoted via its
+Promote Extension parameter, all its attributes with capitalized names
+can be accessed externally, e.g. op('yourComp').PromotedFunction().
+
+For more info, see: http://www.derivative.ca/wiki099/index.php?title=Extensions
+"""
+
+from TDStoreTools import StorageManager
+TDF = op.TDModules.mod.TDFunctions
+import json
+
+class Projecter:
+	"""
+	Projecter description
+	"""
+	def __init__(self, ownerComp):
+		# The component to which this extension is attached
+		self.ownerComp = ownerComp
+
+	def Collect(self):
+		saveFile = ui.chooseFile(load=False, start=project.folder, fileTypes=['json'], title='Save Kantan Project')
+		fullPathDat = op('project/fullPath')
+		treeDat = op('project/tree')
+		fullDict = {}
+		fullDict['shapes'] = []
+		fullDict['shapeDef'] = {}
+		for i in treeDat.col('id'):
+			if i.row > 0:
+				shapeDict = {}
+				sId = i.val
+				shapeDict['sId'] = sId
+				shapeDict['sType'] = treeDat[sId,'type'].val
+				shapeDict['sOwner'] = treeDat[sId,'owner'].val
+				shapeDict['sLayer'] = treeDat[sId,'layer'].val
+				shapeDict['sLock'] = treeDat[sId,'lock'].val
+				shapeDict['sVisible'] = treeDat[sId,'visible'].val
+				shapeDict['sPath'] = fullPathDat[sId,'path'].val
+				shape = op(shapeDict['sPath'])
+				if shape:
+					fullDict['shapes'].append(shapeDict)
+					fullDict['shapeDef'][sId] = shape.GetDefinition()
+
+		projJson = json.dumps(fullDict, sort_keys=True, indent=4, separators=(',', ': '))
+		op('projectJson').text = projJson
+		op('projectJson').save(saveFile)
+
+	def Load(self):
+		loadFile = ui.chooseFile(load=True, start=project.folder ,fileTypes=['json'], title='Load Kantan Project')
+		projJson = open(loadFile,'r').read()
+		projDef = json.loads(projJson)
+		self.Clear()
+		shapes = projDef.get('shapes',[])
+		if shapes:
+			treeDat = op('project/tree')
+			fullPathDat = op('project/fullPath')
+			for i in shapes:
+				treeDat.appendRow([i['sId'],i['sType'],i['sOwner'],i['sLayer'],i['sLock'],i['sVisible']])
+			shapes = sorted(shapes, key=lambda d: d['sOwner'])
+			for i in shapes:
+				op('project').ext.Layerizer.cookOwner(owner=int(i['sOwner']))
+				shapePath = fullPathDat[i['sId'],'path'].val
+				shapeOp = op(shapePath)
+				if shapeOp:
+					shapeOp.SetDefinition(defDict=projDef['shapeDef'][i['sId']], undo=False)
+					shapeOp.cook(force=True)
+				else:
+					debug('something bad happend, Shape could not be loaded')
+			self.ownerComp.par.Project = loadFile
+		else:
+			debug('there are no shapes to load')
+
+	def Clear(self):
+		treeDat = op('project/tree')
+		treeDat.clear(keepFirstRow=True)
+
+##### docsHelper (container) #####
+
+
+##### projectJson (text) #####
+{
+    "shapeDef": {
+        "0": {
+            "layer": 0.0,
+            "parameters": {
+                "Custompivotx": 0.0,
+                "Custompivoty": 0.0,
+                "Custompivotz": 0.0,
+                "Name": "Group",
+                "Pivot": "0",
+                "Type": "Layer"
+            },
+            "path": "/kantanMapper/project/allShapes/item0",
+            "type": "0"
+        },
+        "1": {
+            "layer": 0.0,
+            "parameters": {
+                "Anisotropic": "off",
+                "Colora": 1.0,
+                "Colorb": 0.25,
+                "Colorg": 0.5,
+                "Colorr": 0.44542399048805237,
+                "Cols": 3,
+                "Custompivotuvx": 27.0,
+                "Custompivotuvy": 1.0,
+                "Custompivotuvz": 0.0,
+                "Custompivotx": -119.5,
+                "Custompivoty": -11.5,
+                "Custompivotz": 0.0,
+                "Enablesoftedge": false,
+                "Extendu": "zero",
+                "Extendv": "zero",
+                "Filter": "mipmaplinear",
+                "Fliptexture": false,
+                "Handlelock": true,
+                "Mapping": "perspective",
+                "Name": "Banana_Square",
+                "Pivot": "4",
+                "Pivotuv": "4",
+                "Rows": 3,
+                "Showtexture": true,
+                "Softedge": 0.4124999940395355,
+                "Texture": "/moviefilein1",
+                "Textureorientation": "0",
+                "Type": "Rectangle",
+                "Uvmatrix": "tdu.Matrix()",
+                "Warp": "bezier"
+            },
+            "path": "/kantanMapper/project/allShapes/item0/item3/item1",
+            "shapeDef": {
+                "keyOffset": "id\tu\tv\r\n0\t0\t0\r\n1\t-0.2826233208179474\t0.23645468056201935\r\n2\t0\t0\r\n3\t0\t0\r\n",
+                "pointOffset": "index\tP_0_\tP_1_\tP_2_\r\n",
+                "uvOffset": "\r\n",
+                "uvOffsetTexture": "index\tu\tv\r\n0\t0.3000000058673322\t0.5194444488734007\r\n1\t-0.47343750298023224\t-0.159722238779068\r\n2\t0.39218750037252903\t-0.05416666902601719\r\n3\t-0.21015624701976776\t-0.6625000238418579\r\n"
+            },
+            "shapeXform": "tdu.Matrix([670.833417090582, 8.861055399275301, 0.0, 0.0, -5.949634140751641, 450.4218521294332, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, -119.5, -11.5, 0.0, 1.0])",
+            "type": "1"
+        },
+        "2": {
+            "layer": -2.0,
+            "parameters": {
+                "Anisotropic": "off",
+                "Colora": 1.0,
+                "Colorb": 0.25,
+                "Colorg": 0.5,
+                "Colorr": 0.29264798760414124,
+                "Custompivotuvx": 0.0,
+                "Custompivotuvy": 0.0,
+                "Custompivotuvz": 0.0,
+                "Custompivotx": 0.0,
+                "Custompivoty": 0.0,
+                "Custompivotz": 0.0,
+                "Detail": 1.0,
+                "Enablesoftedge": false,
+                "Extendu": "zero",
+                "Extendv": "zero",
+                "Filter": "mipmaplinear",
+                "Fliptexture": false,
+                "Handlelock": true,
+                "Name": "Jelly_Freeform",
+                "Pivot": "4",
+                "Pivotuv": "4",
+                "Showtexture": true,
+                "Softedge": 0.0,
+                "Texture": "/moviefilein2",
+                "Textureorientation": "0",
+                "Type": "Freeform",
+                "Uvmatrix": "tdu.Matrix()"
+            },
+            "path": "/kantanMapper/project/allShapes/item0/item2",
+            "shapeDef": {
+                "points": "index\tP(0)\tP(1)\r\n0\t150.0\t-330.0\r\n1\t263\t-309\r\n2\t376.0\t-288.0\r\n3\t498.0\t-132.0\r\n4\t454\t-37\r\n5\t410.0\t58.0\r\n6\t464.0\t196.0\r\n7\t341\t181\r\n8\t218.0\t166.0\r\n9\t23.0\t120.0\r\n10\t50\t14\r\n11\t77.0\t-92.0\r\n12\t-49.0\t-226.0\r\n13\t6\t-280\r\n14\t61.0\t-334.0\r\n",
+                "uvOffset": "id\tu\tv\r\n0\t0.20781250018626451\t0.8333333218470216\r\n1\t-0.73828125\t0.7680555582046509\r\n2\t0.21328126429580152\t-0.11249999911524355\r\n3\t-0.731250012293458\t-0.15555555757600814\r\n"
+            },
+            "shapeXform": "tdu.Matrix()",
+            "type": "2"
+        },
+        "3": {
+            "layer": -1.0,
+            "parameters": {
+                "Custompivotx": 0.0,
+                "Custompivoty": 0.0,
+                "Custompivotz": 0.0,
+                "Name": "Group",
+                "Pivot": "0",
+                "Type": "Layer"
+            },
+            "path": "/kantanMapper/project/allShapes/item0/item3",
+            "type": "0"
+        }
+    },
+    "shapes": [
+        {
+            "sId": "0",
+            "sLayer": "0",
+            "sLock": "0",
+            "sOwner": "-1",
+            "sPath": "/kantanMapper/project/allShapes/item0",
+            "sType": "0",
+            "sVisible": "1"
+        },
+        {
+            "sId": "1",
+            "sLayer": "0",
+            "sLock": "0",
+            "sOwner": "3",
+            "sPath": "/kantanMapper/project/allShapes/item0/item3/item1",
+            "sType": "1",
+            "sVisible": "1"
+        },
+        {
+            "sId": "2",
+            "sLayer": "2",
+            "sLock": "0",
+            "sOwner": "0",
+            "sPath": "/kantanMapper/project/allShapes/item0/item2",
+            "sType": "2",
+            "sVisible": "1"
+        },
+        {
+            "sId": "3",
+            "sLayer": "1",
+            "sLock": "0",
+            "sOwner": "0",
+            "sPath": "/kantanMapper/project/allShapes/item0/item3",
+            "sType": "0",
+            "sVisible": "1"
+        }
+    ]
+}
