@@ -50,7 +50,7 @@
   "ball_auto_max": 0,
   "ball_sfx_vol": 0.6,
   "scene_hold": {
-    "mirror": 60,
+    "mirror": 120,
     "face": 12,
     "attn": 25,
     "crowd": 30

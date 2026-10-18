@@ -1,0 +1,13 @@
+gz_switch: type=switch size=512x512 inputs=['null1', 'null2', 'gz_ai']
+castle_tile: type=transform size=1024x1024 inputs=['gz_switch']
+castle_mix: type=cross size=512x512 inputs=['castle_tile', 'gz_switch']
+castle_xf: type=cross size=512x512 inputs=['castle_mix', 'gz_attn']
+gz_attn: type=moviefilein size=512x512 inputs=[]
+castle_tile pars: {'sx': 1.0, 'sy': 1.0, 'rotate': 0.0, 'extend': 'mirror', 'outputresolution': 'custom', 'resolutionw': 1024, 'resolutionh': 1024}
+castle_mix pars: {'cross': 0.0}
+castle_xf pars: {'cross': 0.0}
+gz_tile pars: {'sx': 0.185808, 'sy': 0.185808, 'extend': 'mirror'}
+castle_tile mean rgb: [0.452, 0.643, 0.814]
+castle_xf mean rgb: [0.452, 0.643, 0.814]
+scene=mirror xa=0.0 cm=0.0 ctile_s=None tiles_cur=5.4166666666666625
+exec has castle_tiles_min: False | has castle_mix: True | has scene_hold: True
