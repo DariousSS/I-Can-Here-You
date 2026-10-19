@@ -384,7 +384,7 @@ def _fx_cfg(st):
                'scenes': ['crowd', 'mirror', 'attn'], 'scene_auto_sec': 45, 'xfade_speed': 0.06,
                'pinch_on': True, 'pinch_enter': 0.35, 'pinch_frames': 4, 'pinch_gap_frames': 60,
                'air_pitch_from': 'x', 'air_scale': 'pentatonic', 'air_base': 48, 'air_octaves': 3,
-               'air_x_lo': 0.12, 'air_x_hi': 0.88, 'air_flip_x': False, 'air_margin': 0.25, 'screen_w': 0, 'screen_h': 0, 'ball_on': True, 'ball_rise': 0.5, 'ball_hold': 2.2, 'ball_fall': 1.0, 'mapping_on': False, 'win_display': 0, 'auto_open_window': False, 'castle_ball_w': 1920, 'castle_ball_h': 640, 'ball_with_flash': False, 'castle_ball_auto': True, 'ball_auto_min': 0, 'ball_auto_max': 0, 'ball_every_switches': 3, 'ball_need_hand': True, 'ball_hand_sec': 4.0, 'castle_ball_phys_aspect': 0, 'castle_tiles_min': 3, 'castle_spin_deg_s': 6.0, 'scene_hold': {'mirror': 60, 'face': 12, 'attn': 25, 'crowd': 30}, 'scene_weights': {'face': 1, 'attn': 2, 'crowd': 1}, 'ball_sfx_vol': 0.6}
+               'air_x_lo': 0.12, 'air_x_hi': 0.88, 'air_flip_x': False, 'air_margin': 0.25, 'screen_w': 0, 'screen_h': 0, 'ball_on': True, 'ball_rise': 0.5, 'ball_hold': 2.2, 'ball_fall': 1.0, 'mapping_on': False, 'win_display': 0, 'auto_open_window': False, 'castle_ball_w': 1920, 'castle_ball_h': 640, 'ball_with_flash': False, 'castle_ball_auto': True, 'ball_auto_min': 0, 'ball_auto_max': 0, 'ball_every_switches': 3, 'ball_need_hand': True, 'ball_hand_sec': 4.0, 'castle_ball_phys_aspect': 0, 'castle_tiles_min': 3, 'hand_on': True, 'hand_need_hand': False, 'hand_target_max_frac': 0.5, 'poke_fx_on': True, 'poke_fx_amp': 1.0, 'puppet_on': True, 'puppet_need_hand': False, 'angel_on': True, 'angel_idle_level': 0.5, 'angel_x': 0.62, 'angel_y': 0.30, 'angel_scale': 0.75, 'angel_hold': 9.0, 'angel_auto_min': 60, 'angel_auto_max': 120, 'angel_follow_hand': True, 'puppet_every_switches': 0, 'puppet_auto_min': 0, 'puppet_auto_max': 0, 'puppet_hand_scale': 0.38, 'puppet_scale': 0.36, 'puppet_string_len': 0.17, 'puppet_rot_sign': 1, 'hand_scale': 0.6, 'hand_fps': 10, 'hand_every_switches': 0, 'hand_auto_min': 0, 'hand_auto_max': 0, 'hand_canvas_w': 1920, 'hand_canvas_h': 1080, 'castle_spin_deg_s': 6.0, 'scene_hold': {'mirror': 60, 'face': 12, 'attn': 25, 'crowd': 30}, 'scene_weights': {'face': 1, 'attn': 2, 'crowd': 1}, 'ball_sfx_vol': 0.6}
         try:
             with open(BRIDGE + '/audio_fx.json', encoding='utf-8') as fh:
                 j = json.load(fh)
@@ -483,6 +483,11 @@ def _update_scene(st):
     """场景系统：镜像(万花筒)是主场景，停留最久；纯人脸(face)和黑白注意力图(attn)偶尔插进来，然后回到镜像。
     gz_xfade(Cross) 管 镜像<->群像，gz_xfade2(Cross) 再管 (它们)<->黑白图；castle_mix 管城堡方块上 万花筒<->纯人脸。"""
     cfg = _fx_cfg(st)
+    st['sc_age'] = st.get('sc_age', 0) + 1
+    if st['sc_age'] >= 30:                      # 每约半秒清掉"上次写了什么"的记忆，强制把值重新写给节点（重装脚本会把节点重置，不清的话画面会卡住）
+        st['sc_age'] = 0
+        for k_ in ('xf_set', 'xa_set', 'cx_set', 'cm_set'):
+            st.pop(k_, None)
     mode = cfg.get('visual_mode', 'auto')
     valid = ('crowd', 'mirror', 'attn', 'face')
     scenes = [x_ for x_ in (cfg.get('scenes') or ['mirror']) if x_ in valid] or ['mirror']
@@ -513,6 +518,12 @@ def _update_scene(st):
             every = int(cfg.get('ball_every_switches', 3))
             if cfg.get('ball_on', True) and every > 0 and st['switches'] %% every == 0:
                 st['ball_pending'] = now + 0.5                    # 夹在切换中间：切换开始半秒后，海洋球涌出来（要有手才触发）
+            pev = int(cfg.get('puppet_every_switches', 0))
+            if cfg.get('puppet_on', True) and pev > 0 and st['switches'] %% pev == 0:
+                st['puppet_pending'] = now + 1.0
+            hev = int(cfg.get('hand_every_switches', 0))
+            if cfg.get('hand_on', True) and hev > 0 and st['switches'] %% hev == 0:
+                st['hand_pending'] = now + 1.0
         scene = cur
     else:
         st.pop('scene_next', None)
@@ -680,7 +691,7 @@ def _update_screen(st):
     if W < 64 or H < 64 or (W, H) == st.get('scr_wh'):
         return
     st['scr_wh'] = (W, H)
-    names = ['gz_fit', 'gz_tile', 'crowd_bg', 'ball_fit', 'map_fit'] + ['cf' + str(i_) for i_ in range(CROWD_N)]
+    names = ['gz_fit', 'gz_tile', 'crowd_bg', 'ball_fit', 'map_fit', 'hand_fit'] + ['cf' + str(i_) for i_ in range(CROWD_N)]
     for nm in names:
         o = op(nm)
         if o is None:
@@ -708,7 +719,7 @@ def _update_output(st):
     w = op('gz_win')
     if w is None:
         return
-    want = '/project1/gz_over'
+    want = '/project1/gz_final' if op('gz_final') is not None else '/project1/gz_over'
     if cfg.get('mapping_on', False):
         k = op('map_fit')
         if k is not None:
@@ -716,6 +727,20 @@ def _update_output(st):
     if str(w.par.winop.eval()) != want:
         w.par.winop = want
         print('gz_exec 输出已切换为', want)
+    fx = op('poke_fx')
+    mf = op('map_fit')
+    msel = op('map_sel')
+    if fx is not None and mf is not None and msel is not None:
+        try:
+            err = str(fx.errors() or '').strip()
+        except Exception:
+            err = ''
+        want_in = msel if (err or not cfg.get('poke_fx_on', True)) else fx
+        cur_in = mf.inputs[0] if mf.inputs else None
+        if cur_in is None or cur_in.path != want_in.path:
+            mf.inputConnectors[0].connect(want_in)
+            if err:
+                print('gz_exec 水波特效着色器有错，已绕开特效（画面不受影响）:', err[:200])
     try:
         disp = int(cfg.get('win_display', 0))
         if int(w.par.display.eval()) != disp:
@@ -883,6 +908,550 @@ def _update_ball(st):
                 st['cb_wh'] = (cw, ch)
 
 
+_HAND = {'meta': None}
+
+
+def _hand_meta():
+    if _HAND['meta'] is None:
+        try:
+            with open(os.path.normpath(os.path.join(BRIDGE, '..', '..', 'assets', 'hand', 'hand_sprite.json')), encoding='utf-8') as fh:
+                _HAND['meta'] = json.load(fh)
+        except Exception:
+            _HAND['meta'] = {'w': 1536, 'h': 1024, 'tip_u': 0.791, 'tip_v': 0.9033}
+    return _HAND['meta']
+
+
+def _ease_out(x_):
+    return 1.0 - (1.0 - min(1.0, max(0.0, x_))) ** 3
+
+
+def _ease_in(x_):
+    x_ = min(1.0, max(0.0, x_))
+    return x_ * x_ * x_
+
+
+def _ease_io(x_):
+    x_ = min(1.0, max(0.0, x_))
+    return 3.0 * x_ * x_ - 2.0 * x_ * x_ * x_
+
+
+def _hand_tip(t, S, Hv, P):
+    """手指尖在画布上的位置(像素)随时间的变化：伸进来 -> 悬停(轻轻抖) -> 戳一下 -> 停 -> 缩回去。返回 (x, y, 是否还在动画里)。"""
+    T1, T2, T3, T4, T5 = 2.2, 1.3, 0.35, 0.5, 1.8
+    if t < T1:
+        k = _ease_out(t / T1)
+        return S[0] + (Hv[0] - S[0]) * k, S[1] + (Hv[1] - S[1]) * k, True
+    t -= T1
+    if t < T2:
+        return Hv[0] + 7.0 * math.sin(t * 5.0), Hv[1] + 5.0 * math.sin(t * 3.7 + 1.0), True
+    t -= T2
+    if t < T3:
+        k = _ease_io(t / T3)
+        return Hv[0] + (P[0] - Hv[0]) * k, Hv[1] + (P[1] - Hv[1]) * k, True
+    t -= T3
+    if t < T4:
+        return P[0] + 2.0 * math.sin(t * 40.0), P[1], True
+    t -= T4
+    if t < T5:
+        k = _ease_in(t / T5)
+        return P[0] + (S[0] - P[0]) * k, P[1] + (S[1] - P[1]) * k, True
+    return S[0], S[1], False
+
+
+def _hand_target(cfg):
+    """手要戳的位置：从 Kantan 里随机挑一个城堡形状，在它【朝外的边】上随机取一点（画布像素）。找不到就用默认位置。"""
+    Wc, Hc = float(cfg.get('hand_canvas_w', 1920)), float(cfg.get('hand_canvas_h', 1080))
+    root = op('kantanMapper/project/allShapes')
+    shapes = []
+    allx, ally = [], []
+    if root is not None:
+        for c in root.children:
+            pr = c.op('parameters')
+            if pr is None or not hasattr(pr.par, 'Texture'):
+                continue
+            v = pr.par.Texture.eval()
+            if str(getattr(v, 'path', v)) != '/project1/castle_xf':
+                continue
+            sc = c.op('script1')
+            if sc is None:
+                continue
+            pts = [(Wc / 2.0 + q.x, Hc / 2.0 - q.y) for q in sc.points]
+            if len(pts) >= 3:
+                shapes.append(pts)
+                allx += [q[0] for q in pts]
+                ally += [q[1] for q in pts]
+    if not shapes:
+        return (Wc * 0.5, Hc * 0.6)
+    ccx, ccy = (min(allx) + max(allx)) / 2.0, (min(ally) + max(ally)) / 2.0
+    edges = []
+    for pts in shapes:
+        n_ = len(pts)
+        for i_ in range(n_):
+            a_, b_ = pts[i_], pts[(i_ + 1) %% n_]
+            mx, my = (a_[0] + b_[0]) / 2.0, (a_[1] + b_[1]) / 2.0
+            if ((a_[0] - b_[0]) ** 2 + (a_[1] - b_[1]) ** 2) ** 0.5 < 20:
+                continue
+            if a_[1] > max(ally) - 25 and b_[1] > max(ally) - 25:
+                continue                                           # 不选城堡最底下的边
+            edges.append((((mx - ccx) ** 2 + (my - ccy) ** 2) ** 0.5, a_, b_))
+    if not edges:
+        return (Wc * 0.5, Hc * 0.6)
+    ytop_, ybot_ = min(ally), max(ally)
+    ylim = ytop_ + float(cfg.get('hand_target_max_frac', 0.5)) * (ybot_ - ytop_)
+    upper = [e_ for e_ in edges if (e_[1][1] + e_[2][1]) / 2.0 <= ylim]        # 只选城堡上半部分的边（手不会从很低的地方伸出来）
+    if upper:
+        edges = upper
+    edges.sort(key=lambda e_: -e_[0])
+    pick = random.choice(edges[:max(1, len(edges) // 2)])          # 离城堡中心最远的一半边 = 朝外的边
+    t_ = random.uniform(0.25, 0.75)
+    return (pick[1][0] + (pick[2][0] - pick[1][0]) * t_, pick[1][1] + (pick[2][1] - pick[1][1]) * t_)
+
+
+def _update_hand(st):
+    """巨大的木头手：从左上角伸进来，悬停，戳一下某个城堡方块，再缩回去。触发：test_hand.py、每隔几次切换场景、或随机。"""
+    cfg = _fx_cfg(st)
+    tf = op('hand_out')
+    if tf is None:
+        return
+    st['hand_age'] = st.get('hand_age', 99) + 1
+    if st['hand_age'] >= 6:
+        st['hand_age'] = 0
+        t_new = None
+        try:
+            with open(BRIDGE + '/hand_test.json', encoding='utf-8') as fh:
+                t_new = float(json.load(fh).get('t', 0.0))
+        except Exception:
+            t_new = None
+        if st.get('hand_seen') is None:
+            st['hand_seen'] = t_new if t_new is not None else 0.0
+        elif t_new is not None and t_new > st['hand_seen']:
+            st['hand_seen'] = t_new
+            st['hand_pending'] = time.time()
+        present_ok = (not cfg.get('hand_need_hand', False)) or _hands_recent(st, cfg)       # 要求有人在（摄像头最近看到手）才触发
+        pend = st.get('hand_pending')
+        if pend is not None and time.time() >= pend:
+            st['hand_pending'] = None
+            if cfg.get('hand_on', True) and st.get('hand_t0') is None and st.get('pup_t0') is None and present_ok:
+                _hand_start(st, cfg)
+        lo_, hi_ = float(cfg.get('hand_auto_min', 0)), float(cfg.get('hand_auto_max', 0))
+        if cfg.get('hand_on', True) and lo_ > 0 and hi_ >= lo_:
+            if st.get('hand_next') is None:
+                st['hand_next'] = time.time() + random.uniform(lo_, hi_)
+            elif time.time() >= st['hand_next'] and st.get('hand_t0') is None and st.get('pup_t0') is None:
+                st['hand_next'] = time.time() + random.uniform(lo_, hi_)
+                if present_ok:
+                    _hand_start(st, cfg)
+    t0 = st.get('hand_t0')
+    if t0 is None or not cfg.get('hand_on', True):
+        if st.get('hand_vis', True):
+            tf.par.sx = 0.0001
+            tf.par.sy = 0.0001
+            st['hand_vis'] = False
+        return
+    fps = max(1.0, float(cfg.get('hand_fps', 10)))
+    t = math.floor((time.time() - t0) * fps) / fps               # 定格动画：时间按 fps 取整，一顿一顿的
+    Wc, Hc = float(cfg.get('hand_canvas_w', 1920)), float(cfg.get('hand_canvas_h', 1080))
+    m = _hand_meta()
+    Wp = float(cfg.get('hand_scale', 0.6)) * Wc
+    Hp = Wp * float(m['h']) / float(m['w'])
+    tu, tv = float(m['tip_u']), float(m['tip_v'])
+    S = (-(1.0 - tu) * Wp - 60.0, -(1.0 - tv) * Hp - 60.0)       # 起点：整只手都在画布左上角之外
+    P = st['hand_P']
+    Hv = (max(0.12 * Wc, P[0] - 0.14 * Wc), max(0.10 * Hc, P[1] - 0.20 * Hc))
+    x, y, alive = _hand_tip(t, S, Hv, P)
+    if not alive:
+        st['hand_t0'] = None
+        return
+    cx = x - (tu - 0.5) * Wp
+    cy = y - (tv - 0.5) * Hp
+    tf.par.sx = Wp / Wc
+    tf.par.sy = Hp / Hc
+    tf.par.tx = (cx - Wc / 2.0) / Wc
+    tf.par.ty = (Hc / 2.0 - cy) / Hc
+    tf.par.rotate = 1.5 * math.sin(t * 2.3)
+    st['hand_vis'] = True
+
+
+def _hand_start(st, cfg):
+    st['hand_P'] = _hand_target(cfg)
+    st['hand_t0'] = time.time()
+    st['poke_time'] = st['hand_t0'] + 2.2 + 1.3 + 0.35        # 指尖碰到城堡的时刻（和 _hand_tip 的时间表一致）
+    st['poke_P'] = st['hand_P']
+    print('gz_exec 木头手出现，目标位置:', int(st['hand_P'][0]), int(st['hand_P'][1]))
+
+
+_PUP = {'meta': None, 'rmeta': None}
+
+
+def _puppet_meta():
+    if _PUP['meta'] is None:
+        try:
+            with open(os.path.normpath(os.path.join(BRIDGE, '..', '..', 'assets', 'puppet', 'puppet.json')), encoding='utf-8') as fh:
+                _PUP['meta'] = json.load(fh)
+        except Exception:
+            _PUP['meta'] = {'w': 600, 'h': 900, 'attach': [[0.30, 0.04], [0.70, 0.04], [0.12, 0.52], [0.88, 0.52]]}
+        try:
+            with open(os.path.normpath(os.path.join(BRIDGE, '..', '..', 'assets', 'hand', 'hand_sprite_R.json')), encoding='utf-8') as fh:
+                _PUP['rmeta'] = json.load(fh)
+        except Exception:
+            _PUP['rmeta'] = {'w': 1536, 'h': 1024, 'tip_u': 0.209, 'tip_v': 0.9033}
+    return _PUP['meta'], _PUP['rmeta']
+
+
+def _castle_box(cfg):
+    """所有城堡方块（纹理是 castle_xf 的形状）在画布上的包围盒 (x0, y0, x1, y1) 像素；找不到就给个默认值。"""
+    Wc, Hc = float(cfg.get('hand_canvas_w', 1920)), float(cfg.get('hand_canvas_h', 1080))
+    root = op('kantanMapper/project/allShapes')
+    xs, ys = [], []
+    if root is not None:
+        for c in root.children:
+            pr = c.op('parameters')
+            if pr is None or not hasattr(pr.par, 'Texture'):
+                continue
+            v = pr.par.Texture.eval()
+            if str(getattr(v, 'path', v)) != '/project1/castle_xf':
+                continue
+            sc = c.op('script1')
+            if sc is None:
+                continue
+            for q in sc.points:
+                xs.append(Wc / 2.0 + q.x)
+                ys.append(Hc / 2.0 - q.y)
+    if xs:
+        return (min(xs), min(ys), max(xs), max(ys))
+    return (Wc * 0.2, Hc * 0.1, Wc * 0.8, Hc * 0.95)
+
+
+def _puppet_geom(cfg, box=None):
+    Wc, Hc = float(cfg.get('hand_canvas_w', 1920)), float(cfg.get('hand_canvas_h', 1080))
+    pm, rm = _puppet_meta()
+    lm = _hand_meta()
+    x0, y0, x1, y1 = box if box is not None else _castle_box(cfg)
+    ph = float(cfg.get('puppet_scale', 0.36)) * Hc
+    pw = ph * float(pm['w']) / float(pm['h'])
+    hw = float(cfg.get('puppet_hand_scale', 0.38)) * Wc
+    hh = hw * float(lm['h']) / float(lm['w'])
+    cx = (x0 + x1) / 2.0
+    Yc = min(0.80 * Hc, max(0.58 * Hc, y0 + 0.55 * (y1 - y0)))          # 兔子停在城堡高度的中部偏下一点，手才露得出来
+    L = float(cfg.get('puppet_string_len', 0.17)) * Hc
+    return {'Wc': Wc, 'Hc': Hc, 'cx': cx, 'Yc': Yc, 'pw': pw, 'ph': ph, 'hw': hw, 'hh': hh, 'L': L,
+            'attach': pm['attach'], 'tuL': float(lm['tip_u']), 'tvL': float(lm['tip_v']), 'tuR': float(rm['tip_u']), 'tvR': float(rm['tip_v'])}
+
+
+def _puppet_pose(t, G, S, fps):
+    """木偶戏的一帧：t=开始后的秒数。两只手的指尖位置由编排给出；兔子是弹簧-阻尼系统（会摆动）。S 保存兔子的速度等状态。
+    返回 dict 或 None（演完了）。"""
+    T_in, T_perf, T_out = 2.5, 8.0, 2.5
+    if t >= T_in + T_perf + T_out:
+        return None
+    Wc, Hc = G['Wc'], G['Hc']
+    if t < T_in:
+        off = -(Hc * 0.9) * (1.0 - _ease_out(t / T_in))                      # 从画面上方降下来
+    elif t > T_in + T_perf:
+        off = -(Hc * 0.9) * _ease_in((t - T_in - T_perf) / T_out)            # 往上提走
+    else:
+        off = 0.0
+    perf = max(0.0, min(t - T_in, T_perf))
+    D = 0.17 * Wc
+    tipy0 = G['Yc'] - 0.46 * G['ph'] - G['L']
+    sway = 0.05 * Wc * math.sin(perf * 0.9)
+    bob = 0.035 * Hc
+    hop = 0.0
+    if 3.5 < perf < 4.6:
+        hop = -0.09 * Hc * math.sin((perf - 3.5) / 1.1 * math.pi)            # 手猛地一提：兔子被甩起来
+    tipL = (G['cx'] - D + sway + 0.02 * Wc * math.sin(perf * 2.1), tipy0 + off + bob * math.sin(perf * 2.6) + hop)
+    tipR = (G['cx'] + D + sway - 0.02 * Wc * math.sin(perf * 2.1), tipy0 + off + bob * math.sin(perf * 2.6 + 3.14) + hop)
+    mid = ((tipL[0] + tipR[0]) / 2.0, (tipL[1] + tipR[1]) / 2.0)
+    tgt = (mid[0], mid[1] + G['L'] + 0.46 * G['ph'])
+    if S.get('t') is None:
+        S.update({'t': t, 'x': tgt[0], 'y': tgt[1], 'vx': 0.0, 'vy': 0.0, 'a': 0.0, 'av': 0.0})
+    n = max(1, int(round((t - S['t']) * 60.0)))
+    h = (t - S['t']) / n if t > S['t'] else 1.0 / 60.0
+    for _ in range(n):
+        ax = 28.0 * (tgt[0] - S['x']) - 3.2 * S['vx']
+        ay = 40.0 * (tgt[1] - S['y']) - 5.5 * S['vy']
+        S['vx'] += ax * h
+        S['vy'] += ay * h
+        S['x'] += S['vx'] * h
+        S['y'] += S['vy'] * h
+        a_t = max(-16.0, min(16.0, -S['vx'] * 0.012 + 3.0 * math.sin(perf * 1.7)))   # 横向速度带动倾斜 + 轻轻自己晃
+        aa = 38.0 * (a_t - S['a']) - 4.0 * S['av']
+        S['av'] += aa * h
+        S['a'] += S['av'] * h
+    S['t'] = t
+    th = math.radians(S['a'])                                                # 逆时针为正（和 TD 的 rotate 一致）
+    att = []
+    for u_, v_ in G['attach']:
+        dx, dy = (u_ - 0.5) * G['pw'], (v_ - 0.5) * G['ph']
+        att.append((S['x'] + dx * math.cos(th) + dy * math.sin(th), S['y'] - dx * math.sin(th) + dy * math.cos(th)))
+    strings = [(tipL, att[0]), (tipL, att[2]), (tipR, att[1]), (tipR, att[3])]
+    return {'tipL': tipL, 'tipR': tipR, 'pup': (S['x'], S['y']), 'ang': S['a'], 'strings': strings}
+
+
+def _tf_sprite(par, cx, cy, Wp, Hp, Wc, Hc, rot=0.0):
+    par.sx = Wp / Wc
+    par.sy = Hp / Hc
+    par.tx = (cx - Wc / 2.0) / Wc
+    par.ty = (Hc / 2.0 - cy) / Hc
+    par.rotate = rot
+
+
+def _tf_string(par, A, B, width, Wc, Hc, sign):
+    dx, dy = B[0] - A[0], B[1] - A[1]
+    ln = max(1.0, (dx * dx + dy * dy) ** 0.5)
+    phi = math.degrees(math.atan2(-dx, -dy)) * sign                          # 竖直的细长条转到沿着 A->B（y 向上坐标里 vx=dx, vy=-dy）
+    par.sx = width / Wc
+    par.sy = ln / Hc
+    par.tx = ((A[0] + B[0]) / 2.0 - Wc / 2.0) / Wc
+    par.ty = (Hc / 2.0 - (A[1] + B[1]) / 2.0) / Hc
+    par.rotate = phi
+
+
+def _puppet_hide():
+    for nm in ('puppet_tf', 'pL_tf', 'pR_tf', 'pstr1', 'pstr2', 'pstr3', 'pstr4'):
+        o = op(nm)
+        if o is not None:
+            o.par.sx = 0.0001
+            o.par.sy = 0.0001
+
+
+def _puppet_start(st, cfg):
+    st['pup_G'] = _puppet_geom(cfg)
+    st['pup_S'] = {}
+    st['pup_t0'] = time.time()
+    st['pup_q'] = -1
+    print('gz_exec 木偶戏开始')
+
+
+def _update_puppet(st):
+    """木偶戏：两只木头手从上面降下来，手指拉着线，吊着小兔子在城堡前面摇摆，再提走。触发：test_puppet.py、每隔几次切换场景、随机。"""
+    cfg = _fx_cfg(st)
+    if op('puppet_tf') is None or op('pL_tf') is None:
+        return
+    st['pup_age'] = st.get('pup_age', 99) + 1
+    if st['pup_age'] >= 6:
+        st['pup_age'] = 0
+        t_new = None
+        try:
+            with open(BRIDGE + '/puppet_test.json', encoding='utf-8') as fh:
+                t_new = float(json.load(fh).get('t', 0.0))
+        except Exception:
+            t_new = None
+        if st.get('pup_seen') is None:
+            st['pup_seen'] = t_new if t_new is not None else 0.0
+        elif t_new is not None and t_new > st['pup_seen']:
+            st['pup_seen'] = t_new
+            st['puppet_pending'] = time.time()
+        pend = st.get('puppet_pending')
+        busy = st.get('pup_t0') is not None or st.get('hand_t0') is not None
+        pup_ok = (not cfg.get('puppet_need_hand', False)) or _hands_recent(st, cfg)   # 要求摄像头最近看到过手
+        if pend is not None and time.time() >= pend and not busy:
+            st['puppet_pending'] = None
+            if cfg.get('puppet_on', True) and pup_ok:
+                _puppet_start(st, cfg)
+        lo_, hi_ = float(cfg.get('puppet_auto_min', 0)), float(cfg.get('puppet_auto_max', 0))
+        if cfg.get('puppet_on', True) and lo_ > 0 and hi_ >= lo_:
+            if st.get('pup_next') is None:
+                st['pup_next'] = time.time() + random.uniform(lo_, hi_)
+            elif time.time() >= st['pup_next'] and not busy:
+                st['pup_next'] = time.time() + random.uniform(lo_, hi_)
+                if pup_ok:
+                    _puppet_start(st, cfg)
+    t0 = st.get('pup_t0')
+    if t0 is None or not cfg.get('puppet_on', True):
+        if st.get('pup_vis', True):
+            _puppet_hide()
+            st['pup_vis'] = False
+        return
+    fps = max(1.0, float(cfg.get('hand_fps', 10)))
+    q = int(math.floor((time.time() - t0) * fps))
+    if q == st.get('pup_q'):
+        return                                                              # 定格动画：同一格内不更新
+    st['pup_q'] = q
+    G = st['pup_G']
+    pose = _puppet_pose(q / fps, G, st['pup_S'], fps)
+    if pose is None:
+        st['pup_t0'] = None
+        return
+    Wc, Hc = G['Wc'], G['Hc']
+    sign = 1.0 if float(cfg.get('puppet_rot_sign', 1)) >= 0 else -1.0
+    _tf_sprite(op('puppet_tf').par, pose['pup'][0], pose['pup'][1], G['pw'], G['ph'], Wc, Hc, sign * pose['ang'])
+    tL, tR = pose['tipL'], pose['tipR']
+    _tf_sprite(op('pL_tf').par, tL[0] - (G['tuL'] - 0.5) * G['hw'], tL[1] - (G['tvL'] - 0.5) * G['hh'], G['hw'], G['hh'], Wc, Hc)
+    _tf_sprite(op('pR_tf').par, tR[0] - (G['tuR'] - 0.5) * G['hw'], tR[1] - (G['tvR'] - 0.5) * G['hh'], G['hw'], G['hh'], Wc, Hc)
+    for i_, (A, B) in enumerate(pose['strings']):
+        o = op('pstr' + str(i_ + 1))
+        if o is not None:
+            _tf_string(o.par, A, B, 4.0, Wc, Hc, sign)
+    st['pup_vis'] = True
+
+
+def _update_poke_fx(st):
+    """手指碰到城堡的瞬间，从戳点荡开水波+故障（GLSL 着色器 poke_fx）。每帧把 戳点、戳了多少秒、强度 写给着色器。"""
+    fx = op('poke_fx')
+    if fx is None:
+        return
+    cfg = _fx_cfg(st)
+    Wc, Hc = float(cfg.get('hand_canvas_w', 1920)), float(cfg.get('hand_canvas_h', 1080))
+    pt = st.get('poke_time')
+    amp = 0.0
+    age = -1.0
+    if pt is not None and cfg.get('poke_fx_on', True):
+        age = time.time() - pt
+        if -0.05 <= age <= 2.8:
+            amp = float(cfg.get('poke_fx_amp', 1.0))
+            age = max(0.0, age)
+    key = (round(age, 3), amp)
+    if key == st.get('fx_key'):
+        return
+    st['fx_key'] = key
+    P_ = st.get('poke_P') or (Wc * 0.5, Hc * 0.5)
+    fx.par.vec0valuex = P_[0] / Wc
+    fx.par.vec0valuey = 1.0 - P_[1] / Hc
+    fx.par.vec0valuez = age if amp > 0 else -1.0
+    fx.par.vec0valuew = amp
+
+
+_ANG = {'meta': None}
+
+
+def _angel_meta():
+    if _ANG['meta'] is None:
+        try:
+            with open(os.path.normpath(os.path.join(BRIDGE, '..', '..', 'assets', 'angel', 'angel.json')), encoding='utf-8') as fh:
+                _ANG['meta'] = json.load(fh)['pixel']
+        except Exception:
+            _ANG['meta'] = {'w': 1254, 'h': 1254, 'eye_cx': 626.5, 'eye_cy': 547.0, 'pupil_r': 55.2, 'pupil_w': 128, 'pupil_h': 128, 'range_deg_step': 15, 'range': [25.0] * 24}
+    return _ANG['meta']
+
+
+def _angel_range(m, deg):
+    """瞳孔朝 deg 度方向最远能走多少像素（原图像素）；在 15 度一档的表里线性插值。"""
+    step = float(m.get('range_deg_step', 15))
+    r = m['range']
+    d = deg %% 360.0
+    i = int(d // step)
+    f = (d - i * step) / step
+    return r[i %% len(r)] * (1.0 - f) + r[(i + 1) %% len(r)] * f
+
+
+def _angel_target(st, cfg, E, t):
+    """瞳孔想看的方向：有手就朝手在画布上的位置，没手就慢慢飘着张望。返回 (角度deg, 力度0~1)。"""
+    Wc, Hc = float(cfg.get('hand_canvas_w', 1920)), float(cfg.get('hand_canvas_h', 1080))
+    if cfg.get('angel_follow_hand', True):
+        try:
+            for n in _hand_nodes():
+                if n is None:
+                    continue
+                pts = list(n.points)
+                if len(pts) > 9:
+                    x_, y_ = pts[9].x, pts[9].y
+                    if cfg.get('air_flip_x', AIR_FLIP_X):
+                        x_ = 1.0 - x_
+                    dx = x_ * Wc - E[0]
+                    dy = (1.0 - y_) * Hc - E[1]
+                    dist = (dx * dx + dy * dy) ** 0.5
+                    deg = math.degrees(math.atan2(-dy, dx))                    # 屏幕向上为正
+                    return deg, min(1.0, dist / (0.35 * Wc)), True
+        except Exception:
+            pass
+    deg = (t * 25.0 + 40.0 * math.sin(t * 0.6)) %% 360.0
+    return deg, 0.55 + 0.35 * math.sin(t * 0.7), False
+
+
+def _angel_hide():
+    for nm in ('angel_body_tf', 'angel_pupil_tf'):
+        o = op(nm)
+        if o is not None:
+            o.par.sx = 0.0001
+            o.par.sy = 0.0001
+    f = op('angel_fade')
+    if f is not None:
+        f.par.cross = 0.0
+
+
+def _update_angel(st):
+    """随机出现的大眼睛天使：慢慢淡入 -> 停一会儿（瞳孔跟着观众的手转，没手就到处张望）-> 淡出。触发：test_angel.py 或随机间隔。"""
+    cfg = _fx_cfg(st)
+    body, pupil, fade = op('angel_body_tf'), op('angel_pupil_tf'), op('angel_fade')
+    if body is None or pupil is None or fade is None:
+        return
+    st['ang_age'] = st.get('ang_age', 99) + 1
+    if st['ang_age'] >= 6:
+        st['ang_age'] = 0
+        t_new = None
+        try:
+            with open(BRIDGE + '/angel_test.json', encoding='utf-8') as fh:
+                t_new = float(json.load(fh).get('t', 0.0))
+        except Exception:
+            t_new = None
+        if st.get('ang_seen') is None:
+            st['ang_seen'] = t_new if t_new is not None else 0.0
+        elif t_new is not None and t_new > st['ang_seen']:
+            st['ang_seen'] = t_new
+            st['ang_pending'] = True
+        lo_, hi_ = float(cfg.get('angel_auto_min', 0)), float(cfg.get('angel_auto_max', 0))
+        if cfg.get('angel_on', True) and lo_ > 0 and hi_ >= lo_:
+            if st.get('ang_next') is None:
+                st['ang_next'] = time.time() + random.uniform(lo_, hi_)
+            elif time.time() >= st['ang_next'] and st.get('ang_t0') is None:
+                st['ang_next'] = time.time() + random.uniform(lo_, hi_)
+                st['ang_pending'] = True
+        if st.pop('ang_pending', False) and cfg.get('angel_on', True) and st.get('ang_t0') is None:
+            st['ang_t0'] = time.time()
+            st['ang_off'] = [0.0, 0.0]
+            print('gz_exec 天使出现')
+    t0 = st.get('ang_t0')
+    idle = max(0.0, min(1.0, float(cfg.get('angel_idle_level', 0.0))))     # 常驻在背景里的亮度（0 = 平时看不见，只在"出现"时露面）
+    env = 0.0
+    if t0 is not None and cfg.get('angel_on', True):
+        t = time.time() - t0
+        T_in, T_hold, T_out = 2.5, float(cfg.get('angel_hold', 9.0)), 2.5
+        if t >= T_in + T_hold + T_out:
+            st['ang_t0'] = None
+        elif t < T_in:
+            env = _ease_io(t / T_in)
+        elif t < T_in + T_hold:
+            env = 1.0
+        else:
+            env = 1.0 - _ease_io((t - T_in - T_hold) / T_out)
+    if st.get('ang_base') is None:
+        st['ang_base'] = time.time()
+    t = time.time() - (st['ang_t0'] if st.get('ang_t0') is not None else st['ang_base'])
+    fd = idle + (1.0 - idle) * env
+    if not cfg.get('angel_on', True) or fd <= 0.001:
+        if st.get('ang_vis', True):
+            _angel_hide()
+            st['ang_vis'] = False
+        return
+    m = _angel_meta()
+    Wc, Hc = float(cfg.get('hand_canvas_w', 1920)), float(cfg.get('hand_canvas_h', 1080))
+    Wp = float(cfg.get('angel_scale', 0.5)) * Wc * (1.0 + 0.015 * math.sin(t * 1.3))        # 轻轻呼吸
+    Hp = Wp * float(m['h']) / float(m['w'])
+    k = Wp / float(m['w'])                                                                  # 原图像素 -> 画布像素
+    ex, ey = float(cfg.get('angel_x', 0.78)) * Wc, float(cfg.get('angel_y', 0.33)) * Hc + 4.0 * math.sin(t * 0.9)
+    u, v = float(m['eye_cx']) / float(m['w']), float(m['eye_cy']) / float(m['h'])
+    cx, cy = ex - (u - 0.5) * Wp, ey - (v - 0.5) * Hp
+    body.par.sx = Wp / Wc
+    body.par.sy = Hp / Hc
+    body.par.tx = (cx - Wc / 2.0) / Wc
+    body.par.ty = (Hc / 2.0 - cy) / Hc
+    deg, frac, tracking = _angel_target(st, cfg, (ex, ey), t)
+    rmax = _angel_range(m, deg) * max(0.0, min(1.0, frac))
+    tx_off, ty_off = math.cos(math.radians(deg)) * rmax, -math.sin(math.radians(deg)) * rmax
+    o_ = st.setdefault('ang_off', [0.0, 0.0])
+    sm = 0.18 if tracking else 0.04                                                        # 跟手快一点，张望慢一点
+    o_[0] += (tx_off - o_[0]) * sm
+    o_[1] += (ty_off - o_[1]) * sm
+    pw, ph = float(m['pupil_w']) * k, float(m['pupil_h']) * k
+    pupil.par.sx = pw / Wc
+    pupil.par.sy = ph / Hc
+    pupil.par.tx = (ex + o_[0] * k - Wc / 2.0) / Wc
+    pupil.par.ty = (Hc / 2.0 - (ey + o_[1] * k)) / Hc
+    fade.par.cross = fd
+    st['ang_vis'] = True
+
+
 def onFrameEnd(frame):
     st = _state()
     kb = op('gz_kb')
@@ -938,6 +1507,30 @@ def onFrameEnd(frame):
         if not st.get('crowd_err'):
             st['crowd_err'] = 1
             print('gz_exec 脸群像出错（只打印一次）:', repr(e))
+    try:
+        _update_angel(st)
+    except Exception as e:
+        if not st.get('angel_err'):
+            st['angel_err'] = 1
+            print('gz_exec 天使出错（只打印一次）:', repr(e))
+    try:
+        _update_puppet(st)
+    except Exception as e:
+        if not st.get('puppet_err'):
+            st['puppet_err'] = 1
+            print('gz_exec 木偶戏出错（只打印一次）:', repr(e))
+    try:
+        _update_poke_fx(st)
+    except Exception as e:
+        if not st.get('pokefx_err'):
+            st['pokefx_err'] = 1
+            print('gz_exec 水波特效出错（只打印一次）:', repr(e))
+    try:
+        _update_hand(st)
+    except Exception as e:
+        if not st.get('hand_err'):
+            st['hand_err'] = 1
+            print('gz_exec 木头手出错（只打印一次）:', repr(e))
     try:
         _update_ballsize(st)
     except Exception as e:
@@ -1176,9 +1769,127 @@ if _km is not None and _km.op('out1') is not None:
     except Exception as e:
         print('map_fit 设置失败:', e)
     map_sel.nodeX, map_sel.nodeY = 1200, -1100
+    # 水波+故障特效：Kantan 输出 -> poke_fx(GLSL) -> map_fit。着色器代码在 code/poke_fx_shader.glsl
+    try:
+        poke_fx = p.op('poke_fx') or p.create(glslTOP, 'poke_fx')
+        poke_fx.inputConnectors[0].connect(map_sel)
+        _px = p.op('poke_fx_pixel')
+        if _px is not None:
+            with open(_os.path.normpath(_os.path.join(BRIDGE, '..', '..', 'code', 'poke_fx_shader.glsl')), encoding='utf-8') as _fh:
+                _px.text = _fh.read()
+        poke_fx.par.vec0name = 'uPoke'
+        poke_fx.par.vec0valuex = 0.5
+        poke_fx.par.vec0valuey = 0.5
+        poke_fx.par.vec0valuez = -1.0
+        poke_fx.par.vec0valuew = 0.0
+        map_fit.inputConnectors[0].connect(poke_fx)
+        poke_fx.nodeX, poke_fx.nodeY = 1275, -1100
+        print('poke_fx 就绪（戳城堡的水波+故障特效）；着色器有错时程序会自动绕开，不会黑屏')
+    except Exception as e:
+        print('poke_fx 建立失败（不影响其他功能）:', e)
     map_fit.nodeX, map_fit.nodeY = 1350, -1100
 else:
     print('没找到 kantanMapper/out1，跳过映射输出节点')
+hand_img = p.op('hand_img') or p.create(moviefileinTOP, 'hand_img')
+hand_img.par.file = _os.path.normpath(_os.path.join(BRIDGE, '..', '..', 'assets', 'hand', 'hand_sprite.png'))
+hand_out = p.op('hand_out') or p.create(transformTOP, 'hand_out')       # 木头手：整张 1920x1080 画布，透明背景，Kantan 里用一个盖满画布的长方形来映射它
+hand_out.inputConnectors[0].connect(hand_img)
+try:
+    hand_out.par.extend = 'zero'
+    hand_out.par.outputresolution = 'custom'
+    hand_out.par.resolutionw = 1920
+    hand_out.par.resolutionh = 1080
+    hand_out.par.sx = 0.0001
+    hand_out.par.sy = 0.0001
+except Exception as e:
+    print('hand_out 设置失败:', e)
+hand_fit = p.op('hand_fit') or p.create(fitTOP, 'hand_fit')              # 不开映射时，手叠在整屏画面上预览
+hand_fit.inputConnectors[0].connect(hand_out)
+try:
+    hand_fit.par.outputresolution = 'custom'
+    hand_fit.par.resolutionw = W
+    hand_fit.par.resolutionh = H
+    _hf = [m_ for m_ in hand_fit.par.fit.menuNames if 'best' in m_.lower()]
+    if _hf:
+        hand_fit.par.fit = _hf[0]
+except Exception as e:
+    print('hand_fit 设置失败:', e)
+gz_final = p.op('gz_final') or p.create(overTOP, 'gz_final')
+gz_final.inputConnectors[0].connect(hand_fit)      # 手在最上面
+gz_final.inputConnectors[1].connect(gz_over)       # 画面 + 海洋球在下面
+hand_img.nodeX, hand_img.nodeY = 1600, -1100
+hand_out.nodeX, hand_out.nodeY = 1750, -1100
+hand_fit.nodeX, hand_fit.nodeY = 1900, -1100
+gz_final.nodeX, gz_final.nodeY = 2050, -1100
+print('木头手就绪（hand_out 是给 Kantan 用的，gz_final 是画面+海洋球+手）')
+
+# --- 木偶戏：两只手 + 四根线 + 兔子，全部画在 1920x1080 的透明画布上，叠在"木头手"那一层之上，合成 scene_out ---
+def _mk_img(name, rel, x, y):
+    n_ = p.op(name) or p.create(moviefileinTOP, name)
+    n_.par.file = _os.path.normpath(_os.path.join(BRIDGE, '..', '..', 'assets', *rel))
+    n_.nodeX, n_.nodeY = x, y
+    return n_
+
+
+def _mk_tf(name, src, x, y):
+    t_ = p.op(name) or p.create(transformTOP, name)
+    t_.inputConnectors[0].connect(src)
+    try:
+        t_.par.extend = 'zero'
+        t_.par.outputresolution = 'custom'
+        t_.par.resolutionw = 1920
+        t_.par.resolutionh = 1080
+        t_.par.sx = 0.0001
+        t_.par.sy = 0.0001
+    except Exception as e_:
+        print(name, '设置失败:', e_)
+    t_.nodeX, t_.nodeY = x, y
+    return t_
+
+
+puppet_img = _mk_img('puppet_img', ('puppet', 'puppet.png'), 1600, -1300)
+hand_img_r = _mk_img('hand_img_r', ('hand', 'hand_sprite_R.png'), 1600, -1450)
+string_img = _mk_img('string_img', ('puppet', 'string.png'), 1600, -1600)
+puppet_tf = _mk_tf('puppet_tf', puppet_img, 1750, -1300)
+pL_tf = _mk_tf('pL_tf', hand_img, 1750, -1100)
+pR_tf = _mk_tf('pR_tf', hand_img_r, 1750, -1450)
+_pstr = [_mk_tf('pstr' + str(i_ + 1), string_img, 1750, -1600 - 100 * i_) for i_ in range(4)]
+_prev = hand_out
+for i_, node_ in enumerate(_pstr + [puppet_tf, pL_tf, pR_tf]):
+    nm_ = 'pc' + str(i_ + 1) if i_ < 6 else 'scene_out'
+    ov_ = p.op(nm_) or p.create(overTOP, nm_)
+    ov_.inputConnectors[0].connect(node_)       # 这一层在上面
+    ov_.inputConnectors[1].connect(_prev)       # 下面是前面所有层
+    ov_.nodeX, ov_.nodeY = 2000 + 150 * i_, -1100
+    _prev = ov_
+scene_out = _prev
+hand_fit.inputConnectors[0].connect(scene_out)  # 整屏预览里，手/木偶也叠在画面上
+print('木偶戏就绪：scene_out = 木头手 + 木偶戏（Kantan 里手的形状请用 scene_out 当纹理）')
+
+# --- 大眼睛天使：翅膀(带眼白的底图) + 瞳孔(单独一张，会动) -> 淡入淡出 -> 叠在 scene_out 之上，合成 scene_all ---
+angel_body_img = _mk_img('angel_body_img', ('angel', 'wings_pixel_base.png'), 1600, -1800)
+angel_pupil_img = _mk_img('angel_pupil_img', ('angel', 'pupil_pixel.png'), 1600, -1950)
+blank_img = _mk_img('blank_img', ('angel', 'blank.png'), 1600, -2100)
+angel_body_tf = _mk_tf('angel_body_tf', angel_body_img, 1750, -1800)
+angel_pupil_tf = _mk_tf('angel_pupil_tf', angel_pupil_img, 1750, -1950)
+angel_comp = p.op('angel_comp') or p.create(overTOP, 'angel_comp')
+angel_comp.inputConnectors[0].connect(angel_pupil_tf)      # 瞳孔在上
+angel_comp.inputConnectors[1].connect(angel_body_tf)       # 翅膀和眼睛在下
+angel_fade = p.op('angel_fade') or p.create(crossTOP, 'angel_fade')
+angel_fade.inputConnectors[0].connect(blank_img)           # 0 = 全透明
+angel_fade.inputConnectors[1].connect(angel_comp)          # 1 = 天使完全出现
+try:
+    angel_fade.par.cross = 0.0
+except Exception as e:
+    print('angel_fade 的 cross 设置失败:', e)
+scene_all = p.op('scene_all') or p.create(overTOP, 'scene_all')
+scene_all.inputConnectors[0].connect(angel_fade)           # 天使在最上面
+scene_all.inputConnectors[1].connect(scene_out)
+hand_fit.inputConnectors[0].connect(scene_all)             # 整屏预览也叠上天使
+angel_comp.nodeX, angel_comp.nodeY = 1900, -1850
+angel_fade.nodeX, angel_fade.nodeY = 2050, -1850
+scene_all.nodeX, scene_all.nodeY = 2200, -1850
+print('天使就绪：scene_all = 木头手 + 木偶戏 + 天使（Kantan 里手/天使的形状请用 scene_all 当纹理）')
 win = p.op('gz_win')
 if win is not None:
     win.par.winop = gz_over.path
@@ -1272,7 +1983,7 @@ _xf = p.op('gz_xfade') or p.create(crossTOP, 'gz_xfade')
 _xf.inputConnectors[0].connect(tile)
 _xf.inputConnectors[1].connect(_comp)
 try:
-    _xf.par.cross = 1.0
+    _xf.par.cross = 0.0
 except Exception as e:
     print('gz_xfade 的 cross 参数设置失败（名字可能不对），请把下面这行发给我:', [x.name for x in _xf.pars()][:30], e)
 _at = p.op('gz_attn') or p.create(moviefileinTOP, 'gz_attn')

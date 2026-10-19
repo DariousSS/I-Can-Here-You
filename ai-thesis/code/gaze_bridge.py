@@ -151,7 +151,7 @@ def save_atomic(im, path):
 
 WHISPER_DIR = os.path.join(os.path.dirname(os.path.abspath(args.dir)), "whispers")
 WHISPER_CFG = os.path.join(args.dir, "whisper.json")
-_wh = {"proc": None, "last": None, "t_last": 0.0, "cfg": {"on": True, "vol": 0.35, "ambient_sec": 0, "min_gap_sec": 2.0, "flash_prob": 0.2, "ball_sfx_vol": 0.6}, "t_cfg": 0.0, "t_amb": time.time()}
+_wh = {"proc": None, "last": None, "t_last": 0.0, "cfg": {"on": True, "vol": 0.35, "ambient_sec": 0, "min_gap_sec": 2.0, "flash_prob": 0.2, "ball_sfx_vol": 0.6, "creepy_only": True}, "t_cfg": 0.0, "t_amb": time.time()}
 
 
 def _wh_cfg():
@@ -160,7 +160,7 @@ def _wh_cfg():
         try:
             with open(WHISPER_CFG, encoding="utf-8") as fh:
                 j = json.load(fh)
-            _wh["cfg"].update({k: j[k] for k in ("on", "vol", "ambient_sec", "min_gap_sec", "flash_prob", "ball_sfx_vol") if k in j})
+            _wh["cfg"].update({k: j[k] for k in ("on", "vol", "ambient_sec", "min_gap_sec", "flash_prob", "ball_sfx_vol", "creepy_only") if k in j})
         except Exception:
             pass
     return _wh["cfg"]
@@ -204,6 +204,19 @@ def whisper(reason=""):
     files = sorted(glob.glob(os.path.join(WHISPER_DIR, "*.aiff")))
     if not files:
         return
+    if cfg.get("creepy_only", True):
+        creepy = [f for f in files if f.endswith("_flash.aiff")]          # 只念诡异的版本（听不清内容，保持想象）
+        if creepy:
+            pool = [f for f in creepy if f != _wh["last"]] or creepy
+            f = random.choice(pool)
+            vol = min(1.0, max(0.0, float(cfg.get("vol", 0.35))))
+            try:
+                _wh["proc"] = subprocess.Popen(["afplay", "-v", str(vol), f], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                _wh["last"], _wh["t_last"] = f, now
+                print("低语（诡异）：", os.path.basename(f), reason)
+            except Exception as e:
+                print("[低语出错]", repr(e)[:80])
+            return
     mains = [f for f in files if not f.endswith("_flash.aiff")]          # 平时只念清楚的（C）；_flash（A）只作为 C 的前缀/尾巴
     if not mains:
         return

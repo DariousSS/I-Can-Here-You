@@ -1,0 +1,6 @@
+src size=1536x1024 opaque bbox=(0, 0, 1217, 929) tip=(1215, 925)
+out size=1920x1080 opaque bbox=(595, 297, 1173, 738) tip=(1172, 736)
+expected tip=(1172, 736)  measured tip=(1172, 736)  diff(measured-expected)=(0, 0)
+drawn opaque width ratio (out/src*1536/Wp)=1.0 height ratio=0.999
+string expected ends A=(300,300) B=(900,700); measured opaque bbox=(66, 299, 1133, 700) (如果线方向反了，bbox 会是 x 300..900, y 300..700 的镜像)
+distance from measured string to (300,300)=80.4 ; to (900,300)=291.1  (前者应该接近 0，后者应该很大)

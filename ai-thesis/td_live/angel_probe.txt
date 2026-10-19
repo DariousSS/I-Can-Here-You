@@ -1,0 +1,20 @@
+angel_body_img: moviefilein size=1344x1344 inputs=[]
+angel_pupil_img: moviefilein size=90x90 inputs=[]
+blank_img: moviefilein size=1920x1080 inputs=[]
+angel_body_tf: transform size=1920x1080 inputs=['angel_body_img']
+angel_pupil_tf: transform size=1920x1080 inputs=['angel_pupil_img']
+angel_comp: over size=1920x1080 inputs=['angel_pupil_tf', 'angel_body_tf']
+angel_fade: cross size=1920x1080 inputs=['blank_img', 'angel_comp']
+scene_all: over size=1920x1080 inputs=['angel_fade', 'scene_out']
+scene_out: over size=1920x1080 inputs=['pR_tf', 'pc6']
+hand_fit: fit size=1147x745 inputs=['scene_all']
+gz_final: over size=1147x745 inputs=['hand_fit', 'gz_over']
+angel_body_img.file=/Users/shanzeyang/Desktop/I can Here You/ai-thesis/assets/angel/wings_pixel_base.png
+angel_fade.cross=0.5
+body sx,sy,tx,ty=[0.739, 1.314, 0.12, 0.155]
+angel_fade mean rgba=[0.0416, 0.0416, 0.0416, 0.0416]
+scene_all mean rgba=[0.0416, 0.0416, 0.0416, 0.0416]
+ang_t0=None ang_vis=True angel_err=None ang_seen=1792438907.715026
+exec has _update_angel: True | has angel_idle_level: True
+cfg angel_idle_level=0.5 angel_on=True
+kantan shapes (name, texture): [('Rectangle4', '/project1/castle_xf'), ('Rectangle5', '/project1/castle_xf'), ('Rectangle6', '/project1/castle_xf'), ('Rectangle7', '/project1/castle_xf'), ('Freeform8', '/project1/castle_xf'), ('Freeform9', '/project1/castle_xf'), ('Freeform10', '/project1/castle_xf'), ('Rectangle11', '/project1/castle_ball_tf'), ('Rectangle12', '/project1/scene_out'), ('Rectangle13', '/project1/scene_all')]

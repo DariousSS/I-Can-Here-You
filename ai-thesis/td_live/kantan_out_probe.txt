@@ -1,0 +1,9 @@
+config mapping_on=False win_display=0
+gz_win.winop=/project1/gz_final  display=0
+/project1/kantanMapper/out1 size=1920x1080 mean rgba=[0.17, 0.227, 0.271, 0.318]
+/project1/kantanMapper/out2 size=1920x1080 mean rgba=[0.255, 0.253, 0.673, -0.163]
+/project1/map_sel size=1920x1080 mean rgba=[0.17, 0.227, 0.271, 0.318]
+/project1/map_fit size=1147x745 mean rgba=[0.147, 0.197, 0.235, 0.276]
+/project1/gz_final size=1147x745 mean rgba=[0.492, 0.644, 0.722, 0.999]
+/project1/hand_out size=1920x1080 mean rgba=[0.0, 0.0, 0.0, 0.0]
+shapes (name, texture, showtexture): [('Rectangle4', '/project1/castle_xf', 'True'), ('Rectangle5', '/project1/castle_xf', 'True'), ('Rectangle6', '/project1/castle_xf', 'True'), ('Rectangle7', '/project1/castle_xf', 'True'), ('Freeform8', '/project1/castle_xf', 'True'), ('Freeform9', '/project1/castle_xf', 'True'), ('Freeform10', '/project1/castle_xf', 'True'), ('Rectangle11', '/project1/castle_ball_tf', 'True'), ('Rectangle12', '/project1/hand_out', 'True')]

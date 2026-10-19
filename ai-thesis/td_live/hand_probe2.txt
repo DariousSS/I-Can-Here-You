@@ -1,0 +1,24 @@
+hand_img: type=moviefilein size=1536x1024 inputs=[]
+hand_out: type=transform size=1920x1080 inputs=['hand_img']
+hand_fit: type=fit size=1147x745 inputs=['hand_out']
+gz_over: type=over size=1147x745 inputs=['ball_tf', 'gz_fit']
+gz_final: type=over size=1147x745 inputs=['hand_fit', 'gz_over']
+gz_win: type=window size=1147x745 inputs=[]
+hand_img.file=/Users/shanzeyang/Desktop/I can Here You/ai-thesis/assets/hand/hand_sprite.png
+hand_out.sx=0.0001
+hand_out.sy=0.0001
+hand_out.tx=-0.8008487061774832
+hand_out.ty=0.8369921511107296
+hand_out.rotate=1.4913946756098666
+hand_out.extend=zero
+hand_out.resolutionw=1920
+hand_out.resolutionh=1080
+gz_win.winop=/project1/gz_final
+hand_img mean rgba=[0.193, 0.142, 0.091, 0.253]
+hand_out mean rgba=[0.0, 0.0, 0.0, 0.0]
+hand_fit mean rgba=[0.0, 0.0, 0.0, 0.0]
+gz_over mean rgba=[0.372, 0.495, 0.574, 0.999]
+gz_final mean rgba=[0.372, 0.495, 0.574, 0.999]
+hand_seen=1792344093.671755 hand_t0=None hand_P=(419.5, 853.5) hand_vis=False hand_err=None
+exec has _update_hand: True
+cfg hand_on=True

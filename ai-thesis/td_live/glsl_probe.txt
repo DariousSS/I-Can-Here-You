@@ -1,0 +1,26 @@
+num pars: 79
+relevant pars: ['glslversion', 'mode', 'predat', 'vertexdat', 'pixeldat', 'computedat', 'loaduniformnames', 'outputaccess', 'clearoutputs', 'inputmapping', 'inputextenduv', 'inputextendw', 'vec', 'vec0name', 'vec0valuex', 'vec0valuey', 'vec0valuez', 'vec0valuew', 'array', 'array0name', 'array0type', 'array0chop', 'array0arraytype', 'const', 'const0name', 'const0value', 'outputresolution', 'resolutionw', 'resolutionh', 'outputaspect', 'inputfiltertype', 'fillmode', 'format']
+vec0name = 
+vec0valuex = 0.5
+vec0valuey = 0.0
+vec0valuez = 0.0
+vec0valuew = 0.0
+pixeldat = /project1/__probe_glsl_pixel
+computedat = /project1/__probe_glsl_compute
+mode = vertexpixel
+children: []
+project1 nodes starting with __probe_glsl: [('__probe_glsl', 'glslTOP'), ('__probe_glsl_info', 'infoDAT'), ('__probe_glsl_pixel', 'textDAT'), ('__probe_glsl_compute', 'textDAT')]
+pixeldat op: /project1/__probe_glsl_pixel | text length 208
+--- default pixel shader ---
+
+// Example Pixel Shader
+
+// uniform float exampleUniform;
+
+out vec4 fragColor;
+void main()
+{
+	// vec4 color = texture(sTD2DInputs[0], vUV.st);
+	vec4 color = vec4(1.0);
+	fragColor = TDOutputSwizzle(color);
+}
