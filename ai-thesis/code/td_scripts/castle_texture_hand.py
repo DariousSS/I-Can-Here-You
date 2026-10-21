@@ -13,7 +13,7 @@ else:
         cur = p.par.Texture.eval()
         path = str(getattr(cur, 'path', cur))
         nm = str(p.par.Name.eval()) if hasattr(p.par, 'Name') else ''
-        if path in ('/project1/castle_xf', '/project1/castle_ball_tf') or 'ball' in nm.lower():
+        if path in ('/project1/castle_xf', '/project1/castle_ball_tf', '/project1/mask_L', '/project1/mask_R', '/project1/castle_tri') or 'ball' in nm.lower():
             continue
         sc = c.op('script1')
         area = 0.0
@@ -28,6 +28,10 @@ else:
     pick = named[0] if named else (max(cands, key=lambda t: t[0]) if cands else None)
     if pick is None:
         print('没有找到可用的形状，没有改动')
+    elif pick[0] < 0.4 * 1920 * 1080 and not named:
+        # 保护：最大的那个也没有盖到画布的 40%，说明盖满画布的叠加层还没画好（或被删了），不乱挑别的形状
+        print('没有找到"盖满画布"的叠加层（最大的 ' + pick[1] + ' 面积只有 ' + str(int(pick[0])) + '），所以没有改动任何形状。')
+        print('请在 Kantan 里用画矩形工具【最后】拖出一个大框，Transform 里输入大小 2016 和 1134、位置 0 和 0，然后再运行本脚本。')
     else:
         pick[3].par.Texture = TEX
         pick[3].par.Showtexture = True

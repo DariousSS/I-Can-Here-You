@@ -1,0 +1,16 @@
+map_sel: select size=1920x1080 inputs=[]
+poke_fx: glsl size=1920x1080 inputs=['map_sel']
+map_fit: fit size=1147x745 inputs=['poke_fx']
+gz_win: window size=1147x745 inputs=[]
+poke_fx_pixel: text inputs=[]
+poke_fx errors: ''
+poke_fx warnings: ''
+uniform uPoke = ('uPoke', 0.4278645833333333, 0.6995573368778936, -1.0, 0.0)
+pixel shader dat: /project1/poke_fx_pixel length 1146 | has uPoke: True
+gz_win.winop = /project1/map_fit
+poke_time age(s)=99.4 poke_P=(821.5, 324.478076171875) hand_t0=None fx_key=(99.413, 0.0) pokefx_err=None
+exec has _update_poke_fx: True
+cfg poke_fx_on=True amp=1.0 mapping_on=True
+/project1/map_sel mean rgba=[0.1436, 0.1712, 0.1585, 0.2587]
+/project1/poke_fx mean rgba=[0.1436, 0.1712, 0.1585, 0.2587]
+/project1/map_fit mean rgba=[0.1243, 0.1482, 0.1373, 0.224]

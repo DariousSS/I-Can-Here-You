@@ -1,0 +1,12 @@
+Kantan 画布 1920x1080，原点在中心：盖满画布的形状 bbox 应该约 (-960, -540) 到 (960, 540)
+Rectangle4 | texture=/project1/castle_xf | showtexture=True | bbox=(-322, -101, 427, 184)
+Rectangle5 | texture=/project1/castle_xf | showtexture=True | bbox=(-246, -543, 365, -99)
+Freeform8 | texture=/project1/castle_xf | showtexture=True | bbox=(-96, 358, 154, 541)
+Freeform9 | texture=/project1/scene_out | showtexture=True | bbox=(-734, -155, -356, 93)
+Freeform10 | texture=/project1/castle_xf | showtexture=True | bbox=(46, -158, 457, 99)
+Rectangle11 | texture=/project1/castle_ball_tf | showtexture=True | bbox=(-511, -541, 207, -366)
+Rectangle13 | texture=/project1/scene_all | showtexture=True | bbox=(-622, -140, -622, -140)
+Rectangle14 | texture=/project1/gz_over | showtexture=True | bbox=(-70, 182, 142, 360)
+/project1/kantanMapper/out1 size=1920x1080 mean rgba=[0.1378, 0.1693, 0.1589, 0.2575]
+/project1/scene_all size=1920x1080 mean rgba=[0.0, 0.0, 0.0, 0.0]
+/project1/angel_fade error AttributeError("'NoneType' object has no attribute 'numpyArray'")
