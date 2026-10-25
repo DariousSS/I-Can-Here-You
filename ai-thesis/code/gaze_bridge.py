@@ -33,6 +33,7 @@ import time
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from gaze_core import GazeFace   # noqa: E402
 import style_kid as SK   # noqa: E402
+import deviation as DV   # noqa: E402
 
 DIR = "/Users/shanzeyang/Desktop/I can Here You/ai-thesis/td_live/gaze_bridge"
 ap = argparse.ArgumentParser()
@@ -257,6 +258,13 @@ def render_and_save():
     im = g.face(seed, extra if not args.no_piano else None)
     sp = style_preset()
     save_atomic(SK.stylize(im, sp), OUT)
+    try:                                                      # 这张脸离标准脸多远：写成 deviation.json 给 TD 显示（用没加滤镜的原脸算）
+        tmp_ = os.path.join(args.dir, "deviation.json.tmp")
+        with open(tmp_, "w", encoding="utf-8") as f_:
+            json.dump({"live": round(DV.deviation(im), 3), "t": time.time()}, f_)
+        os.replace(tmp_, os.path.join(args.dir, "deviation.json"))
+    except Exception as e:
+        print("[偏离度计算出错，已跳过]", repr(e)[:80])
     if rec is not None:
         try:
             ov = AT.ai_overlay(rec, im, size=im.size[0])

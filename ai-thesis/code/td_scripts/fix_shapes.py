@@ -26,7 +26,7 @@ else:
         if area < 50:
             zero.append(nm)
             continue
-        if path in ('/project1/mask_L', '/project1/mask_R', '/project1/castle_tri'):
+        if path in ('/project1/mask_L', '/project1/mask_R', '/project1/castle_tri', '/project1/dev_L', '/project1/dev_R', '/project1/castle_pc_top', '/project1/castle_pc_mid', '/project1/castle_pc_bot'):
             kept.append(nm + '（面具/可淡出的三角形）')
             continue
         if path == '/project1/castle_ball_tf' or 'ball' in nm.lower():

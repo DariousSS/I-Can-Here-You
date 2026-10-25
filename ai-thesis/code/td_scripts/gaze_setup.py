@@ -384,7 +384,7 @@ def _fx_cfg(st):
                'scenes': ['crowd', 'mirror', 'attn'], 'scene_auto_sec': 45, 'xfade_speed': 0.06,
                'pinch_on': True, 'pinch_enter': 0.35, 'pinch_frames': 4, 'pinch_gap_frames': 60,
                'air_pitch_from': 'x', 'air_scale': 'pentatonic', 'air_base': 48, 'air_octaves': 3,
-               'air_x_lo': 0.12, 'air_x_hi': 0.88, 'air_flip_x': False, 'air_margin': 0.25, 'screen_w': 0, 'screen_h': 0, 'ball_on': True, 'ball_rise': 0.5, 'ball_hold': 2.2, 'ball_fall': 1.0, 'mapping_on': False, 'win_display': 0, 'auto_open_window': False, 'castle_ball_w': 1920, 'castle_ball_h': 640, 'ball_with_flash': False, 'castle_ball_auto': True, 'ball_auto_min': 0, 'ball_auto_max': 0, 'ball_every_switches': 3, 'ball_need_hand': True, 'ball_hand_sec': 4.0, 'castle_ball_phys_aspect': 0, 'castle_tiles_min': 3, 'hand_on': True, 'hand_need_hand': False, 'hand_target_max_frac': 0.5, 'poke_fx_on': True, 'poke_fx_amp': 1.0, 'puppet_on': True, 'puppet_need_hand': False, 'standard_on': True, 'standard_hand': True, 'std_build_sec': 24.0, 'std_hold_sec': 2.0, 'std_shatter_sec': 1.6, 'std_fade_sec': 1.0, 'mask_on': True, 'mask_R_mode': 'mix', 'mask_always': True, 'mask_swap_min': 7.0, 'mask_swap_max': 14.0, 'mask_gap_min': 25.0, 'mask_gap_max': 70.0, 'mask_hold_min': 8.0, 'mask_hold_max': 16.0, 'mask_fade_sec': 2.0, 'tri_names': ['Freeform16', 'Freeform17'], 'burst_on': True, 'burst_n': 12, 'burst_size_min': 0.28, 'burst_size_max': 0.75, 'burst_dist_min': 0.20, 'burst_dist_max': 0.75, 'burst_sec': 1.4, 'burst_fade_start': 1.8, 'burst_fade_sec': 1.2, 'angel_on': True, 'angel_count': 3, 'angel_max_level': 0.85, 'angel_gap_min': 3.0, 'angel_gap_max': 25.0, 'angel_hold_min': 12.0, 'angel_hold_max': 28.0, 'angel_hop_prob': 0.7, 'angel_castle_weight': 0.5, 'angel_music_gain': 0.30, 'angel_music_sens': 2.5, 'angel_punch': 0.12, 'angel_follow_hand': True, 'puppet_every_switches': 0, 'puppet_auto_min': 0, 'puppet_auto_max': 0, 'puppet_hand_scale': 0.38, 'puppet_scale': 0.36, 'puppet_string_len': 0.17, 'puppet_rot_sign': 1, 'hand_scale': 0.6, 'hand_fps': 10, 'hand_every_switches': 0, 'hand_auto_min': 0, 'hand_auto_max': 0, 'hand_canvas_w': 1920, 'hand_canvas_h': 1080, 'castle_spin_deg_s': 6.0, 'scene_hold': {'mirror': 60, 'face': 12, 'attn': 25, 'crowd': 30}, 'scene_weights': {'face': 1, 'attn': 2, 'crowd': 1}, 'ball_sfx_vol': 0.6}
+               'air_x_lo': 0.12, 'air_x_hi': 0.88, 'air_flip_x': False, 'air_margin': 0.25, 'screen_w': 0, 'screen_h': 0, 'ball_on': True, 'ball_rise': 0.5, 'ball_hold': 2.2, 'ball_fall': 1.0, 'mapping_on': False, 'win_display': 0, 'auto_open_window': False, 'castle_ball_w': 1920, 'castle_ball_h': 640, 'ball_with_flash': False, 'castle_ball_auto': True, 'ball_auto_min': 0, 'ball_auto_max': 0, 'ball_every_switches': 3, 'ball_need_hand': True, 'ball_hand_sec': 4.0, 'castle_ball_phys_aspect': 0, 'castle_tiles_min': 3, 'hand_on': True, 'hand_need_hand': False, 'hand_target_max_frac': 0.5, 'poke_fx_on': True, 'poke_fx_amp': 1.0, 'puppet_on': True, 'puppet_need_hand': False, 'standard_on': True, 'standard_hand': True, 'std_build_sec': 24.0, 'std_hold_sec': 2.0, 'std_shatter_sec': 1.6, 'std_fade_sec': 1.0, 'mask_on': True, 'mask_R_mode': 'mix', 'mask_always': True, 'angel_dev_link': True, 'angel_always': True, 'angel_birth': True, 'angel_peek': True, 'angel_peek_w': 0.75, 'angel_peek_x': 0.02, 'angel_tilt': 0.30, 'clip_ignore': ['Freeform9'], 'angel_turn': True, 'angel_clip': True, 'angel_eyes_on': True, 'say_on': True, 'say_hold': 4.8, 'say_gap_min': 11.0, 'say_gap_max': 20.0, 'angel_dev_thresh': 0.80, 'angel_dev_stay': 14.0, 'angel_dev_gap_min': 25.0, 'angel_dev_gap_max': 60.0, 'overlay_w': 2016, 'overlay_h': 1134, 'dev_on': True, 'dev_font': 84, 'mask_swap_min': 7.0, 'mask_swap_max': 14.0, 'mask_gap_min': 25.0, 'mask_gap_max': 70.0, 'mask_hold_min': 8.0, 'mask_hold_max': 16.0, 'mask_fade_sec': 2.0, 'tri_names': ['Freeform16', 'Freeform17'], 'burst_on': False, 'giant_on': True, 'giant_names': ['Rectangle14', 'Rectangle4', 'Rectangle5'], 'eye2_on': True, 'angel_mode': 'persist', 'rift_on': False, 'rift_thr': 0.70, 'eye2_thr': 0.75, 'eye2_w': 0.22, 'angel_birth_zoom': False, 'std_mosaic_on': True, 'std_mosaic_max': 72.0, 'std_mosaic_min': 18.0, 'burst_n': 12, 'burst_size_min': 0.28, 'burst_size_max': 0.75, 'burst_dist_min': 0.20, 'burst_dist_max': 0.75, 'burst_sec': 1.4, 'burst_fade_start': 1.8, 'burst_fade_sec': 1.2, 'angel_on': True, 'angel_count': 3, 'angel_max_level': 0.85, 'angel_gap_min': 3.0, 'angel_gap_max': 25.0, 'angel_hold_min': 12.0, 'angel_hold_max': 28.0, 'angel_hop_prob': 0.7, 'angel_castle_weight': 0.5, 'angel_music_gain': 0.30, 'angel_music_sens': 2.5, 'angel_punch': 0.12, 'angel_follow_hand': True, 'puppet_every_switches': 0, 'puppet_auto_min': 0, 'puppet_auto_max': 0, 'puppet_hand_scale': 0.38, 'puppet_scale': 0.36, 'puppet_string_len': 0.17, 'puppet_rot_sign': 1, 'hand_scale': 0.6, 'hand_fps': 10, 'hand_every_switches': 0, 'hand_auto_min': 0, 'hand_auto_max': 0, 'hand_canvas_w': 1920, 'hand_canvas_h': 1080, 'castle_spin_deg_s': 6.0, 'scene_hold': {'mirror': 60, 'face': 12, 'attn': 25, 'crowd': 30}, 'scene_weights': {'face': 1, 'attn': 2, 'crowd': 1}, 'ball_sfx_vol': 0.6}
         try:
             with open(BRIDGE + '/audio_fx.json', encoding='utf-8') as fh:
                 j = json.load(fh)
@@ -481,6 +481,8 @@ def _crowd_layout(seed, n):
 
 def _burst_begin(st, cfg):
     """手戳下去的一瞬间：N 张不同的脸从戳点向四周飞散，越飞越大，随后淡出。"""
+    st['ang_born'] = True                                       # 天使在这一刻诞生
+    st['ang_born_t'] = time.time()
     Wc, Hc = float(cfg.get('hand_canvas_w', 1920)), float(cfg.get('hand_canvas_h', 1080))
     if not cfg.get('burst_on', True):
         return
@@ -559,6 +561,7 @@ def _std_meta():
 def _std_begin(st, cfg):
     m = _std_meta()
     st['std'] = {'t0': time.time(), 'set': random.choice(m.get('sets') or ['A']), 'hand': False, 'poked': False, 'poke_at': None, 'idx': -1}
+    st['ang_born'] = False                                       # 新一轮叠脸开始，天使退场，等下一次手戳再诞生
     print('gz_exec 标准人脸开始：脸一张张叠上去…')
 
 
@@ -620,6 +623,34 @@ def _update_standard(st, cfg, scene):
         if st.get('std') is not None and idx != S.get('idx') and not (S['poked'] and mix <= 0.0):
             S['idx'] = idx
             img.par.file = os.path.normpath(os.path.join(BRIDGE, '..', 'stack', S['set'], 'stack_' + str(idx).zfill(4) + '.jpg'))
+    fx_ = op('stack_fx')
+    if fx_ is not None:
+        amt_, bsz_ = 0.0, float(cfg.get('std_mosaic_max', 72.0))
+        if cfg.get('std_mosaic_on', True) and S is not None and S.get('poked') and S.get('poke_at') is not None:
+            ts_ = now - S['poke_at']
+            Tsh_ = max(0.2, float(cfg.get('std_shatter_sec', 1.6)))
+            amt_ = min(1.0, ts_ / 0.12) * mix                                   # 手戳的一瞬间，叠着的脸被蜡笔马赛克盖住
+            q_ = _ease_out(min(1.0, ts_ / Tsh_))
+            bsz_ = float(cfg.get('std_mosaic_max', 72.0)) * (1.0 - q_) + float(cfg.get('std_mosaic_min', 18.0)) * q_      # 块越来越小，散开的脸慢慢看清
+        if abs(amt_ - st.get('fx_amt', -1.0)) > 0.003 or amt_ > 0.0:
+            try:
+                fx_.par.vec0valuex = amt_
+                fx_.par.vec0valuey = bsz_
+                fx_.par.vec0valuez = now %% 1000.0
+                fx_.par.vec0valuew = 0.0
+            except Exception:
+                pass
+            st['fx_amt'] = amt_
+            st['fx_age'] = st.get('fx_age', 0) + 1
+            if st['fx_age'] %% 120 == 1 and not st.get('fx_err'):
+                er_ = str(fx_.errors() or '').strip()
+                if er_:
+                    st['fx_err'] = 1
+                    print('gz_exec 蜡笔马赛克着色器有错，已绕开（叠脸照常）:', er_[:200])
+                    try:
+                        pre.inputConnectors[1].connect(img)
+                    except Exception:
+                        pass
     if abs(mix - st.get('std_set', -1.0)) > 0.002:
         pre.par.cross = mix
         st['std_set'] = mix
@@ -632,7 +663,7 @@ def _update_scene(st):
     st['sc_age'] = st.get('sc_age', 0) + 1
     if st['sc_age'] >= 30:                      # 每约半秒清掉"上次写了什么"的记忆，强制把值重新写给节点（重装脚本会把节点重置，不清的话画面会卡住）
         st['sc_age'] = 0
-        for k_ in ('xf_set', 'xa_set', 'cx_set', 'cm_set', 'std_set', 'mask_set'):
+        for k_ in ('xf_set', 'xa_set', 'cx_set', 'cm_set', 'std_set', 'mask_set', 'gf_set'):
             st.pop(k_, None)
     st['std_age'] = st.get('std_age', 99) + 1
     if st['std_age'] >= 6:                         # 手动触发：test_standard.py 写一个时间进 std_test.json，就立刻开始"标准人脸"流程
@@ -651,8 +682,23 @@ def _update_scene(st):
                 st['scene'] = 'face'
                 st['scene_t'] = time.time()
                 st['std_forced'] = True
+    st['gt_age'] = st.get('gt_age', 99) + 1
+    if st['gt_age'] >= 6:                         # 手动触发：test_giant.py 写一个时间进 giant_test.json，立刻切到"巨大拼脸"场景
+        st['gt_age'] = 0
+        t_new = None
+        try:
+            with open(BRIDGE + '/giant_test.json', encoding='utf-8') as fh:
+                t_new = float(json.load(fh).get('t', 0.0))
+        except Exception:
+            t_new = None
+        if st.get('gt_seen') is None:
+            st['gt_seen'] = t_new if t_new is not None else 0.0
+        elif t_new is not None and t_new > st['gt_seen']:
+            st['gt_seen'] = t_new
+            st['scene'] = 'giant'
+            st['scene_t'] = time.time()
     mode = cfg.get('visual_mode', 'auto')
-    valid = ('crowd', 'mirror', 'attn', 'face')
+    valid = ('crowd', 'mirror', 'attn', 'face', 'giant')
     scenes = [x_ for x_ in (cfg.get('scenes') or ['mirror']) if x_ in valid] or ['mirror']
     now = time.time()
     cur = st.get('scene')
@@ -703,7 +749,7 @@ def _update_scene(st):
     speed = float(cfg.get('xfade_speed', 0.06))
     if 'crowd' not in scenes:
         tx_ = 0.0                                 # 轮换里没有脸群：始终停在镜像，不让脸群在黑白图切换时透出来
-    elif scene in ('crowd', 'mirror', 'face'):
+    elif scene in ('crowd', 'mirror', 'face', 'giant'):
         tx_ = 1.0 if scene == 'crowd' else 0.0
     else:
         tx_ = st.get('xf', 1.0)
@@ -741,6 +787,110 @@ def _update_scene(st):
         cmix.par.cross = cm
         st['cm_set'] = cm
     _update_standard(st, cfg, scene)
+    try:
+        _update_giant(st, cfg, scene)
+    except Exception as e:
+        if not st.get('gf_err2'):
+            st['gf_err2'] = 1
+            print('gz_exec 巨大拼脸出错（只打印一次）:', repr(e))
+
+
+def _gf_rects(st, cfg):
+    """三块箱子（texture 是 castle_pc_top/mid/bot 的形状）各自在"整张大脸"里的范围，归一化（0~1，y 向下）。每 2 秒读一次 Kantan。"""
+    c = st.get('gf_rects')
+    now = time.time()
+    if c is not None and now - c[0] < 2.0:
+        return c[1]
+    Wc, Hc = float(cfg.get('hand_canvas_w', 1920)), float(cfg.get('hand_canvas_h', 1080))
+    raw = {}
+    root = op('kantanMapper/project/allShapes')
+    if root is not None:
+        for ch in root.children:
+            pr = ch.op('parameters')
+            if pr is None or not hasattr(pr.par, 'Texture'):
+                continue
+            v = pr.par.Texture.eval()
+            path = str(getattr(v, 'path', v))
+            for key_ in ('top', 'mid', 'bot'):
+                if path == '/project1/castle_pc_' + key_:
+                    sc = ch.op('script1')
+                    pts = [(q.x, q.y) for q in sc.points] if sc is not None else []
+                    if pts:
+                        raw[key_] = (Wc / 2.0 + min(q[0] for q in pts), Hc / 2.0 - max(q[1] for q in pts), Wc / 2.0 + max(q[0] for q in pts), Hc / 2.0 - min(q[1] for q in pts))
+    out = None
+    if len(raw) == 3:
+        bx0, by0 = min(r[0] for r in raw.values()), min(r[1] for r in raw.values())
+        bx1, by1 = max(r[2] for r in raw.values()), max(r[3] for r in raw.values())
+        bw, bh = max(bx1 - bx0, 1.0), max(by1 - by0, 1.0)
+        out = {k_: ((r[0] - bx0) / bw, (r[1] - by0) / bh, (r[2] - bx0) / bw, (r[3] - by0) / bh) for k_, r in raw.items()}
+    st['gf_rects'] = (now, out)
+    return out
+
+
+def _update_giant(st, cfg, scene):
+    """巨大拼脸：城堡三块箱子合成一张大脸，额头/左眼/右眼/鼻子/嘴/下巴 6 个零件各自来自不同的脸，每隔一两秒各自换一张（跳切）；偶尔六块同时对上同一张脸 1.8 秒，然后又散开。"""
+    pcs = [op('castle_pc_top'), op('castle_pc_mid'), op('castle_pc_bot')]
+    if any(c_ is None for c_ in pcs):
+        return
+    now = time.time()
+    tgt = 1.0 if (scene == 'giant' and cfg.get('giant_on', True) and not st.get('gf_err')) else 0.0
+    mix = st.get('gf_mix', 0.0)
+    mix += (tgt - mix) * 0.06
+    if abs(tgt - mix) < 0.003:
+        mix = tgt
+    st['gf_mix'] = mix
+    if abs(mix - st.get('gf_set', -1.0)) > 0.002:
+        for c_ in pcs:
+            c_.par.cross = mix
+        st['gf_set'] = mix
+    if mix < 0.01:
+        return
+    NF = 13
+    G = st.setdefault('gf', {'idx': [0] * 6, 'next': [0.0] * 6, 'align': None, 'next_align': now + random.uniform(6.0, 10.0), 'set': [-1] * 6})
+    if G['align'] is None and now >= G['next_align']:
+        G['align'] = (now + 1.8, random.randrange(NF))
+        G['next_align'] = now + random.uniform(9.0, 15.0)
+    if G['align'] is not None and now >= G['align'][0]:
+        G['align'] = None
+        for i in range(6):
+            G['next'][i] = now + random.uniform(0.3, 1.2)
+    for i in range(6):
+        if G['align'] is not None:
+            G['idx'][i] = G['align'][1]
+        elif now >= G['next'][i]:
+            G['next'][i] = now + random.uniform(0.7, 2.2)
+            nxt = random.randrange(NF)
+            if nxt == G['idx'][i]:
+                nxt = (nxt + 1) %% NF
+            G['idx'][i] = nxt
+    for i, nm in enumerate('ABCDEF'):
+        sw_ = op('gf_p' + nm)
+        if sw_ is not None and G['set'][i] != G['idx'][i]:
+            sw_.par.index = G['idx'][i]
+            G['set'][i] = G['idx'][i]
+    rects = _gf_rects(st, cfg)
+    on_ = 0.0 if (rects is None or st.get('gf_err')) else 1.0
+    for nm, key in (('gf_top', 'top'), ('gf_mid', 'mid'), ('gf_bot', 'bot')):
+        n_ = op(nm)
+        if n_ is None:
+            continue
+        r_ = rects[key] if rects is not None else (0.0, 0.0, 1.0, 1.0)
+        try:
+            n_.par.vec0valuex, n_.par.vec0valuey, n_.par.vec0valuez, n_.par.vec0valuew = r_
+            n_.par.vec1valuex = 1.0
+            n_.par.vec1valuey = 0.0
+            n_.par.vec1valuez = now %% 1000.0
+            n_.par.vec1valuew = on_
+            st['gf_age'] = st.get('gf_age', 0) + 1
+            if st['gf_age'] %% 90 == 1 and not st.get('gf_err'):
+                er_ = str(n_.errors() or '').strip()
+                if er_:
+                    st['gf_err'] = 1
+                    print('gz_exec 巨大拼脸着色器有错，已关闭（其他照常）:', er_[:200])
+        except Exception:
+            if not st.get('gf_err'):
+                st['gf_err'] = 1
+                print('gz_exec 巨大拼脸参数设置失败，已关闭')
 
 
 def _update_crowd(st):
@@ -1142,7 +1292,7 @@ def _hand_target(cfg):
             if pr is None or not hasattr(pr.par, 'Texture'):
                 continue
             v = pr.par.Texture.eval()
-            if str(getattr(v, 'path', v)) != '/project1/castle_xf':
+            if str(getattr(v, 'path', v)) not in CASTLE_TEX:
                 continue
             sc = c.op('script1')
             if sc is None:
@@ -1270,6 +1420,9 @@ def _puppet_meta():
     return _PUP['meta'], _PUP['rmeta']
 
 
+CASTLE_TEX = ('/project1/castle_xf', '/project1/castle_pc_top', '/project1/castle_pc_mid', '/project1/castle_pc_bot')
+
+
 def _castle_box(cfg):
     """所有城堡方块（纹理是 castle_xf 的形状）在画布上的包围盒 (x0, y0, x1, y1) 像素；找不到就给个默认值。"""
     Wc, Hc = float(cfg.get('hand_canvas_w', 1920)), float(cfg.get('hand_canvas_h', 1080))
@@ -1281,7 +1434,7 @@ def _castle_box(cfg):
             if pr is None or not hasattr(pr.par, 'Texture'):
                 continue
             v = pr.par.Texture.eval()
-            if str(getattr(v, 'path', v)) != '/project1/castle_xf':
+            if str(getattr(v, 'path', v)) not in CASTLE_TEX:
                 continue
             sc = c.op('script1')
             if sc is None:
@@ -1292,6 +1445,51 @@ def _castle_box(cfg):
     if xs:
         return (min(xs), min(ys), max(xs), max(ys))
     return (Wc * 0.2, Hc * 0.1, Wc * 0.8, Hc * 0.95)
+
+
+def _castle_boxes_c(st, cfg):
+    """每个"城堡纹理"形状各自的范围 [(x0, y0, x1, y1), ...]（画布像素，y 向下；面积小于 3000 的忽略），2 秒缓存。天使用它来躲开箱子。"""
+    c = st.get('cbs')
+    now = time.time()
+    if c is not None and now - c[0] < 2.0:
+        return c[1]
+    Wc, Hc = float(_fx_cfg(st).get('hand_canvas_w', 1920)), float(_fx_cfg(st).get('hand_canvas_h', 1080))
+    out = []
+    ign_ = list(_fx_cfg(st).get('clip_ignore', ['Freeform9']))
+    root = op('kantanMapper/project/allShapes')
+    if root is not None:
+        for ch in root.children:
+            pr = ch.op('parameters')
+            if pr is None or not hasattr(pr.par, 'Texture'):
+                continue
+            v = pr.par.Texture.eval()
+            if str(getattr(v, 'path', v)) not in CASTLE_TEX:
+                continue
+            if str(pr.par.Name.eval()) in ign_:                  # 配置里 clip_ignore 列出的形状（看不见的旧形状），天使不用躲
+                continue
+            sc = ch.op('script1')
+            pts = [(q.x, q.y) for q in sc.points] if sc is not None else []
+            if not pts:
+                continue
+            x0, x1 = Wc / 2.0 + min(q[0] for q in pts), Wc / 2.0 + max(q[0] for q in pts)
+            y0, y1 = Hc / 2.0 - max(q[1] for q in pts), Hc / 2.0 - min(q[1] for q in pts)
+            if (x1 - x0) * (y1 - y0) >= 3000.0:
+                out.append((x0, y0, x1, y1))
+    out.sort(key=lambda b: -(b[2] - b[0]) * (b[3] - b[1]))
+    out = out[:8]
+    st['cbs'] = (now, out)
+    return out
+
+
+def _castle_box_c(st, cfg):
+    """_castle_box 的 2 秒缓存版（天使每帧都要用，别每帧去读 Kantan 形状）。"""
+    c = st.get('cb')
+    now = time.time()
+    if c is not None and now - c[0] < 2.0:
+        return c[1]
+    b = _castle_box(cfg)
+    st['cb'] = (now, b)
+    return b
 
 
 def _puppet_geom(cfg, box=None):
@@ -1531,6 +1729,69 @@ def _angel_target(st, cfg, E, t):
     return deg, 0.55 + 0.35 * math.sin(t * 0.7), False
 
 
+def _mask_centers(st, cfg):
+    """两个面具在 1920x1080 叠加层画布上的中心 {'L': (x, y), 'R': (x, y)}（从 Kantan 形状读，每 5 秒更新一次）。"""
+    now = time.time()
+    c = st.get('mk_ctr')
+    if c is not None and now - c[0] < 5.0:
+        return c[1]
+    out = {}
+    Wc, Hc = float(cfg.get('hand_canvas_w', 1920)), float(cfg.get('hand_canvas_h', 1080))
+    Ow, Oh = float(cfg.get('overlay_w', 2016)), float(cfg.get('overlay_h', 1134))
+    try:
+        for ch in op('/project1/kantanMapper/project/allShapes').children:
+            pr = ch.op('parameters')
+            if pr is None or not hasattr(pr.par, 'Texture'):
+                continue
+            v = pr.par.Texture.eval()
+            path = str(getattr(v, 'path', v))
+            if path in ('/project1/mask_L', '/project1/mask_R'):
+                sc = ch.op('script1')
+                pts = [(q.x, q.y) for q in sc.points] if sc is not None else []
+                if pts:
+                    cx = (max(q[0] for q in pts) + min(q[0] for q in pts)) / 2.0
+                    cy = (max(q[1] for q in pts) + min(q[1] for q in pts)) / 2.0
+                    out['L' if path.endswith('mask_L') else 'R'] = ((cx / Ow + 0.5) * Wc, Hc - (cy / Oh + 0.5) * Hc)
+    except Exception:
+        pass
+    st['mk_ctr'] = (now, out)
+    return out
+
+
+def _angel_peek(st, cfg, now, side, al):
+    """天使像木头手一样从画面左/右边缘探头：慢慢伸进来，偶尔害羞缩回去再探头；偏差高的脸换到另一边，就先缩回去、从另一边再出来。"""
+    Wc, Hc = float(cfg.get('hand_canvas_w', 1920)), float(cfg.get('hand_canvas_h', 1080))
+    P = st.setdefault('pk', {'v': 0.0, 'side': side or 'R', 'shy_until': 0.0, 'next': now + random.uniform(12.0, 24.0)})
+    sd = side if side in ('L', 'R') else P['side']
+    if sd != P['side']:
+        tgt = -0.1
+        if P['v'] < 0.03:
+            P['side'] = sd
+    else:
+        tgt = 1.0 + 0.12 * al
+        if now < P['shy_until']:
+            tgt = 0.0
+        elif now >= P['next']:
+            P['shy_until'] = now + random.uniform(1.8, 3.2)
+            P['next'] = now + random.uniform(12.0, 24.0)
+    P['v'] += (tgt - P['v']) * 0.045
+    v = max(0.0, min(1.25, P['v']))
+    xs = Wc * float(cfg.get('angel_peek_x', 0.24))
+    bxs_ = _castle_boxes_c(st, cfg)
+    if bxs_:
+        x0_, x1_ = min(b[0] for b in bxs_), max(b[2] for b in bxs_)
+    else:
+        x0_, y0_, x1_, y1_ = _castle_box_c(st, cfg)
+    free_ = (x0_ - 24.0 - xs) if P['side'] == 'L' else ((Wc - x1_) - 24.0 - xs)
+    w = min(Wc * float(cfg.get('angel_peek_w', 0.75)), 2.0 * max(0.10 * Wc, free_)) * (0.50 + 0.50 * al)   # 眼睛在画面边缘，翅膀一半在画面外；放松（白色）时只有一半大，过度关注（红色）时放大到刚好碰到箱子边
+    x = -0.45 * w + (xs + 0.45 * w) * v
+    if P['side'] == 'R':
+        x = Wc - x
+    P['vv'] = v
+    y = 0.40 * Hc + (1.0 - min(1.0, v)) * 0.24 * Hc + 14.0 * math.sin(now * 0.8)               # 从斜下方往上伸进来
+    return {'x': x, 'y': y, 'w': w, 'kind': 'left' if P['side'] == 'L' else 'right'}
+
+
 def _ang_names(k):
     return ('ang' + str(k + 1) + '_body', 'ang' + str(k + 1) + '_pupil', 'ang' + str(k + 1) + '_fade')
 
@@ -1584,6 +1845,153 @@ def _angel_choose(cfg, exclude=None):
     return pr
 
 
+SAY_INTRO = ['I see everyone equally.', 'I treat everyone the same.', 'I do not see differences.']
+SAY_CALM = ['I judge no one.', 'I am objective.', 'Everyone is equal to me.', 'I am only here to help.']
+SAY_ALERT = ['...Hold on.', 'Let me look closer.', 'Just a routine check.', 'Something does not match.', 'It is nothing personal.']
+SAY_OK = ['Nothing unusual here.', 'Perfectly normal.', 'Move along.']
+
+
+def _say_pick(S, pool):
+    opts = [x for x in pool if x != S.get('full')] or pool
+    return random.choice(opts)
+
+
+def _say_hide():
+    lv = op('say_lv')
+    if lv is not None:
+        try:
+            lv.par.opacity = 0.0
+        except Exception:
+            pass
+
+
+def _say_tick(st, cfg, now, vis, al, ex, ey, Wp, Hp, new_app):
+    """天使的对话框：出场先说"我平等地看每个人"，之后偶尔说一句；看到高偏差的脸会改口。字一个个打出来，停几秒后淡出。"""
+    if not cfg.get('say_on', True):
+        _say_hide()
+        return
+    txt, tf, lv = op('say_txt'), op('say_tf'), op('say_lv')
+    if txt is None or tf is None or lv is None:
+        return
+    Wc, Hc = float(cfg.get('hand_canvas_w', 1920)), float(cfg.get('hand_canvas_h', 1080))
+    S = st.setdefault('say', {'full': '', 't0': -99.0, 'next': 0.0, 'state': 'calm', 'shown': None})
+    hold = float(cfg.get('say_hold', 4.8))
+
+    def new_line(pool, state):
+        S['full'] = _say_pick(S, pool)
+        S['t0'] = now
+        S['state'] = state
+        S['next'] = now + random.uniform(float(cfg.get('say_gap_min', 11.0)), float(cfg.get('say_gap_max', 20.0)))
+        S['shown'] = None
+    if new_app:
+        new_line(SAY_INTRO, 'calm')
+    elif vis > 0.3 and now - S['t0'] > 5.5:
+        if al > 0.7 and S['state'] != 'alert':
+            new_line(SAY_ALERT, 'alert')
+        elif al < 0.3 and S['state'] == 'alert':
+            new_line(SAY_OK, 'calm')
+        elif now >= S['next']:
+            new_line(SAY_ALERT if al > 0.6 else (SAY_OK if al < 0.25 else SAY_CALM), 'alert' if al > 0.6 else 'calm')
+    age = now - S['t0']
+    full = S['full']
+    if not full or age > hold or vis < 0.3:
+        _say_hide()
+        return
+    n_ch = max(1, min(len(full), int(age * 28.0) + 1))
+    cur = full[:n_ch]
+    try:
+        if S.get('shown') != cur:
+            S['shown'] = cur
+            fs_ = 32.0                                           # 字号；每个字大约 0.68 个字号宽（这个字体偏宽），左右各留 30 像素
+            w_ = 0.68 * fs_ * len(full) + 60.0
+            if w_ > 0.60 * Wc:                                   # 太长就缩小字号，保证整句放得下
+                fs_ = fs_ * (0.60 * Wc - 60.0) / (w_ - 60.0)
+                w_ = 0.60 * Wc
+            w_ = max(200.0, w_)
+            txt.par.resolutionw = int(w_)
+            txt.par.resolutionh = 70
+            txt.par.fontsizex = fs_
+            txt.par.text = cur
+            S['w'] = w_
+            red = 1.0 if S['state'] == 'alert' else 0.0
+            txt.par.bgcolorg = 1.0 - 0.22 * red
+            txt.par.bgcolorb = 1.0 - 0.22 * red
+        w_, h_ = float(S.get('w', 400)), 70.0
+        bx = max(w_ / 2.0 + 20.0, min(Wc - w_ / 2.0 - 20.0, ex))
+        by = max(h_ / 2.0 + 20.0, ey - 0.30 * Hp - 50.0)
+        tf.par.sx = w_ / Wc
+        tf.par.sy = h_ / Hc
+        tf.par.tx = (bx - Wc / 2.0) / Wc
+        tf.par.ty = (Hc / 2.0 - by) / Hc
+        fin = min(1.0, age / 0.4)
+        fout = min(1.0, max(0.0, (hold - age) / 0.5))
+        lv.par.opacity = min(fin, fout) * min(1.0, vis)
+    except Exception:
+        if not st.get('say_err'):
+            st['say_err'] = 1
+            print('gz_exec 对话框设置失败（天使照常）')
+
+
+def _update_eye2(st, cfg, now):
+    """两个面具的偏离度都很高时：天使在偏离度更高的那一边，另一边单独出现一只像素大眼睛，红色，盯着那边的面具。"""
+    body, pupil, fade = op('ang2_body'), op('ang2_pupil'), op('ang2_fade')
+    if body is None or pupil is None or fade is None:
+        return
+    Wc, Hc = float(cfg.get('hand_canvas_w', 1920)), float(cfg.get('hand_canvas_h', 1080))
+    dv = st.get('dev_val', {})
+    thr = float(cfg.get('eye2_thr', 0.75))
+    main = (st.get('pk') or {}).get('side')
+    a0 = (st.get('angs') or [{}])[0]
+    on = bool(cfg.get('eye2_on', True) and cfg.get('angel_dev_link', True) and main in ('L', 'R')
+              and a0.get('phase') in ('hold', 'glide') and not st.get('ang_birth_on')
+              and (dv.get('L') or 0.0) >= thr and (dv.get('R') or 0.0) >= thr and (st.get('mask') or {}).get('lv', 0.0) > 0.6)
+    lv = st.get('eye2_lv', 0.0)
+    lv += ((1.0 if on else 0.0) - lv) * 0.06
+    st['eye2_lv'] = lv
+    if lv < 0.01:
+        if st.get('eye2_vis', True):
+            st['eye2_vis'] = False
+            body.par.sx = 0.0001
+            body.par.sy = 0.0001
+            pupil.par.sx = 0.0001
+            pupil.par.sy = 0.0001
+            fade.par.cross = 0.0
+        return
+    st['eye2_vis'] = True
+    other = 'R' if main == 'L' else 'L'
+    Wp = Wc * float(cfg.get('eye2_w', 0.22)) * (0.96 + 0.04 * math.sin(now * 1.1))
+    Hp = Wp * 240.0 / 400.0
+    ex = 0.12 * Wc if other == 'L' else Wc - 0.12 * Wc
+    ey = 0.52 * Hc + 10.0 * math.sin(now * 0.9)
+    body.par.sx = Wp / Wc
+    body.par.sy = Hp / Hc
+    body.par.tx = (ex - Wc / 2.0) / Wc
+    body.par.ty = (Hc / 2.0 - ey) / Hc
+    mc = _mask_centers(st, cfg).get(other) or (Wc / 2.0, Hc / 2.0)
+    dx, dy = mc[0] - ex, mc[1] - ey
+    deg = math.degrees(math.atan2(-dy, dx))
+    frac = min(1.0, (dx * dx + dy * dy) ** 0.5 / (0.35 * Wc))
+    m = _angel_meta()
+    rmax = _angel_range(m, deg) * frac
+    off = st.setdefault('eye2_off', [0.0, 0.0])
+    off[0] += (math.cos(math.radians(deg)) * rmax - off[0]) * 0.18
+    off[1] += (-math.sin(math.radians(deg)) * rmax - off[1]) * 0.18
+    kk = Wp / 400.0
+    pupil.par.sx = float(m['pupil_w']) * kk / Wc
+    pupil.par.sy = float(m['pupil_h']) * kk / Hc
+    pupil.par.tx = (ex + off[0] * kk - Wc / 2.0) / Wc
+    pupil.par.ty = (Hc / 2.0 - (ey + off[1] * kk)) / Hc
+    fade.par.cross = lv * max(0.0, min(1.0, float(cfg.get('angel_max_level', 0.85))))
+    tc = op('ang2_tintc')
+    if tc is not None:
+        try:
+            tc.par.colorr = 1.0
+            tc.par.colorg = 0.28
+            tc.par.colorb = 0.28
+        except Exception:
+            pass
+
+
 def _update_angel(st):
     """多只线框天使：各自淡入 -> 停留（中途可能飞到另一个栖息地）-> 淡出 -> 隔一会儿再出现。
     站在城堡上就放大，站在背景空地里就缩小；瞳孔跟着观众的手转；随音乐放大，重音时"砰"地一下。"""
@@ -1605,6 +2013,7 @@ def _update_angel(st):
         elif t_new is not None and t_new > st['ang_seen']:
             st['ang_seen'] = t_new
             st['ang_force'] = True
+            st['ang_force_until'] = time.time() + 14.0
     # 音乐：GarageBand 进来的音量（snd_in 峰值，每 10 帧更新一次）
     lvl = None
     try:
@@ -1621,12 +2030,46 @@ def _update_angel(st):
     swell = 1.0 + float(cfg.get('angel_music_gain', 0.3)) * min(1.0, L * float(cfg.get('angel_music_sens', 2.5))) + float(cfg.get('angel_punch', 0.12)) * st['ang_punch']
     insts = st.setdefault('angs', [{'phase': 'off', 'next': None, 'off': [0.0, 0.0]} for _ in range(3)])
     n = max(0, min(3, int(cfg.get('angel_count', 3))))
+    link = bool(cfg.get('angel_dev_link', True))
+    want, side = False, None
+    if link:
+        n = min(n, 1)                                            # 联动模式只有一只天使：它是"平等之眼"
+        dv_ = st.get('dev_val', {})
+        shown = (st.get('mask') or {}).get('lv', 0.0) > 0.6
+        cand_ = [(dv_[k_], k_) for k_ in ('L', 'R') if dv_.get(k_) is not None]
+        d_side = 0.0
+        if shown and cand_:
+            cur_ = st.get('ang_side')
+            hi_ = max(cand_)[1]
+            if cur_ not in dv_ or dv_.get(cur_) is None or dv_[hi_] - dv_[cur_] > 0.10:        # 另一边明显更高才换边，避免来回跳
+                cur_ = hi_
+            st['ang_side'] = cur_
+            d_side = dv_.get(cur_) or 0.0
+        poked_now = bool(st.get('std') and st['std'].get('poked'))
+        if cfg.get('angel_always', True):
+            want = shown or poked_now                            # 天使一直在（面具亮着时，或刚被手戳出来的这几秒）
+            if cfg.get('angel_birth', True):
+                want = want and bool(st.get('ang_born', False))
+        else:
+            if shown and d_side >= float(cfg.get('angel_dev_thresh', 0.80)):
+                st['ang_want_t'] = now
+            want = now - st.get('ang_want_t', -99.0) < 3.0
+        if now < st.get('ang_force_until', 0.0):
+            want = True
+            st['ang_side'] = st.get('ang_side') or 'L'
+        side = st.get('ang_side')
+        if cfg.get('angel_mode', 'birth') == 'birth':
+            want = (st.get('ang_born_t') is not None and now - st['ang_born_t'] < 4.0) or (insts[0].get('b0') is not None)
+        al_t = max(0.0, min(1.0, (d_side - 0.45) / 0.35)) if shown else 0.0                       # 过度关注程度 0（放松）~ 1（睁大、变红）
+        st['ang_dev'] = st.get('ang_dev', 0.0) + (al_t - st.get('ang_dev', 0.0)) * 0.05
     on = bool(cfg.get('angel_on', True))
     T_in, T_out, T_glide = 2.2, 2.2, 1.6
     m = _angel_meta()
     Wc, Hc = float(cfg.get('hand_canvas_w', 1920)), float(cfg.get('hand_canvas_h', 1080))
     maxlv = max(0.0, min(1.0, float(cfg.get('angel_max_level', 0.85))))
     force = st.pop('ang_force', False)
+    if insts[0]['phase'] == 'off':
+        _say_hide()
     for k in range(3):
         a = insts[k]
         if (k >= n or not on) and a['phase'] != 'off':
@@ -1638,14 +2081,23 @@ def _update_angel(st):
             continue
         if a['phase'] == 'off':
             if a.get('next') is None:
-                a['next'] = now + random.uniform(0.0, 4.0) + k * 2.5
-            if force or now >= a['next']:
+                a['next'] = now + (0.5 if link else random.uniform(0.0, 4.0) + k * 2.5)
+            if (link and want and now >= a['next']) or (not link and (force or now >= a['next'])):
                 force = False
                 pr = _angel_choose(cfg)
+                if link and side in ('L', 'R'):
+                    pk = _angel_perch(cfg, 'left' if side == 'L' else 'right')
+                    if pk is not None:
+                        pk['kind'] = 'left' if side == 'L' else 'right'
+                        pr = pk
+                a['new_app'] = True
+                a['b0'] = now if (st.get('ang_born_t') is not None and now - st['ang_born_t'] < 4.0 and cfg.get('angel_birth_zoom', True)) else None
+                st['ang_born_t'] = None
                 a.update({'phase': 'in', 't0': now, 'cur': pr, 'hold': random.uniform(float(cfg.get('angel_hold_min', 12.0)), float(cfg.get('angel_hold_max', 28.0)))})
-                a['hop_at'] = now + T_in + a['hold'] * random.uniform(0.25, 0.7) if random.random() < float(cfg.get('angel_hop_prob', 0.7)) else None
+                a['hop_at'] = (now + T_in + a['hold'] * random.uniform(0.25, 0.7) if random.random() < float(cfg.get('angel_hop_prob', 0.7)) else None) if not link else None
                 a['off'] = [0.0, 0.0]
             else:
+                st.pop('pk', None)                                         # 下次出现重新从边缘探进来
                 if a.get('vis', True):
                     _angel_hide_one(k)
                     a['vis'] = False
@@ -1658,13 +2110,26 @@ def _update_angel(st):
                 a['phase'] = 'hold'
         if a['phase'] == 'hold':
             fd = 1.0
-            if a.get('hop_at') is not None and now >= a['hop_at']:
+            if link and (not want or (not cfg.get('angel_always', True) and now - a['t0'] - T_in > float(cfg.get('angel_dev_stay', 14.0)))):     # 脸不再高偏差，或已经盯够久了：离开
+                a['phase'] = 'out'
+                a['o0'] = now
+            elif link and not cfg.get('angel_peek', True) and side in ('L', 'R') and a['cur'].get('kind') != ('left' if side == 'L' else 'right'):
+                pk = _angel_perch(cfg, 'left' if side == 'L' else 'right')
+                if pk is not None:
+                    pk['kind'] = 'left' if side == 'L' else 'right'
+                    a['from'] = dict(a['cur'])
+                    a['to'] = pk
+                    a['g0'] = now
+                    a['phase'] = 'glide'
+            if a['phase'] == 'out':
+                pass
+            elif a.get('hop_at') is not None and now >= a['hop_at']:
                 a['from'] = dict(a['cur'])
                 a['to'] = _angel_choose(cfg, a['cur'].get('kind'))
                 a['g0'] = now
                 a['hop_at'] = None
                 a['phase'] = 'glide'
-            elif now >= a['t0'] + T_in + a['hold']:
+            elif not link and now >= a['t0'] + T_in + a['hold']:
                 a['phase'] = 'out'
                 a['o0'] = now
         if a['phase'] == 'glide':
@@ -1676,14 +2141,14 @@ def _update_angel(st):
                 a['cur'] = dict(to)
                 pos = a['cur']
                 a['phase'] = 'hold'
-            elif now >= a['t0'] + T_in + a['hold'] + T_glide:
+            elif not link and now >= a['t0'] + T_in + a['hold'] + T_glide:
                 a['phase'] = 'out'
                 a['o0'] = now
         if a['phase'] == 'out':
             fd = 1.0 - _ease_io((now - a['o0']) / T_out)
             if now - a['o0'] >= T_out:
                 a['phase'] = 'off'
-                a['next'] = now + random.uniform(float(cfg.get('angel_gap_min', 3.0)), float(cfg.get('angel_gap_max', 25.0)))
+                a['next'] = now + ((2.0 if cfg.get('angel_always', True) else random.uniform(float(cfg.get('angel_dev_gap_min', 25.0)), float(cfg.get('angel_dev_gap_max', 60.0)))) if link else random.uniform(float(cfg.get('angel_gap_min', 3.0)), float(cfg.get('angel_gap_max', 25.0))))
                 _angel_hide_one(k)
                 a['vis'] = False
                 continue
@@ -1691,8 +2156,59 @@ def _update_angel(st):
         body, pupil, fade = op(nb), op(npu), op(nf)
         if body is None or pupil is None or fade is None:
             continue
+        mode_ = cfg.get('angel_mode', 'birth')
+        bmode_ = link and mode_ == 'birth'
+        if link and cfg.get('angel_peek', True) and not bmode_:
+            pos = _angel_peek(st, cfg, now, side, max(0.0, min(1.0, st.get('ang_dev', 0.0))))
+        birth_ = False
+        if link and a.get('b0') is not None:                         # 手戳的一刻：天使从屏幕中间放大，越来越快，直到超出屏幕、消失
+            tb_ = now - a['b0']
+            Tb_ = 1.7
+            if tb_ < Tb_:
+                birth_ = True
+                q_ = (tb_ / Tb_) ** 1.7
+                w0_, wm_ = 0.05 * Wc, 4.6 * Wc
+                pos = {'x': 0.5 * Wc, 'y': 0.45 * Hc, 'w': w0_ * (wm_ / w0_) ** q_, 'kind': 'right'}
+                fd = 1.0 if tb_ < Tb_ - 0.35 else max(0.0, (Tb_ - tb_) / 0.35)
+            elif mode_ == 'persist':                                 # 常驻模式：放大消失之后，天使再从画面边缘探头进来
+                a['b0'] = None
+                a['phase'] = 'in'
+                a['t0'] = now
+                st.pop('pk', None)
+                fd = 0.0
+            else:
+                a['b0'] = None
+                a['phase'] = 'off'
+                a['next'] = now + 0.5
+                _angel_hide_one(k)
+                a['vis'] = False
+                st['ang_birth_on'] = False
+                continue
+        elif a.get('b0') is not None:                                # （常驻模式）诞生：从屏幕中间放大，再缩回到边缘探头的位置
+            tb_ = now - a['b0']
+            T1_, T2_, T3_ = 1.8, 0.4, 1.4
+            if tb_ < T1_ + T2_ + T3_:
+                birth_ = True
+                cxb_, cyb_ = 0.5 * Wc, 0.45 * Hc
+                w0_, wm_ = 0.04 * Wc, 3.4 * Wc
+                if tb_ < T1_:
+                    q_ = _ease_io(tb_ / T1_)
+                    wb_, xb_, yb_ = w0_ * (wm_ / w0_) ** q_, cxb_, cyb_
+                elif tb_ < T1_ + T2_:
+                    wb_, xb_, yb_ = wm_, cxb_, cyb_
+                else:
+                    q_ = _ease_io((tb_ - T1_ - T2_) / T3_)
+                    wb_ = wm_ * (max(pos['w'], 1.0) / wm_) ** q_
+                    xb_, yb_ = cxb_ + (pos['x'] - cxb_) * q_, cyb_ + (pos['y'] - cyb_) * q_
+                pos = {'x': xb_, 'y': yb_, 'w': wb_, 'kind': pos.get('kind')}
+                fd = 1.0
+            else:
+                a['b0'] = None
+        st['ang_birth_on'] = birth_
         t = now - a['t0']
-        Wp = pos['w'] * (1.0 + 0.015 * math.sin(t * 1.3 + k)) * swell                     # 轻轻呼吸 + 随音乐放大
+        dd_ = max(0.0, min(1.0, st.get('ang_dev', 0.0))) if link else 0.0
+        spread = 1.0 if (link and cfg.get('angel_peek', True)) else ((0.78 + 0.55 * dd_) if link else 1.0)     # 探头模式下，大小已经由 _angel_peek 按偏差决定
+        Wp = pos['w'] * (1.0 + 0.015 * math.sin(t * 1.3 + k)) * swell * spread              # 轻轻呼吸 + 随音乐放大
         Hp = Wp * float(m['h']) / float(m['w'])
         kk = Wp / float(m['w'])
         ex, ey = pos['x'], pos['y'] + 4.0 * math.sin(t * 0.9 + k)
@@ -1703,18 +2219,208 @@ def _update_angel(st):
         body.par.tx = (cx - Wc / 2.0) / Wc
         body.par.ty = (Hc / 2.0 - cy) / Hc
         deg, frac, tracking = _angel_target(st, cfg, (ex, ey), t + k * 7.0)
+        if link and side in ('L', 'R'):
+            mc_ = _mask_centers(st, cfg).get(side)
+            if mc_ is not None:
+                dx_, dy_ = mc_[0] - ex, mc_[1] - ey
+                deg = math.degrees(math.atan2(-dy_, dx_))
+                frac = min(1.0, (dx_ * dx_ + dy_ * dy_) ** 0.5 / (0.35 * Wc))
+                tracking = True                                                             # 盯着那张脸
         rmax = _angel_range(m, deg) * max(0.0, min(1.0, frac))
         tx_off, ty_off = math.cos(math.radians(deg)) * rmax, -math.sin(math.radians(deg)) * rmax
         o_ = a['off']
         sm = 0.18 if tracking else 0.04
         o_[0] += (tx_off - o_[0]) * sm
         o_[1] += (ty_off - o_[1]) * sm
-        pupil.par.sx = float(m['pupil_w']) * kk / Wc
-        pupil.par.sy = float(m['pupil_h']) * kk / Hc
+        ps_ = (1.30 - 0.90 * dd_) if link else 1.0                                          # 过度关注：瞳孔收紧；放松时瞳孔大而柔和
+        pupil.par.sx = float(m['pupil_w']) * kk * ps_ / Wc
+        pupil.par.sy = float(m['pupil_h']) * kk * ps_ / Hc
         pupil.par.tx = (ex + o_[0] * kk - Wc / 2.0) / Wc
         pupil.par.ty = (Hc / 2.0 - (ey + o_[1] * kk)) / Hc
         fade.par.cross = fd * maxlv
+        if k == 0:
+            tn_ = op('ang_turn')
+            if tn_ is not None:
+                try:
+                    pk_ = st.get('pk') or {}
+                    th_ = 0.0
+                    if link and cfg.get('angel_turn', True) and cfg.get('angel_peek', True):
+                        th_ = (1.0 - max(0.0, min(1.0, pk_.get('vv', 1.0)))) * 0.80                 # 缩在边缘时微微侧身，伸进来时转到正对观众（角度别太大，否则近的一侧会被透视拉没）
+                    if st.get('ang_birth_on'):
+                        th_ = 0.0
+                    sg_ = 1.0 if pk_.get('side', 'R') == 'R' else -1.0
+                    mg_ = 24.0
+                    tn_.par.vec0valuex = ex
+                    tn_.par.vec0valuey = Hc - ey
+                    tn_.par.vec0valuez = th_
+                    tn_.par.vec0valuew = 1.0 / 2600.0
+                    tn_.par.vec1valuex = sg_
+                    tn_.par.vec1valuey = 1.0 if (cfg.get('angel_clip', True) and not st.get('ang_birth_on')) else 0.0
+                    vv_ = max(0.0, min(1.0, pk_.get('vv', 1.0)))
+                    tn_.par.vec1valuez = 0.0 if st.get('ang_birth_on') else (-1.0 if pk_.get('side', 'R') == 'L' else 1.0) * float(cfg.get('angel_tilt', 0.30)) * (1.0 + 1.2 * (1.0 - vv_))   # 身体歪着，刚伸进来时歪得更厉害，像木头手斜着出现
+                    bl_ = _castle_boxes_c(st, cfg)
+                    for i_ in range(8):
+                        if i_ < len(bl_):
+                            q_ = bl_[i_]
+                            vals_ = (q_[0] - mg_, Hc - q_[3] - mg_, q_[2] + mg_, Hc - q_[1] + mg_)
+                        else:
+                            vals_ = (0.0, 0.0, 0.0, 0.0)
+                        for c_, v_ in zip('xyzw', vals_):
+                            setattr(tn_.par, 'vec' + str(2 + i_) + 'value' + c_, v_)
+                    st['turn_age'] = st.get('turn_age', 0) + 1
+                    if st['turn_age'] %% 90 == 1 and not st.get('turn_err'):
+                        er2_ = str(tn_.errors() or '').strip()
+                        if er2_:
+                            st['turn_err'] = 1
+                            print('gz_exec 天使转动着色器有错，已绕开（天使照常，只是不转、不切）:', er2_[:200])
+                            try:
+                                fade.inputConnectors[1].connect(op('ang1_mul') or op('ang1_ecomp'))
+                            except Exception:
+                                pass
+                except Exception:
+                    if not st.get('turn_err'):
+                        st['turn_err'] = 1
+                        print('gz_exec 天使转动参数设置失败，已绕开')
+            ey_ = op('ang1_eyes')
+            if ey_ is not None:
+                try:
+                    dist_ = frac * 0.35 * Wc
+                    Tx_, Ty_ = ex + math.cos(math.radians(deg)) * dist_, ey - math.sin(math.radians(deg)) * dist_
+                    if link and side in ('L', 'R'):
+                        mc2_ = _mask_centers(st, cfg).get(side)
+                        if mc2_ is not None:
+                            Tx_, Ty_ = mc2_
+                    on_ = 1.0 if (cfg.get('angel_eyes_on', True) and not st.get('eyes_err')) else 0.0
+                    ey_.par.vec0valuex = cx
+                    ey_.par.vec0valuey = Hc - cy
+                    ey_.par.vec0valuez = Wp
+                    ey_.par.vec0valuew = Hp
+                    ey_.par.vec1valuex = Tx_
+                    ey_.par.vec1valuey = Hc - Ty_
+                    ey_.par.vec1valuez = now %% 1000.0
+                    ey_.par.vec1valuew = on_
+                    ey_.par.vec2valuex = dd_ if link else 1.0                    # 睁眼程度：偏差低（白色）时全闭，越红睁开的越多
+                    st['eyes_age'] = st.get('eyes_age', 0) + 1
+                    if st['eyes_age'] %% 90 == 1 and not st.get('eyes_err'):
+                        er_ = str(ey_.errors() or '').strip()
+                        if er_:
+                            st['eyes_err'] = 1
+                            print('gz_exec 翅膀眼睛着色器有错，已自动关闭（天使照常）:', er_[:200])
+                except Exception:
+                    if not st.get('eyes_err'):
+                        st['eyes_err'] = 1
+                        print('gz_exec 翅膀眼睛的参数设置失败，已关闭（天使照常）')
+        if link and k == 0:
+            tc_ = op('ang1_tintc')
+            if tc_ is not None:
+                try:
+                    tc_.par.colorr = 1.0
+                    tc_.par.colorg = 1.0 - 0.72 * dd_
+                    tc_.par.colorb = 1.0 - 0.72 * dd_                                           # 放松时白色，过度关注时变红
+                except Exception:
+                    pass
+            if cfg.get('angel_mode', 'birth') != 'birth':
+                _say_tick(st, cfg, now, 0.0 if birth_ else fd, dd_, ex, ey, Wp, Hp, False if birth_ else a.pop('new_app', False))
         a['vis'] = True
+    try:
+        _update_eye2(st, cfg, now)
+    except Exception:
+        if not st.get('eye2_err'):
+            st['eye2_err'] = 1
+            print('gz_exec 另一边的像素眼睛出错，已跳过')
+
+
+def _update_rift(st, cfg, now):
+    """偏离度超标的面具那一边，画面边缘裂开一道缝，缝里一排眼睛一起盯着那个面具；低于门槛就合上。缝旁边会冒出天使的话。"""
+    node = op('rift_eyes')
+    if node is None:
+        return
+    if not cfg.get('rift_on', True):                             # 裂缝关着：关掉着色器，也不替天使说话
+        if st.get('rift_shown', True):
+            st['rift_shown'] = False
+            try:
+                node.par.vec0valuew = 0.0
+            except Exception:
+                pass
+        return
+    st['rift_shown'] = True
+    Wc, Hc = float(cfg.get('hand_canvas_w', 1920)), float(cfg.get('hand_canvas_h', 1080))
+    dv = st.get('dev_val', {})
+    thr = float(cfg.get('rift_thr', 0.70))
+    shown = (st.get('mask') or {}).get('lv', 0.0) > 0.6
+    R = st.setdefault('rift', {'L': 0.0, 'R': 0.0, 'redL': 0.0, 'redR': 0.0})
+    for sd in ('L', 'R'):
+        v = dv.get(sd)
+        hot = bool(cfg.get('rift_on', True) and shown and v is not None and v >= thr)
+        tgt = 1.0 if hot else 0.0
+        R[sd] += (tgt - R[sd]) * (0.06 if tgt > R[sd] else 0.035)
+        if hot:
+            R['red' + sd] = max(0.0, min(1.0, 0.35 + 0.65 * (v - thr) / max(0.05, 1.0 - thr)))
+    mc = _mask_centers(st, cfg)
+    tl = mc.get('L', (0.35 * Wc, 0.28 * Hc))
+    tr = mc.get('R', (0.65 * Wc, 0.28 * Hc))
+    yl = max(380.0, min(Hc - 380.0, Hc - tl[1]))
+    yr = max(380.0, min(Hc - 380.0, Hc - tr[1]))
+    on_ = 0.0 if st.get('rift_err') else (1.0 if max(R['L'], R['R']) > 0.01 else 0.0)
+    try:
+        node.par.vec0valuex = R['L']
+        node.par.vec0valuey = R['R']
+        node.par.vec0valuez = now %% 1000.0
+        node.par.vec0valuew = on_
+        node.par.vec1valuex = tl[0]
+        node.par.vec1valuey = Hc - tl[1]
+        node.par.vec1valuez = tr[0]
+        node.par.vec1valuew = Hc - tr[1]
+        node.par.vec2valuex = R['redL']
+        node.par.vec2valuey = R['redR']
+        node.par.vec2valuez = yl
+        node.par.vec2valuew = yr
+        st['rift_age'] = st.get('rift_age', 0) + 1
+        if st['rift_age'] %% 90 == 1 and not st.get('rift_err'):
+            er_ = str(node.errors() or '').strip()
+            if er_:
+                st['rift_err'] = 1
+                print('gz_exec 裂缝着色器有错，已关闭（其他照常）:', er_[:200])
+    except Exception:
+        if not st.get('rift_err'):
+            st['rift_err'] = 1
+            print('gz_exec 裂缝参数设置失败，已关闭')
+    mx = max(R['L'], R['R'])
+    act = mx > 0.15
+    new_ = act and not st.get('rift_active', False)
+    st['rift_active'] = act
+    sd_ = 'L' if R['L'] >= R['R'] else 'R'
+    _say_tick(st, cfg, now, mx, max(R['redL'] if R['L'] > 0.1 else 0.0, R['redR'] if R['R'] > 0.1 else 0.0), 150.0 if sd_ == 'L' else Wc - 150.0, (Hc - yl) if sd_ == 'L' else (Hc - yr), 0.0, 1.03 * Hc, new_)
+
+
+def _dev_set(st, side, val):
+    """把偏离度数字写到 dev_txt_L / dev_txt_R（Text TOP），颜色从薄荷绿（近）渐变到红（远）。"""
+    node = op('dev_txt_' + side)
+    if node is None or val is None:
+        return
+    key = 'dev_txt_' + side
+    txt = 'DEVIATION' + chr(10) + str(round(val, 2)).ljust(4, '0')
+    if st.get(key) == txt:
+        return
+    st[key] = txt
+    t = max(0.0, min(1.0, val))
+    tf_ = op('dev_tf_' + side)
+    if tf_ is not None:
+        try:
+            sc_ = 1.0 + 0.8 * max(0.0, min(1.0, (val - 0.3) / 0.6))      # 偏离度 0.3 以下原大小，0.9 以上放大到 1.8 倍
+            tf_.par.sx = sc_
+            tf_.par.sy = sc_
+        except Exception:
+            pass
+    try:
+        node.par.text = txt
+        node.par.fontcolorr = 0.55 + 0.45 * t
+        node.par.fontcolorg = 1.0 - 0.65 * t
+        node.par.fontcolorb = 0.8 - 0.4 * t
+    except Exception:
+        if not st.get('dev_err'):
+            st['dev_err'] = 1
+            print('gz_exec 偏离度文字设置失败，请运行 text_probe.py 看 Text TOP 的参数名')
 
 
 def _update_masks(st):
@@ -1743,6 +2449,27 @@ def _update_masks(st):
             st['mk_seen'] = t_new
             if M['phase'] == 'off':
                 M['next'] = now
+    if st['mk_age'] == 0:                                        # 读 gaze_bridge 写的"此刻这张脸的偏离度"，和 12 张爆开脸的偏离度表
+        try:
+            with open(BRIDGE + '/deviation.json', encoding='utf-8') as fh_:
+                st['dev_live'] = float(json.load(fh_).get('live'))
+        except Exception:
+            pass
+        if st.get('dev_burst') is None:
+            try:
+                with open(os.path.join(BRIDGE, '..', 'burst', 'burst_dev.json'), encoding='utf-8') as fh_:
+                    st['dev_burst'] = json.load(fh_)
+            except Exception:
+                st['dev_burst'] = {}
+        if cfg.get('dev_on', True):
+            for sd_ in ('L', 'R'):
+                kd_ = M.get('devsrc', {}).get(sd_)
+                if kd_ is None or kd_ == 'live':
+                    dv_ = st.get('dev_live')
+                else:
+                    dv_ = st.get('dev_burst', {}).get(str(kd_))
+                st.setdefault('dev_val', {})[sd_] = dv_
+                _dev_set(st, sd_, dv_)
     if not ok:
         if M['phase'] in ('in', 'hold'):
             M['phase'] = 'out'
@@ -1760,16 +2487,21 @@ def _update_masks(st):
     if M['phase'] in ('in', 'hold') and now >= M.get('swap', 0.0):     # 面具亮着的时候，每隔几秒左右两张脸各自换一张
         M['swap'] = now + random.uniform(float(cfg.get('mask_swap_min', 7.0)), float(cfg.get('mask_swap_max', 14.0)))
         try:
-            for node, rn in ((L, 'mask_rand_tf_L'), (R, 'mask_rand_tf')):
+            M['devsrc'] = {}
+            for node, rn, sd_ in ((L, 'mask_rand_tf_L', 'L'), (R, 'mask_rand_tf', 'R')):
                 src = op('mask_live_tf')
+                M['devsrc'][sd_] = 'live'
                 if random.random() < 0.55:                       # 一半多的机会换成随机的一张脸，其余用此刻画的脸
                     rnd = op(rn)
-                    bi = op('burst_img' + str(random.randint(0, 11)))
+                    kk_ = random.randint(0, 11)
+                    bi = op('burst_img' + str(kk_))
                     if rnd is not None and bi is not None:
                         op(rn + '_in').inputConnectors[1].connect(bi)
                         src = rnd
+                        M['devsrc'][sd_] = kk_
                 if src is not None:
                     node.inputConnectors[1].connect(src)
+            st['mk_age'] = 5                                     # 马上刷新数字
         except Exception:
             pass
     if M['phase'] == 'in':
@@ -1794,6 +2526,13 @@ def _update_masks(st):
         L.par.cross = lv
         R.par.cross = lv
         T.par.cross = lv                       # 三角形：0 = 正常的城堡纹理，1 = 透明（关掉）
+        for nm_ in ('dev_L', 'dev_R'):
+            d_ = op(nm_)
+            if d_ is not None:
+                try:
+                    d_.par.opacity = lv
+                except Exception:
+                    pass
         st['mask_set'] = lv
     hide = lv >= 0.98                                          # 面具完全亮起时，两个小三角形的 Kantan 形状直接关掉显示，彻底不会盖住脸
     if hide != st.get('tri_hid', False):
@@ -1883,6 +2622,12 @@ def onFrameEnd(frame):
         if not st.get('angel_err'):
             st['angel_err'] = 1
             print('gz_exec 天使出错（只打印一次）:', repr(e))
+    try:
+        _update_rift(st, _fx_cfg(st), time.time())
+    except Exception as e:
+        if not st.get('rift_err2'):
+            st['rift_err2'] = 1
+            print('gz_exec 裂缝出错（只打印一次）:', repr(e))
     try:
         _update_puppet(st)
     except Exception as e:
@@ -2238,6 +2983,7 @@ print('木偶戏就绪：scene_out = 木头手 + 木偶戏（Kantan 里手的形
 
 # --- 大眼睛天使：翅膀(带眼白的底图) + 瞳孔(单独一张，会动) -> 淡入淡出 -> 叠在 scene_out 之上，合成 scene_all ---
 angel_body_img = _mk_img('angel_body_img', ('angel', 'wings_pixel_base.png'), 1600, -1800)
+angel_eye_img = _mk_img('angel_eye_img', ('angel', 'eye_only.png'), 1600, -2000)          # 只有中间那只大眼睛（给"另一边的单个像素眼睛"用）
 angel_pupil_img = _mk_img('angel_pupil_img', ('angel', 'pupil_pixel.png'), 1600, -1950)
 blank_img = _mk_img('blank_img', ('angel', 'blank.png'), 1600, -2100)
 for _old in ('angel_body_tf', 'angel_pupil_tf', 'angel_comp', 'angel_fade'):          # 旧的单只天使节点，清掉
@@ -2299,19 +3045,87 @@ print('爆开的大脸就绪：burst_over = 手/木偶 + 爆开的脸')
 _prev_a = burst_over
 for _k in range(3):
     _nb, _np, _nf = 'ang' + str(_k + 1) + '_body', 'ang' + str(_k + 1) + '_pupil', 'ang' + str(_k + 1) + '_fade'
-    _bt = _mk_tf(_nb, angel_body_img, 1750, -1800 - 300 * _k)
+    _bt = _mk_tf(_nb, angel_eye_img if _k == 1 else angel_body_img, 1750, -1800 - 300 * _k)
     _pt = _mk_tf(_np, angel_pupil_img, 1750, -1950 - 300 * _k)
     _cp = p.op('ang' + str(_k + 1) + '_comp') or p.create(overTOP, 'ang' + str(_k + 1) + '_comp')
     _cp.inputConnectors[0].connect(_pt)
     _cp.inputConnectors[1].connect(_bt)
     _fd = p.op(_nf) or p.create(crossTOP, _nf)
     _fd.inputConnectors[0].connect(blank_img)
-    _fd.inputConnectors[1].connect(_cp)
+    _cpE = _cp
+    if _k == 0:
+        try:                                                          # 翅膀上的小眼睛：GLSL 画 22 只会各自转动、会眨眼的眼睛，叠在天使上
+            _ey = p.op('ang1_eyes') or p.create(glslTOP, 'ang1_eyes')
+            _ey.par.outputresolution = 'custom'
+            _ey.par.resolutionw = 1920
+            _ey.par.resolutionh = 1080
+            try:
+                _ey.seq.vec.numBlocks = 3
+            except Exception as e_:
+                print('ang1_eyes 的 vec 序列设置失败:', repr(e_)[:60])
+            _ey.par.vec0name = 'uA'
+            _ey.par.vec1name = 'uB'
+            _ey.par.vec2name = 'uC'
+            _epx = p.op('ang1_eyes_pixel')
+            if _epx is not None:
+                with open(_os.path.normpath(_os.path.join(BRIDGE, '..', '..', 'code', 'angel_eyes_shader.glsl')), encoding='utf-8') as _fh:
+                    _epx.text = _fh.read()
+            _ec = p.op('ang1_ecomp') or p.create(overTOP, 'ang1_ecomp')
+            _ec.inputConnectors[0].connect(_ey)
+            _ec.inputConnectors[1].connect(_cp)
+            _ey.nodeX, _ey.nodeY = 1750, -1700
+            _ec.nodeX, _ec.nodeY = 1900, -1700
+            _cpE = _ec
+            print('翅膀眼睛就绪（angel_eyes_shader.glsl）；着色器有错时程序会自动关掉这一层')
+        except Exception as e_:
+            print('翅膀眼睛没建成（天使照常）:', repr(e_)[:100])
+    _src = _cpE
+    try:                                                              # 着色：线框天使 × 一个纯色（平时白色，过度关注时变红）
+        _tc = p.op('ang' + str(_k + 1) + '_tintc') or p.create(constantTOP, 'ang' + str(_k + 1) + '_tintc')
+        for _kk, _vv in (('colorr', 1.0), ('colorg', 1.0), ('colorb', 1.0), ('alpha', 1.0), ('outputresolution', 'custom'), ('resolutionw', 1920), ('resolutionh', 1080)):
+            setattr(_tc.par, _kk, _vv)
+        _mu = p.op('ang' + str(_k + 1) + '_mul') or p.create(multiplyTOP, 'ang' + str(_k + 1) + '_mul')
+        _mu.inputConnectors[0].connect(_cpE)
+        _mu.inputConnectors[1].connect(_tc)
+        _tc.nodeX, _tc.nodeY = 1900, -1700 - 300 * _k
+        _mu.nodeX, _mu.nodeY = 2000, -1800 - 300 * _k
+        _src = _mu
+    except Exception as e_:
+        print('天使着色节点没建成（天使照常，只是不会变红）:', repr(e_)[:80])
+    if _k == 0:
+        try:                                                          # 天使"转过来" + 切掉箱子范围（GLSL，angel_turn_shader.glsl）
+            _tn = p.op('ang_turn') or p.create(glslTOP, 'ang_turn')
+            _tn.inputConnectors[0].connect(_src)
+            _tn.par.outputresolution = 'custom'
+            _tn.par.resolutionw = 1920
+            _tn.par.resolutionh = 1080
+            try:
+                _tn.par.inputextenduv = 'zero'
+            except Exception:
+                pass
+            try:
+                _tn.seq.vec.numBlocks = 10
+            except Exception as e_:
+                print('ang_turn 的 vec 序列设置失败:', repr(e_)[:60])
+            _tn.par.vec0name = 'uT'
+            _tn.par.vec1name = 'uM'
+            for _i in range(8):
+                setattr(_tn.par, 'vec' + str(2 + _i) + 'name', 'uB' + str(_i))
+            _tpx = p.op('ang_turn_pixel')
+            if _tpx is not None:
+                with open(_os.path.normpath(_os.path.join(BRIDGE, '..', '..', 'code', 'angel_turn_shader.glsl')), encoding='utf-8') as _fh:
+                    _tpx.text = _fh.read()
+            _tn.nodeX, _tn.nodeY = 2100, -1750
+            _src = _tn
+            print('天使转动就绪（angel_turn_shader.glsl）；着色器有错时程序会自动绕开')
+        except Exception as e_:
+            print('天使转动没建成（天使照常）:', repr(e_)[:100])
+    _fd.inputConnectors[1].connect(_src)
     try:
         _fd.par.cross = 0.0
     except Exception as e:
         print(_nf, '的 cross 设置失败:', e)
-    _nm = 'scene_all' if _k == 2 else 'ang_chain' + str(_k + 1)
+    _nm = 'ang_chain' + str(_k + 1)
     _ch = p.op(_nm) or p.create(overTOP, _nm)
     _ch.inputConnectors[0].connect(_fd)
     _ch.inputConnectors[1].connect(_prev_a)
@@ -2319,7 +3133,51 @@ for _k in range(3):
     _fd.nodeX, _fd.nodeY = 2050, -1850 - 300 * _k
     _ch.nodeX, _ch.nodeY = 2200, -1850 - 300 * _k
     _prev_a = _ch
-scene_all = _prev_a
+try:                                                              # 裂缝里的一堆眼睛：GLSL（rift_shader.glsl），偏离度超标时在画面左右边缘裂开
+    rift = p.op('rift_eyes') or p.create(glslTOP, 'rift_eyes')
+    rift.par.outputresolution = 'custom'
+    rift.par.resolutionw = 1920
+    rift.par.resolutionh = 1080
+    try:
+        rift.seq.vec.numBlocks = 3
+    except Exception as e_:
+        print('rift_eyes 的 vec 序列设置失败:', repr(e_)[:60])
+    rift.par.vec0name = 'uA'
+    rift.par.vec1name = 'uB'
+    rift.par.vec2name = 'uC'
+    _rpx = p.op('rift_eyes_pixel')
+    if _rpx is not None:
+        with open(_os.path.normpath(_os.path.join(BRIDGE, '..', '..', 'code', 'rift_shader.glsl')), encoding='utf-8') as _fh:
+            _rpx.text = _fh.read()
+    _ro = p.op('rift_over') or p.create(overTOP, 'rift_over')
+    _ro.inputConnectors[0].connect(rift)
+    _ro.inputConnectors[1].connect(_prev_a)
+    rift.nodeX, rift.nodeY = 2250, -2650
+    _ro.nodeX, _ro.nodeY = 2400, -2650
+    _prev_a = _ro
+    print('裂缝眼睛就绪（rift_shader.glsl）；着色器有错时程序会自动关掉')
+except Exception as e_:
+    print('裂缝眼睛没建成（其他照常）:', repr(e_)[:100])
+say_txt = p.op('say_txt') or p.create(textTOP, 'say_txt')                   # 天使的对话框：白底黑字的文字条，宽度随句子长短变
+for _kk, _vv in (('outputresolution', 'custom'), ('resolutionw', 600), ('resolutionh', 96), ('text', ''), ('fontsizex', 46), ('alignx', 'center'), ('aligny', 'center'),
+                 ('fontcolorr', 0.0), ('fontcolorg', 0.0), ('fontcolorb', 0.0), ('fontalpha', 1.0), ('bgcolorr', 1.0), ('bgcolorg', 1.0), ('bgcolorb', 1.0), ('bgalpha', 1.0)):
+    try:
+        setattr(say_txt.par, _kk, _vv)
+    except Exception as e_:
+        print('say_txt', _kk, '设置失败:', repr(e_)[:60])
+say_tf = _mk_tf('say_tf', say_txt, 2050, -2800)
+say_lv = p.op('say_lv') or p.create(levelTOP, 'say_lv')
+say_lv.inputConnectors[0].connect(say_tf)
+try:
+    say_lv.par.opacity = 0.0
+except Exception as e_:
+    print('say_lv opacity 设置失败:', repr(e_)[:60])
+say_txt.nodeX, say_txt.nodeY = 1900, -2800
+say_lv.nodeX, say_lv.nodeY = 2200, -2800
+scene_all = p.op('scene_all') or p.create(overTOP, 'scene_all')
+scene_all.inputConnectors[0].connect(say_lv)
+scene_all.inputConnectors[1].connect(_prev_a)
+scene_all.nodeX, scene_all.nodeY = 2400, -2800
 hand_fit.inputConnectors[0].connect(scene_all)             # 整屏预览也叠上天使
 print('三只天使就绪：scene_all = 木头手 + 木偶戏 + 天使（Kantan 里手/天使的形状请用 scene_all 当纹理）')
 win = p.op('gz_win')
@@ -2454,7 +3312,22 @@ stack_img.par.file = _os2.path.normpath(_os2.path.join(BRIDGE, '..', 'stack', 'A
 stack_img.nodeX, stack_img.nodeY = 750, -1400
 castle_pre = p.op('castle_pre') or p.create(crossTOP, 'castle_pre')        # 万花筒 <-> 叠加中的脸
 castle_pre.inputConnectors[0].connect(castle_mix)
-castle_pre.inputConnectors[1].connect(stack_img)
+try:                                                              # 蜡笔马赛克：手戳后叠着的脸被盖住，块越来越小（GLSL，crayon_mosaic_shader.glsl）
+    stack_fx = p.op('stack_fx') or p.create(glslTOP, 'stack_fx')
+    stack_fx.inputConnectors[0].connect(stack_img)
+    stack_fx.par.vec0name = 'uM'
+    stack_fx.par.vec0valuex = 0.0
+    stack_fx.par.vec0valuey = 72.0
+    _spx = p.op('stack_fx_pixel')
+    if _spx is not None:
+        with open(_os.path.normpath(_os.path.join(BRIDGE, '..', '..', 'code', 'crayon_mosaic_shader.glsl')), encoding='utf-8') as _fh:
+            _spx.text = _fh.read()
+    stack_fx.nodeX, stack_fx.nodeY = 800, -1450
+    castle_pre.inputConnectors[1].connect(stack_fx)
+    print('蜡笔马赛克就绪（crayon_mosaic_shader.glsl）；着色器有错时程序会自动绕开')
+except Exception as e_:
+    castle_pre.inputConnectors[1].connect(stack_img)
+    print('蜡笔马赛克没建成（叠脸照常）:', repr(e_)[:100])
 try:
     castle_pre.par.cross = 0.0
 except Exception as e:
@@ -2468,6 +3341,50 @@ try:
 except Exception as e:
     print('castle_xf 的 cross 设置失败:', e)
 castle_xf.nodeX, castle_xf.nodeY = 950, -1250
+# --- 巨大拼脸：6 个"零件"（额头A/左眼B/右眼C/鼻子D/嘴E/下巴F），每个从 12 张爆开脸 + 此刻的脸里挑一张（Switch）；
+#     三块箱子各用一个 GLSL 把它们按大脸的位置拼好 -> 再和万花筒(castle_xf)混合，成为三块箱子各自的纹理 castle_pc_top/mid/bot ---
+try:
+    _gf_srcs = [p.op('burst_img' + str(_i)) for _i in range(12)] + [sw]
+    _gf_srcs = [x_ for x_ in _gf_srcs if x_ is not None]
+    for _j, _nm in enumerate('ABCDEF'):
+        _s6 = p.op('gf_p' + _nm) or p.create(switchTOP, 'gf_p' + _nm)
+        for _i2, _src2 in enumerate(_gf_srcs):
+            _s6.inputConnectors[_i2].connect(_src2)
+        try:
+            _s6.par.index = _j
+        except Exception:
+            pass
+        _s6.nodeX, _s6.nodeY = 1000 + 150 * _j, -3500
+    _gpx = _os.path.normpath(_os.path.join(BRIDGE, '..', '..', 'code', 'giant_face_shader.glsl'))
+    for _k3, (_nm3, _key3) in enumerate((('gf_top', 'top'), ('gf_mid', 'mid'), ('gf_bot', 'bot'))):
+        _g = p.op(_nm3) or p.create(glslTOP, _nm3)
+        _g.par.outputresolution = 'custom'
+        _g.par.resolutionw = 1024
+        _g.par.resolutionh = 1024
+        try:
+            _g.seq.vec.numBlocks = 2
+        except Exception as e_:
+            print(_nm3, '的 vec 序列设置失败:', repr(e_)[:60])
+        _g.par.vec0name = 'uP'
+        _g.par.vec1name = 'uQ'
+        _px3 = p.op(_nm3 + '_pixel')
+        if _px3 is not None:
+            with open(_gpx, encoding='utf-8') as _fh:
+                _px3.text = _fh.read()
+        for _j2, _nm2 in enumerate('ABCDEF'):
+            _g.inputConnectors[_j2].connect(p.op('gf_p' + _nm2))
+        _c = p.op('castle_pc_' + _key3) or p.create(crossTOP, 'castle_pc_' + _key3)
+        _c.inputConnectors[0].connect(castle_xf)
+        _c.inputConnectors[1].connect(_g)
+        try:
+            _c.par.cross = 0.0
+        except Exception:
+            pass
+        _g.nodeX, _g.nodeY = 1000 + 300 * _k3, -3700
+        _c.nodeX, _c.nodeY = 1000 + 300 * _k3, -3850
+    print('巨大拼脸就绪：castle_pc_top / castle_pc_mid / castle_pc_bot（在 Kantan 里用 assign_giant.py 指给三块箱子）')
+except Exception as e_:
+    print('巨大拼脸没建成（其他照常）:', repr(e_)[:120])
 # --- 面具：左 = 标准脸，右 = 此刻的脸（裁成椭圆）；三角形用 castle_tri（可淡出的城堡纹理）---
 import os as _os4
 _asm = lambda *r: _os4.path.normpath(_os4.path.join(BRIDGE, '..', '..', 'assets', 'masks', *r))
@@ -2502,6 +3419,32 @@ mask_L.inputConnectors[1].connect(mask_live_tf)
 mask_R = p.op('mask_R') or p.create(crossTOP, 'mask_R')
 mask_R.inputConnectors[0].connect(blank_sq)
 mask_R.inputConnectors[1].connect(mask_live_tf)
+_dev_w, _dev_h = 640, 280
+try:                                                    # dev_fit.py 量过你的长方形比例后，画布大小存在 dev_res.json 里，重装也沿用
+    _dr = json.load(open(_os.path.join(BRIDGE, 'dev_res.json'), encoding='utf-8'))
+    _dev_w, _dev_h = int(_dr['w']), int(_dr['h'])
+except Exception:
+    pass
+for _s in ('L', 'R'):                                  # 偏离度数字：Text TOP -> Level（不透明度随面具淡入淡出），给 Kantan 里的小长方形当纹理
+    _t = p.op('dev_txt_' + _s) or p.create(textTOP, 'dev_txt_' + _s)
+    _v = p.op('dev_' + _s) or p.create(levelTOP, 'dev_' + _s)
+    _tf = p.op('dev_tf_' + _s) or p.create(transformTOP, 'dev_tf_' + _s)          # 数字越大，整块文字放得越大
+    _tf.inputConnectors[0].connect(_t)
+    try:
+        _tf.par.extend = 'zero'
+    except Exception as e:
+        print('dev_tf_' + _s, 'extend 设置失败:', repr(e)[:60])
+    _v.inputConnectors[0].connect(_tf)
+    for k_, v_ in (('outputresolution', 'custom'), ('resolutionw', _dev_w), ('resolutionh', _dev_h), ('text', 'DEVIATION' + chr(10) + '0.00'), ('fontsizex', 54), ('alignx', 'center'), ('aligny', 'center'),
+                   ('fontcolorr', 0.55), ('fontcolorg', 1.0), ('fontcolorb', 0.8), ('bgcolorr', 0.0), ('bgcolorg', 0.0), ('bgcolorb', 0.0), ('bgalpha', 0.0)):
+        try:
+            setattr(_t.par, k_, v_)
+        except Exception as e:
+            print('dev_txt_' + _s, k_, '设置失败（不影响，运行 text_probe.py 告诉我）:', repr(e)[:60])
+    try:
+        _v.par.opacity = 0.0
+    except Exception as e:
+        print('dev_' + _s, 'opacity 设置失败:', repr(e)[:60])
 castle_tri = p.op('castle_tri') or p.create(crossTOP, 'castle_tri')
 castle_tri.inputConnectors[0].connect(castle_xf)
 castle_tri.inputConnectors[1].connect(blank_sq)
@@ -2510,6 +3453,7 @@ for _n in (mask_L, mask_R, castle_tri):
         _n.par.cross = 0.0
     except Exception as e:
         print(_n.name, '的 cross 设置失败:', e)
+print('偏离度数字就绪：dev_L / dev_R（在 Kantan 里画两个小长方形，用 assign_dev.py 指给它们）')
 print('面具就绪：mask_L、mask_R(两个都放随机的脸)、castle_tri(可淡出的三角形纹理)')
 print('castle_xf 就绪：纸箱/城堡用的方形画面（脸 <-> 黑白注意力图，随场景切换）')
 _xf.nodeX, _xf.nodeY = 700, -1100

@@ -8,14 +8,14 @@ p = op('/project1')
 OURS = [
     ('输入与目光', (0.35, 0.50, 0.80), ['gz_out', 'gz_heat', 'gz_ai', 'gz_attn', 'gz_kb', 'gz_exec', 'clap_in']),
     ('画面与场景', (0.30, 0.65, 0.55), ['gz_switch', 'gz_tile', 'gz_fit', 'gz_mode', 'gz_xfade', 'gz_xfade2', 'gz_over', 'gz_final', 'gz_win', 'crowd_bg', 'crowd_comp'] + ['cf' + str(i) for i in range(20)]),
-    ('城堡纹理', (0.85, 0.65, 0.30), ['castle_tile', 'castle_mix', 'castle_pre', 'castle_xf', 'stack_img']),
+    ('城堡纹理', (0.85, 0.65, 0.30), ['castle_pc_top', 'castle_pc_mid', 'castle_pc_bot', 'gf_pA', 'gf_pB', 'gf_pC', 'gf_pD', 'gf_pE', 'gf_pF', 'gf_top', 'gf_mid', 'gf_bot', 'stack_fx', 'castle_tile', 'castle_mix', 'castle_pre', 'castle_xf', 'stack_img']),
     ('海洋球', (0.90, 0.50, 0.60), ['ball_img', 'ball_fit', 'ball_tf', 'castle_ball_img', 'castle_ball_fit', 'castle_ball_tf']),
     ('投影映射', (0.60, 0.40, 0.80), ['kantanMapper', 'map_sel', 'poke_fx', 'poke_fx_pixel', 'map_fit']),
     ('木头手', (0.75, 0.55, 0.30), ['hand_img', 'hand_out', 'hand_fit']),
     ('木偶', (0.55, 0.70, 0.35), ['puppet_img', 'puppet_tf', 'hand_img_r', 'pL_tf', 'pR_tf', 'string_img', 'pstr1', 'pstr2', 'pstr3', 'pstr4', 'pc1', 'pc2', 'pc3', 'pc4', 'pc5', 'pc6', 'scene_out']),
     ('爆开的脸', (0.85, 0.40, 0.40), ['blank_small'] + [pre + str(i) for i in range(12) for pre in ('burst_img', 'burst_tf', 'burst_ov')] + ['burst_fade', 'burst_fit', 'burst_over']),
-    ('天使', (0.85, 0.85, 0.90), ['angel_body_img', 'angel_pupil_img', 'blank_img', 'ang1_body', 'ang1_pupil', 'ang1_comp', 'ang1_fade', 'ang_chain1', 'ang2_body', 'ang2_pupil', 'ang2_comp', 'ang2_fade', 'ang_chain2', 'ang3_body', 'ang3_pupil', 'ang3_comp', 'ang3_fade', 'scene_all']),
-    ('面具', (0.90, 0.80, 0.95), ['blank_sq', 'mask_std_img', 'mask_oval_img', 'mask_live_tf_in', 'mask_live_tf', 'mask_rand_tf_in', 'mask_rand_tf', 'mask_rand_tf_L_in', 'mask_rand_tf_L', 'mask_L', 'mask_R', 'castle_tri']),
+    ('天使', (0.85, 0.85, 0.90), ['angel_body_img', 'angel_eye_img', 'angel_pupil_img', 'blank_img', 'ang1_body', 'ang1_pupil', 'ang1_comp', 'rift_eyes', 'rift_over', 'ang1_eyes', 'ang1_ecomp', 'ang_turn', 'ang1_tintc', 'ang1_mul', 'say_txt', 'say_tf', 'say_lv', 'ang1_fade', 'ang_chain1', 'ang2_body', 'ang2_pupil', 'ang2_tintc', 'ang2_mul', 'ang2_comp', 'ang2_fade', 'ang_chain2', 'ang3_body', 'ang3_pupil', 'ang3_comp', 'ang3_fade', 'scene_all']),
+    ('面具', (0.90, 0.80, 0.95), ['blank_sq', 'mask_std_img', 'mask_oval_img', 'mask_live_tf_in', 'mask_live_tf', 'mask_rand_tf_in', 'mask_rand_tf', 'mask_rand_tf_L_in', 'mask_rand_tf_L', 'mask_L', 'mask_R', 'castle_tri', 'dev_txt_L', 'dev_txt_R', 'dev_L', 'dev_R']),
     ('声音', (0.45, 0.45, 0.45), ['midiin1', 'air_note', 'air_out', 'snd_in', 'snd_gain', 'snd_clip', 'snd_vol', 'snd_out']),
 ]
 DX, DY = 260, 130        # 列间距、行间距
