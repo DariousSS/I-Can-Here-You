@@ -1,0 +1,32 @@
+# 短版（约 17 句，一轮 1 分半左右）。完整长版在 subtitles_v6_long.txt。引擎按顺序走，遇到 CALM/INVADE 切换时自己让房间平静或入侵。
+# VOICE: MAIN=童声主角(白色大字) ADULT=灰色小字不出声 PHONE=淡青色只有一半 CHORUS=暖色，好几个声音叠在一起 BOTH=结尾大白字；SFX=只放音效(shutter=拍照声)
+# 句子末尾写 {shutter} 或 {shutter3}：这句出现的同时在背景放拍照声（1 声 / 3 声）
+# TYPE : A=确定听到的原话(逐字不改)  B=只记得大意  C=想象/合成
+
+# ---- 第一段：平静，讲清前情 ----
+CALM   | ADULT  | C | We need to rent out a room.                              # 我们得把一个房间租出去
+CALM   | MAIN   | C | Someone is moving in!                                    # 有人要搬进来了！
+CALM   | MAIN   | A | Why did she just drag her large suitcase up the stairs?  # 原话
+CALM   | MAIN   | A | She has gone out!                                        # 原话
+CALM   | SFX    | - | shutter                                                  # 拍照声
+CALM   | PHONE  | C | …you won't believe it, there's a girl upstairs…          # ……你不会相信，楼上有个女生……
+
+# ---- 第二段：第一次入侵 ----
+INVADE | PHONE  | B | …cultural background… completely different…              # ……文化背景……完全不一样……（只记得大意）
+INVADE | PHONE  | C | …she looks… so easy to push around…                       # ……她看起来……很好欺负的……
+INVADE | PHONE  | C | …she's a… liar…                                            # ……她是个……骗子……
+INVADE | SFX    | - | shutter
+INVADE | MAIN   | C | This is my house.                                         # 这是我家
+
+# ---- 过渡：平静，家人"一个整体" ----
+CALM   | CHORUS | C | We're a family. We stick together.                       # 我们是一个整体
+CALM   | CHORUS | C | Going into her room? That never happened. {shutter3}   # 进入房间的事情从来没有发生（这句出现时背景放 咔嚓咔嚓咔嚓）
+CALM   | ADULT  | C | I can't lose this income.                                # 我不想失去经济来源
+
+# ---- 第三段：第二次入侵（最高点）----
+INVADE | MAIN   | C | It's just talking. It's not a big deal.                   # 只是聊聊天，没什么大不了
+INVADE | BOTH   | A | I'm in my own room.                                       # 原话
+
+# ---- 结尾：平静 ----
+CALM   | MAIN   | C | She has moved out at last.                                # 她终于搬走了
+CALM   | ADULT  | C | Another guest will come.                                  # 还会有下一位客人

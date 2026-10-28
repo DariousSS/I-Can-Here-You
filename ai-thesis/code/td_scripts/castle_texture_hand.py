@@ -13,7 +13,7 @@ else:
         cur = p.par.Texture.eval()
         path = str(getattr(cur, 'path', cur))
         nm = str(p.par.Name.eval()) if hasattr(p.par, 'Name') else ''
-        if path in ('/project1/castle_xf', '/project1/castle_ball_tf', '/project1/mask_L', '/project1/mask_R', '/project1/castle_tri', '/project1/dev_L', '/project1/dev_R', '/project1/castle_pc_top', '/project1/castle_pc_mid', '/project1/castle_pc_bot') or 'ball' in nm.lower():
+        if path in ('/project1/castle_xf', '/project1/castle_ball_tf', '/project1/mask_L', '/project1/mask_R', '/project1/castle_tri', '/project1/dev_L', '/project1/dev_R', '/project1/castle_pc_top', '/project1/castle_pc_mid', '/project1/castle_pc_bot', '/project1/table_out') or 'ball' in nm.lower():
             continue
         sc = c.op('script1')
         area = 0.0

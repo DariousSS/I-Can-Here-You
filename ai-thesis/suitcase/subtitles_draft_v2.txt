@@ -1,0 +1,13 @@
+# 右边墙上打印的字 = 对方（她）的视角。图像是我的房间，文字是她的房子。
+# 类型: A = 我确定听到的原话（实线白字，逐字）   C = 想象（虚线/淡一点，前面带 Maybe）
+# 规则: 想象的句子只写感受和房子，不写她对我做了什么；不出现名字、地址、学校名。
+# 什么时候出现: CALM = 平静时慢慢打出来；INVADE = 入侵时（声音越过墙），更清楚、更大声
+
+CALM   | C | Someone has moved into the room upstairs.
+CALM   | A | Why did she just drag her large suitcase up the stairs?
+CALM   | C | Maybe: it is strange to hear a stranger living in your house.
+CALM   | C | Maybe: the walls are thin. Everything goes both ways.
+CALM   | C | Maybe: this is our home. It is also how we pay the bills.
+INVADE | A | She looks amazing, I got blush on me.
+INVADE | A | I feel so bad about myself.
+INVADE | A | I'm in my own room.

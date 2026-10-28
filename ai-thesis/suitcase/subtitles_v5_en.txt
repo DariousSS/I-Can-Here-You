@@ -1,0 +1,32 @@
+# 右边墙上打印的字 v5（英文）。VOICE: MAIN=童声主角(白色大字) ADULT=灰色小字不出声 PHONE=淡青色只有一半
+# TYPE: A=确定听到的原话(实线，逐字不改)  B=只记得大意(淡)  C=想象/合成(虚线)
+# WHEN: CALM=平静时打出  INVADE=入侵时；按顺序走，走完循环
+
+CALM   | ADULT | C | We need to rent out a room.                              # 我们得把一个房间租出去
+CALM   | ADULT | C | Money's been… a bit tight lately.                        # 家里最近……资金有点紧
+CALM   | ADULT | C | It'll help with the bills.                               # 能补贴点开销
+
+CALM   | MAIN  | C | Someone is moving in!                                    # 有人要搬进来了！
+CALM   | MAIN  | C | A stranger. In our house.                                # 一个陌生人，在我们家
+CALM   | MAIN  | A | Why did she just drag her large suitcase up the stairs?  # 原话
+CALM   | MAIN  | A | She has gone out!                                        # 原话（她出门了！）
+CALM   | MAIN  | C | What did she put in the fridge? I'm so curious.          # 她把什么放进冰箱了？我好好奇
+CALM   | MAIN  | C | Why would she spend so much money… on dyeing her hair?   # 她为什么要花那么多钱……染头发？
+CALM   | MAIN  | C | If she's really that rich, why would she… rent a room?  # 如果她真那么有钱，为什么要来……租房间？
+
+CALM   | PHONE | C | …you won't believe it, there's a girl upstairs…          # ……你不会相信，楼上有个女生……
+CALM   | PHONE | C | …her room is right next to mine…                         # ……她的房间就在我隔壁……
+CALM   | PHONE | B | …cultural background… completely different…              # ……文化背景……完全不一样……（只记得大意）
+INVADE | PHONE | C | …she looks… so easy to push around…                       # ……她看起来……很好欺负的……
+INVADE | PHONE | C | …let me go in… take a look…                               # ……让我进去……看看……
+INVADE | PHONE | C | …she's a… liar…                                            # ……她是个……骗子……
+INVADE | PHONE | C | …the trash… the hair… dyed it herself…                    # ……垃圾……头发……自己染的……
+
+INVADE | MAIN  | C | How dare she… do that… in my house.                        # 她怎么敢……在我家……这么干
+INVADE | MAIN  | C | This is my house.                                         # 这是我家
+INVADE | MAIN  | C | She actually… told me to keep it down… in front of my friends…  # 她居然……当着我朋友的面……让我小声点
+INVADE | MAIN  | C | It's just talking. It's not a big deal.                  # 只是聊聊天，没什么大不了
+INVADE | MAIN  | C | What's wrong with calling my friend?                     # 和朋友打电话怎么了
+INVADE | MAIN  | A | I feel so bad about myself.                              # 原话
+
+INVADE | BOTH  | A | I'm in my own room.                                      # 原话

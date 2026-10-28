@@ -11,7 +11,7 @@ else:
         if p is not None and hasattr(p.par, 'Texture'):
             nm = str(p.par.Name.eval()) if hasattr(p.par, 'Name') else ''
             cur = p.par.Texture.eval()
-            if 'ball' in nm.lower() or 'hand' in nm.lower() or str(getattr(cur, 'path', cur)) in ('/project1/castle_ball_tf', '/project1/hand_out', '/project1/scene_out', '/project1/scene_all', '/project1/mask_L', '/project1/mask_R', '/project1/castle_tri', '/project1/dev_L', '/project1/dev_R', '/project1/castle_pc_top', '/project1/castle_pc_mid', '/project1/castle_pc_bot'):
+            if 'ball' in nm.lower() or 'hand' in nm.lower() or str(getattr(cur, 'path', cur)) in ('/project1/castle_ball_tf', '/project1/hand_out', '/project1/scene_out', '/project1/scene_all', '/project1/mask_L', '/project1/mask_R', '/project1/castle_tri', '/project1/dev_L', '/project1/dev_R', '/project1/castle_pc_top', '/project1/castle_pc_mid', '/project1/castle_pc_bot', '/project1/table_out'):
                 skipped += 1
                 continue
             p.par.Texture = TEX

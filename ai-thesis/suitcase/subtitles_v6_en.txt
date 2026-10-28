@@ -1,0 +1,38 @@
+# 短版 v7（约 22 句）：加入关键情节"进房间 / 翻垃圾 / 拍照"，并让第一次入侵一步步升级。完整长版 subtitles_v6_long.txt，上一版 subtitles_v6_short1.txt。
+# VOICE: MAIN=主角(白色大字) ADULT=灰色小字 PHONE=淡青色只有一半 CHORUS=暖色，几个声音叠在一起 BOTH=结尾大白字
+# TYPE : A=确定听到的原话(逐字不改)  B=只记得大意  C=想象/合成
+# 句子末尾写 {shutter}（一声）或 {shutter3}（三声）：这句出现的同时在背景放拍照声。
+
+# ---- 第一段：平静，讲清前情 ----
+CALM   | ADULT  | C | We need to rent out a room.                              # 我们得把一个房间租出去
+CALM   | MAIN   | C | Someone is moving in!                                    # 有人要搬进来了！
+CALM   | MAIN   | A | Why did she just drag her large suitcase up the stairs?  # 原话
+CALM   | MAIN   | C | What did she put in the fridge? I'm so curious. {shutter}  # 她把什么放进冰箱了？我好好奇（拍了一张）
+CALM   | PHONE  | C | …you won't believe it, there's a girl upstairs…          # ……你不会相信，楼上有个女生……
+
+# ---- 第二段：第一次入侵，一步步升级：偷听 -> 进房间 -> 翻垃圾 -> 拍照发给所有人 ----
+INVADE | PHONE  | B | …cultural background… completely different…              # ……文化背景……完全不一样……（只记得大意）
+INVADE | MAIN   | A | She has gone out!                                         # 原话：她出门了！
+INVADE | MAIN   | C | Let me go in. Just a quick look.                          # 让我进去，就看一眼
+INVADE | PHONE  | C | …I'm in her room… right now…                              # ……我现在……在她房间里……
+INVADE | MAIN   | C | The trash! She really did dye it herself! {shutter}       # 垃圾！她果然是自己染的头发！
+INVADE | PHONE  | C | …look at these photos… sending them to my friends… {shutter3}  # ……看这些照片……发给我朋友们……
+INVADE | PHONE  | C | …everyone, come on… tonight I'll tell you all about… the girl living in my house…  # ……大家快来……今晚我要跟你们说说……那个住在我家的女生……
+INVADE | PHONE  | C | …she's a… liar…                                            # ……她是个……骗子……
+INVADE | MAIN   | C | This is my house.                                         # 这是我家
+
+# ---- 过渡：平静，家人"一个整体"，否认 ----
+CALM   | ADULT  | C | Don't go into her room again.                            # 不要再进她房间了
+CALM   | ADULT  | C | What do I do? I already told the child not to go into her room.   # 我该怎么办，我已经告诉过孩子不要进她房间了
+CALM   | ADULT  | C | She's so smart. I didn't even know opening a door could be recorded.   # 她好聪明，我都不知道开关门还可以被记录
+CALM   | ADULT  | C | I can't lose this income.                                # 我不想失去经济来源
+CALM   | CHORUS | C | Listen up. We're a family. We stick together.            # 听好了，我们是一个整体（好几个声音叠在一起）
+CALM   | CHORUS | C | Going into her room? That never happened. {shutter3}     # 进入房间的事情从来没有发生（咔嚓咔嚓咔嚓）
+
+# ---- 第三段：第二次入侵（最高点）----
+INVADE | MAIN   | C | It's just talking. It's not a big deal.                   # 只是聊聊天，没什么大不了
+INVADE | BOTH   | A | I'm in my own room.                                       # 原话
+
+# ---- 结尾：平静 ----
+CALM   | MAIN   | C | She has moved out at last.                                # 她终于搬走了
+CALM   | ADULT  | C | Another guest will come.                                  # 还会有下一位客人

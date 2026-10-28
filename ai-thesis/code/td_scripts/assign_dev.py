@@ -2,7 +2,7 @@
 #  - 找：纹理还不是已知纹理、面积不大的新形状（取最靠左的两个里：x 更靠左的 -> dev_L 左面具的数字，靠右的 -> dev_R 右面具的数字）
 #  - 如果新形状多于两个，按你要的名字指：把下面的 NAMES 改成 ('Rectangle20', 'Rectangle21')（左, 右），再运行
 NAMES = None
-KNOWN = ('/project1/castle_xf', '/project1/castle_tri', '/project1/castle_ball_tf', '/project1/scene_all', '/project1/scene_out', '/project1/hand_out', '/project1/mask_L', '/project1/mask_R', '/project1/dev_L', '/project1/dev_R', '/project1/castle_pc_top', '/project1/castle_pc_mid', '/project1/castle_pc_bot')
+KNOWN = ('/project1/castle_xf', '/project1/castle_tri', '/project1/castle_ball_tf', '/project1/scene_all', '/project1/scene_out', '/project1/hand_out', '/project1/mask_L', '/project1/mask_R', '/project1/dev_L', '/project1/dev_R', '/project1/castle_pc_top', '/project1/castle_pc_mid', '/project1/castle_pc_bot', '/project1/table_out')
 CANVAS_AREA = 1920 * 1080
 if op('/project1/dev_L') is None:
     print('找不到 dev_L，请先重新运行 gaze_setup.py 安装')

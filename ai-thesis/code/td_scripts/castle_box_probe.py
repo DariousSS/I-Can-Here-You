@@ -7,7 +7,7 @@ for c in op('/project1/kantanMapper/project/allShapes').children:
     if pr is None or not hasattr(pr.par, 'Texture'):
         continue
     v = pr.par.Texture.eval()
-    if str(getattr(v, 'path', v)) not in ('/project1/castle_xf', '/project1/castle_pc_top', '/project1/castle_pc_mid', '/project1/castle_pc_bot'):
+    if str(getattr(v, 'path', v)) not in ('/project1/castle_xf', '/project1/castle_pc_top', '/project1/castle_pc_mid', '/project1/castle_pc_bot', '/project1/table_out'):
         continue
     sc = c.op('script1')
     pts = [(q.x, q.y) for q in sc.points] if sc is not None else []

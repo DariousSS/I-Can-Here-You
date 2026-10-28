@@ -1,0 +1,53 @@
+# v6：按故事顺序排好。字幕引擎从上往下走，遇到 CALM/INVADE 切换时，自己让房间"平静"或"入侵"（不再随机）。走完最后一句，停几秒，从头循环。
+# SFX 行 = 只放一个音效（shutter = 拍照声），不打字；
+# VOICE: MAIN=童声主角(白色大字) ADULT=灰色小字 PHONE=淡青色只有一半 CHORUS=暖色，好几个声音叠在一起（人数让观众自己猜） BOTH=结尾大白字
+# TYPE : A=确定听到的原话(逐字不改)  B=只记得大意  C=想象/合成
+# 想删掉结尾（搬走之后）的几句，把下面"结尾"那几行删掉就行。
+
+# ---- 第一段：平静。先让观众明白发生了什么（家里需要钱，来了陌生人）----
+CALM   | ADULT | C | We need to rent out a room.                              # 我们得把一个房间租出去
+CALM   | ADULT | C | Money's been… a bit tight lately.                        # 家里最近……资金有点紧
+CALM   | ADULT | C | It'll help with the bills.                               # 能补贴点开销
+CALM   | MAIN  | C | Someone is moving in!                                    # 有人要搬进来了！
+CALM   | MAIN  | C | A stranger. In our house.                                # 一个陌生人，在我们家
+CALM   | MAIN  | A | Why did she just drag her large suitcase up the stairs?  # 原话
+CALM   | MAIN  | A | She has gone out!                                        # 原话
+CALM   | MAIN  | C | What did she put in the fridge? I'm so curious.          # 她把什么放进冰箱了？我好好奇
+CALM   | SFX   | - | shutter                                                  # 拍照声（咔嚓）
+CALM   | MAIN  | C | Why would she spend so much money… on dyeing her hair?   # 她为什么要花那么多钱……染头发？
+CALM   | MAIN  | C | If she's really that rich, why would she… rent a room?  # 如果她真那么有钱，为什么要来……租房间？
+CALM   | PHONE | C | …you won't believe it, there's a girl upstairs…          # ……你不会相信，楼上有个女生……
+CALM   | PHONE | C | …her room is right next to mine…                         # ……她的房间就在我隔壁……
+CALM   | PHONE | B | …cultural background… completely different…              # ……文化背景……完全不一样……
+
+# ---- 第二段：第一次入侵（房间开始故障，两边的脸都亮，中间拉扯）----
+INVADE | PHONE | C | …she looks… so easy to push around…                       # ……她看起来……很好欺负的……
+INVADE | PHONE | C | …let me go in… take a look…                               # ……让我进去……看看……
+INVADE | PHONE | C | …she's a… liar…                                            # ……她是个……骗子……
+INVADE | PHONE | C | …the trash… the hair… dyed it herself…                    # ……垃圾……头发……自己染的……
+INVADE | SFX   | - | shutter                                                  # 拍照声
+INVADE | MAIN  | C | How dare she… do that… in my house.                        # 她怎么敢……在我家……这么干
+INVADE | MAIN  | C | This is my house.                                         # 这是我家
+INVADE | MAIN  | C | She actually… told me to keep it down… in front of my friends…  # 她居然……当着我朋友的面……让我小声点
+
+# ---- 过渡：平静回来了，聊天照常继续（他们没有意识到什么）----
+CALM   | PHONE | C | …anyway, what are you doing this weekend?…              # ……对了，你周末干嘛？……
+CALM   | CHORUS | C | We're a family. We stick together.                    # 我们是一个整体（好几个声音叠在一起，观众自己数有几个人）
+CALM   | CHORUS | C | …if anyone asks… we all say the same thing…             # ……如果有人问……我们都说一样的……
+CALM   | CHORUS | C | …nothing will come of it…                               # ……不会有什么结果的……
+CALM   | CHORUS | C | Going into her room? That never happened.            # 进入房间的事情从来没有发生
+CALM   | CHORUS | C | Please stop making false reports.                       # 请不要再进行虚假通报
+CALM   | ADULT  | C | I don't know what to do. It has already happened.       # 我不知道怎么做了，这事情已经发生了
+CALM   | ADULT  | C | So I'll complain first.                                 # 那我就先告状吧
+CALM   | ADULT  | C | I can't lose this income.                               # 我不想失去经济来源
+
+# ---- 第三段：第二次入侵（最高点）----
+INVADE | MAIN  | C | It's just talking. It's not a big deal.                  # 只是聊聊天，没什么大不了
+INVADE | MAIN  | C | What's wrong with calling my friend?                     # 和朋友打电话怎么了
+INVADE | BOTH  | A | I'm in my own room.                                      # 原话
+
+# ---- 结尾：平静（她搬走了）。不想要就整段删掉 ----
+CALM   | MAIN  | C | She has moved out at last.                               # 她终于搬走了
+CALM   | ADULT | C | The room is empty again.                                 # 房间又空了
+CALM   | ADULT | C | Money's in. The bills are paid.                          # 钱到账了，账单付清了
+CALM   | ADULT | C | Another guest will come.                                 # 还会有下一位客人

@@ -1,0 +1,12 @@
+# 字幕草稿（可改）。格式：谁 | 类型 | 文字
+# 类型: A=确定原话(实线白字)  B=只记得大意(淡、断断续续)  C=我的想象(虚线，加"也许")  ME=我的话(淡灰)
+# 已去掉学校名；不写姓名/地址/房源。字幕下可标"根据记忆重建"。
+ME | ME | Someone online moves to a new city every month. It sounded cool.
+ME | ME | I booked one month.
+ME | ME | First evening. A phone call, through the wall.
+GIRL | A | She looks amazing, I got blush on me.
+GIRL | A | Why did she just drag her large suitcase up the stairs?
+GIRL | A | I feel so bad about myself.
+GIRL | C | Maybe: this is my home.
+GIRL | C | Maybe: it is also how we pay the bills.
+BOTH | A | I'm in my own room.

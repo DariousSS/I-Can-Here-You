@@ -1,6 +1,6 @@
 // 蜡笔质感的马赛克模糊（TouchDesigner GLSL TOP 的像素着色器）
 // 把画面切成大小不一、边缘歪歪扭扭的色块，每块的位置轻轻抖动、颜色压成几档（像蜡笔涂的），再叠上纸面颗粒和斜着的笔触纹。
-// uM = (强度 0~1（0 = 原样通过）, 色块大小（按 512 像素宽的画面算）, 时间（秒）, 0)
+// uM = (强度 0~1（0 = 原样通过）, 色块大小 / 涂抹长度（按 512 像素宽的画面算）, 时间（秒）, 风格：0 = 旧的彩色蜡笔色块 / 2 = 油画（顺着方向的长笔触 + Kuwahara 色块）/ 1 = 干笔涂抹（油画棒、水粉：顺着往下拖、竖向刷痕、很暗的橄榄绿和暗紫红、纸面颗粒）)
 uniform vec4 uM;
 
 out vec4 fragColor;
@@ -29,6 +29,47 @@ void main()
 	}
 	vec2 res = uTD2DInfos[0].res.zw;
 	float sc = res.x / 512.0;
+	if (uM.w > 0.5) {
+		vec2 p = vec2(uv.x, 1.0 - uv.y) * res;
+		float th = 1.5707963 + (vnoise(p * 0.004 / sc) - 0.5) * 0.7;
+		vec2 dir = vec2(cos(th), sin(th));
+		vec2 perp = vec2(-dir.y, dir.x);
+		float bj = (hash(vec2(floor(p.x / (1.6 * sc)), 3.0)) - 0.5) * 5.0 * sc;
+		float Ls = uM.y * 1.25 * sc;
+		vec3 acc = vec3(0.0);
+		for (int i = 0; i < 14; i++) {
+			float t = mix(-0.25, 0.75, float(i) / 13.0);
+			vec2 q = p + dir * t * Ls + perp * bj;
+			acc += texture(sTD2DInputs[0], vec2(q.x / res.x, 1.0 - q.y / res.y)).rgb;
+		}
+		vec3 c = acc / 14.0;
+		float streak = vnoise(vec2(p.x * 0.42 / sc, p.y * 0.012 / sc)) * 0.7 + vnoise(vec2(p.x * 1.1 / sc, p.y * 0.03 / sc)) * 0.3;
+		c *= 0.80 + 0.40 * streak;
+		float th2 = th + 0.45;
+		vec2 d2 = vec2(cos(th2), sin(th2));
+		vec3 acc2 = vec3(0.0);
+		for (int i = 0; i < 9; i++) {
+			float t = mix(-0.2, 0.6, float(i) / 8.0);
+			vec2 q = p + d2 * t * Ls * 0.8;
+			acc2 += texture(sTD2DInputs[0], vec2(q.x / res.x, 1.0 - q.y / res.y)).rgb;
+		}
+		c = c * 0.65 + (acc2 / 9.0) * 0.35 * (0.8 + 0.4 * streak);
+		float blob = vnoise(p * 0.006 / sc) * 0.6 + vnoise(p * 0.02 / sc) * 0.4;
+		c *= 0.55 + 0.9 * blob;
+		float lum = (c.r + c.g + c.b) / 3.0;
+		c = vec3(lum) + (c - vec3(lum)) * 0.42;
+		vec3 shadow = vec3(0.02, 0.03, 0.02);
+		vec3 light = vec3(0.80, 0.79, 0.64);
+		c = shadow + (light - shadow) * pow(clamp(c * 1.1, 0.0, 1.0), vec3(1.7));
+		float mid = clamp(1.0 - abs(lum - 0.40) * 3.2, 0.0, 1.0);
+		c += mid * vec3(0.10, -0.03, 0.03);
+		c += mid * (blob - 0.5) * vec3(-0.04, 0.07, -0.04);
+		c += (hash(p * 1.3) - 0.5) * 0.10;
+		vec2 vq = uv - 0.5;
+		c *= 1.0 - 0.35 * dot(vq, vq) * 2.2;
+		fragColor = TDOutputSwizzle(vec4(mix(orig.rgb, clamp(c, 0.0, 1.0), amt), orig.a));
+		return;
+	}
 	float B = max(uM.y * sc, 2.0);
 	vec2 p = uv * res;
 	vec2 wob = (vec2(vnoise(p * 0.035 / sc + uM.z * 0.15), vnoise(p * 0.035 / sc + 17.3 - uM.z * 0.1)) - 0.5) * B * 0.9;

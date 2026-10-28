@@ -277,6 +277,54 @@ def render_and_save():
             print("[AI 注意力叠图出错，已跳过]", repr(e)[:120])
 
 
+POOL_N = 12
+_pool = {"imgs": None, "order": list(range(POOL_N)), "last": 0.0, "n": 0}
+ATLAS_BASE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "assets", "atlas", "faces_atlas.png")
+ATLAS_LIVE = os.path.join(args.dir, "faces_atlas_live.png")
+POOL_STATE = os.path.join(args.dir, "pool_state.json")
+
+
+def _pool_cfg():
+    try:
+        with open(os.path.join(args.dir, "audio_fx.json"), encoding="utf-8") as f:
+            c = json.load(f)
+        return float(c.get("pool_sec", 6.0)), bool(c.get("pool_on", True))
+    except Exception:
+        return 6.0, True
+
+
+def pool_step(scene):
+    """棋盘 / 巨大拼脸场景里，每隔几秒（audio_fx.json 的 pool_sec，默认 6）多画一张新脸，替换池里最旧的一张；图集存成 faces_atlas_live.png，池的新旧顺序存成 pool_state.json。
+    只在这两个场景里画，别的场景不多花力气（不增加发热）。"""
+    if scene not in ("board", "giant") or g.model != "lucy":
+        return
+    sec, on = _pool_cfg()
+    if not on or time.time() - _pool["last"] < sec:
+        return
+    from PIL import Image
+    if _pool["imgs"] is None:
+        _pool["imgs"] = []
+        for i in range(POOL_N):
+            fp = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "td_live", "burst", "face_%02d.jpg" % i)
+            _pool["imgs"].append(Image.open(fp).convert("RGB").resize((256, 256)))
+    _pool["last"] = time.time()
+    t1 = time.time()
+    im = g.M.sample(random.randint(1, 10 ** 6), None, 10, 128).convert("RGB").resize((256, 256), Image.LANCZOS)
+    k = _pool["order"][-1]                                   # 替换最旧的一张（最新的几张不会被动）
+    _pool["imgs"][k] = im
+    _pool["order"] = [k] + [x for x in _pool["order"] if x != k]
+    _pool["n"] += 1
+    A = Image.open(ATLAS_BASE).convert("RGB").copy()
+    for i, f in enumerate(_pool["imgs"]):
+        A.paste(f, ((i % 4) * 256, (i // 4) * 256))
+    save_atomic(A, ATLAS_LIVE)
+    tmp = POOL_STATE + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as fh:
+        json.dump({"order": _pool["order"], "n": _pool["n"], "t": time.time()}, fh)
+    os.replace(tmp, POOL_STATE)
+    print(f"[脸池] 新脸放进第 {k} 格（第 {_pool['n']} 张，用时 {time.time() - t1:.1f} 秒）")
+
+
 def read_params(old):
     try:
         with open(P, encoding="utf-8") as f:
@@ -362,6 +410,11 @@ try:
             except Exception as e:
                 print("[画图出错，已跳过]", repr(e)[:160])
                 force = False
+        if not force:
+            try:
+                pool_step(last_scene)
+            except Exception as e:
+                print("[脸池出错，已跳过]", repr(e)[:160])
         if time.time() - t_rep > 10:
             print(f"最近 10 秒画了 {renders} 张（累积最大 {float(g.D.max()):.2f}）")
             renders, t_rep = 0, time.time()

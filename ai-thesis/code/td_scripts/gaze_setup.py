@@ -16,14 +16,14 @@ VERT_WEIGHTS = (('nosey', 0.5), ('facey', 0.3), ('dy', 0.2))   # 上下：鼻尖
 CAL = __CAL__         # 校准值（由 gaze_setup 从 calibration_test.json 算出；None=没校准）
 SMOOTH = 0.35         # 目光平滑：越小越稳、越慢
 MIDI_ROWS = [         # TD 的 MIDI 设备表在 /local，重启会丢，所以由脚本定期补回
-    {'id': '1', 'indevice': 'KL Essential 61 mk3 MIDI', 'channel': '1'},   # 琴（midiin1 的 Device ID = 1）
+    {'id': '1', 'indevice': 'Impact LX61+ MIDI1', 'channel': '1'},   # 琴（midiin1 的 Device ID = 1）
     {'id': '2', 'outdevice': 'IAC Driver Bus 1', 'channel': '1'},          # 发给 GarageBand（air_out 的 id = 2）
 ]
 STALE_FRAMES = 45
 # ---- 空气乐器（手 -> 五声音阶）----
 AIR_ZONES = 5                          # 画面左右分几个区
 AIR_NOTES = [60, 62, 64, 67, 69]       # 每个区的音（C D E G A，五声音阶），发给 GarageBand
-AIR_LUCY_NOTES = [61, 63, 65, 66, 68]  # 同时"伪装成琴键"给 Lucy 画面用的编号（对应前 5 个乐器；琴有 +1 偏移）
+AIR_LUCY_NOTES = [61, 63, 65, 66, 68]  # 同时"伪装成琴键"给 Lucy 画面用的编号（对应前 5 个乐器；琴实际发出的编号比标准多 1，Arturia 和 Impact LX61+ 都是）
 AIR_FLIP_X = False                     # 左右反了改 True
 AIR_Y0, AIR_Y1 = 0.0, 0.8              # 手的高度范围（食指根部 y）：低 -> 轻，高 -> 重
 AIR_PITCH_FROM = 'y'                   # 音高来自：'y'=手的高度（越高越高音）；'x'=左右 5 个区
@@ -384,7 +384,7 @@ def _fx_cfg(st):
                'scenes': ['crowd', 'mirror', 'attn'], 'scene_auto_sec': 45, 'xfade_speed': 0.06,
                'pinch_on': True, 'pinch_enter': 0.35, 'pinch_frames': 4, 'pinch_gap_frames': 60,
                'air_pitch_from': 'x', 'air_scale': 'pentatonic', 'air_base': 48, 'air_octaves': 3,
-               'air_x_lo': 0.12, 'air_x_hi': 0.88, 'air_flip_x': False, 'air_margin': 0.25, 'screen_w': 0, 'screen_h': 0, 'ball_on': True, 'ball_rise': 0.5, 'ball_hold': 2.2, 'ball_fall': 1.0, 'mapping_on': False, 'win_display': 0, 'auto_open_window': False, 'castle_ball_w': 1920, 'castle_ball_h': 640, 'ball_with_flash': False, 'castle_ball_auto': True, 'ball_auto_min': 0, 'ball_auto_max': 0, 'ball_every_switches': 3, 'ball_need_hand': True, 'ball_hand_sec': 4.0, 'castle_ball_phys_aspect': 0, 'castle_tiles_min': 3, 'hand_on': True, 'hand_need_hand': False, 'hand_target_max_frac': 0.5, 'poke_fx_on': True, 'poke_fx_amp': 1.0, 'puppet_on': True, 'puppet_need_hand': False, 'standard_on': True, 'standard_hand': True, 'std_build_sec': 24.0, 'std_hold_sec': 2.0, 'std_shatter_sec': 1.6, 'std_fade_sec': 1.0, 'mask_on': True, 'mask_R_mode': 'mix', 'mask_always': True, 'angel_dev_link': True, 'angel_always': True, 'angel_birth': True, 'angel_peek': True, 'angel_peek_w': 0.75, 'angel_peek_x': 0.02, 'angel_tilt': 0.30, 'clip_ignore': ['Freeform9'], 'angel_turn': True, 'angel_clip': True, 'angel_eyes_on': True, 'say_on': True, 'say_hold': 4.8, 'say_gap_min': 11.0, 'say_gap_max': 20.0, 'angel_dev_thresh': 0.80, 'angel_dev_stay': 14.0, 'angel_dev_gap_min': 25.0, 'angel_dev_gap_max': 60.0, 'overlay_w': 2016, 'overlay_h': 1134, 'dev_on': True, 'dev_font': 84, 'mask_swap_min': 7.0, 'mask_swap_max': 14.0, 'mask_gap_min': 25.0, 'mask_gap_max': 70.0, 'mask_hold_min': 8.0, 'mask_hold_max': 16.0, 'mask_fade_sec': 2.0, 'tri_names': ['Freeform16', 'Freeform17'], 'burst_on': False, 'giant_on': True, 'giant_names': ['Rectangle14', 'Rectangle4', 'Rectangle5'], 'eye2_on': True, 'angel_mode': 'persist', 'rift_on': False, 'rift_thr': 0.70, 'eye2_thr': 0.75, 'eye2_w': 0.22, 'angel_birth_zoom': False, 'std_mosaic_on': True, 'std_mosaic_max': 72.0, 'std_mosaic_min': 18.0, 'burst_n': 12, 'burst_size_min': 0.28, 'burst_size_max': 0.75, 'burst_dist_min': 0.20, 'burst_dist_max': 0.75, 'burst_sec': 1.4, 'burst_fade_start': 1.8, 'burst_fade_sec': 1.2, 'angel_on': True, 'angel_count': 3, 'angel_max_level': 0.85, 'angel_gap_min': 3.0, 'angel_gap_max': 25.0, 'angel_hold_min': 12.0, 'angel_hold_max': 28.0, 'angel_hop_prob': 0.7, 'angel_castle_weight': 0.5, 'angel_music_gain': 0.30, 'angel_music_sens': 2.5, 'angel_punch': 0.12, 'angel_follow_hand': True, 'puppet_every_switches': 0, 'puppet_auto_min': 0, 'puppet_auto_max': 0, 'puppet_hand_scale': 0.38, 'puppet_scale': 0.36, 'puppet_string_len': 0.17, 'puppet_rot_sign': 1, 'hand_scale': 0.6, 'hand_fps': 10, 'hand_every_switches': 0, 'hand_auto_min': 0, 'hand_auto_max': 0, 'hand_canvas_w': 1920, 'hand_canvas_h': 1080, 'castle_spin_deg_s': 6.0, 'scene_hold': {'mirror': 60, 'face': 12, 'attn': 25, 'crowd': 30}, 'scene_weights': {'face': 1, 'attn': 2, 'crowd': 1}, 'ball_sfx_vol': 0.6}
+               'air_x_lo': 0.12, 'air_x_hi': 0.88, 'air_flip_x': False, 'air_margin': 0.25, 'screen_w': 0, 'screen_h': 0, 'ball_on': True, 'ball_rise': 0.5, 'ball_hold': 2.2, 'ball_fall': 1.0, 'mapping_on': False, 'win_display': 0, 'auto_open_window': False, 'castle_ball_w': 1920, 'castle_ball_h': 640, 'ball_with_flash': False, 'castle_ball_auto': True, 'ball_auto_min': 0, 'ball_auto_max': 0, 'ball_every_switches': 3, 'ball_need_hand': True, 'ball_hand_sec': 4.0, 'castle_ball_phys_aspect': 0, 'castle_tiles_min': 3, 'hand_on': True, 'hand_need_hand': False, 'hand_target_max_frac': 0.5, 'poke_fx_on': True, 'poke_fx_amp': 1.0, 'puppet_on': True, 'puppet_need_hand': False, 'standard_on': True, 'standard_hand': True, 'std_build_sec': 24.0, 'std_hold_sec': 2.0, 'std_shatter_sec': 1.6, 'std_fade_sec': 1.0, 'mask_on': True, 'mask_R_mode': 'mix', 'mask_always': True, 'angel_dev_link': True, 'angel_always': True, 'angel_birth': True, 'angel_peek': True, 'angel_peek_w': 0.58, 'angel_max_w': 0.58, 'angel_fit_free': False, 'angel_calm_scale': 0.4, 'angel_clip_margin': 6.0, 'angel_anchor': 'castle', 'angel_anchor_gap': 0.07, 'pair_on': True, 'pair_thr': 0.75, 'angel_peek_x': 0.02, 'angel_tilt': 0.30, 'clip_ignore': ['Freeform8', 'Freeform9', 'Freeform10'], 'angel_turn': True, 'angel_clip': True, 'angel_eyes_on': True, 'say_on': True, 'say_hold': 4.8, 'say_gap_min': 11.0, 'say_gap_max': 20.0, 'angel_dev_thresh': 0.80, 'angel_dev_stay': 14.0, 'angel_dev_gap_min': 25.0, 'angel_dev_gap_max': 60.0, 'overlay_w': 2016, 'overlay_h': 1134, 'dev_on': True, 'dev_font': 84, 'mask_swap_min': 7.0, 'mask_swap_max': 14.0, 'mask_gap_min': 25.0, 'mask_gap_max': 70.0, 'mask_hold_min': 8.0, 'mask_hold_max': 16.0, 'mask_fade_sec': 2.0, 'tri_names': ['Freeform16', 'Freeform17'], 'burst_on': False, 'sing_on': True, 'sing_split': 64, 'sing_gain': 1.0, 'sing_mouth_x': 0.5, 'sing_mouth_y': 0.695, 'air_autostart': True, 'board_on': True, 'board_you': 59, 'board_change_min': 10.0, 'board_change_max': 20.0, 'board_swap_min': 5.0, 'board_swap_max': 11.0, 'giant_on': True, 'giant_names': ['Rectangle14', 'Rectangle4', 'Rectangle5'], 'eye2_on': False, 'angel_mode': 'persist', 'rift_on': False, 'rift_thr': 0.70, 'eye2_thr': 0.75, 'eye2_w': 0.22, 'angel_birth_zoom': False, 'std_mosaic_on': True, 'std_mosaic_style': 'oil', 'std_mosaic_max': 80.0, 'std_mosaic_min': 18.0, 'burst_n': 12, 'burst_size_min': 0.28, 'burst_size_max': 0.75, 'burst_dist_min': 0.20, 'burst_dist_max': 0.75, 'burst_sec': 1.4, 'burst_fade_start': 1.8, 'burst_fade_sec': 1.2, 'angel_on': True, 'angel_count': 3, 'angel_max_level': 0.85, 'angel_gap_min': 3.0, 'angel_gap_max': 25.0, 'angel_hold_min': 12.0, 'angel_hold_max': 28.0, 'angel_hop_prob': 0.7, 'angel_castle_weight': 0.5, 'angel_music_gain': 0.30, 'angel_music_sens': 2.5, 'angel_punch': 0.12, 'angel_follow_hand': True, 'puppet_every_switches': 0, 'puppet_auto_min': 0, 'puppet_auto_max': 0, 'puppet_hand_scale': 0.38, 'puppet_scale': 0.36, 'puppet_string_len': 0.17, 'puppet_rot_sign': 1, 'hand_scale': 0.6, 'hand_fps': 10, 'hand_every_switches': 0, 'hand_auto_min': 0, 'hand_auto_max': 0, 'hand_canvas_w': 1920, 'hand_canvas_h': 1080, 'castle_spin_deg_s': 6.0, 'scene_hold': {'mirror': 60, 'face': 12, 'attn': 25, 'crowd': 30}, 'scene_weights': {'face': 1, 'attn': 2, 'crowd': 1}, 'ball_sfx_vol': 0.6}
         try:
             with open(BRIDGE + '/audio_fx.json', encoding='utf-8') as fh:
                 j = json.load(fh)
@@ -637,7 +637,7 @@ def _update_standard(st, cfg, scene):
                 fx_.par.vec0valuex = amt_
                 fx_.par.vec0valuey = bsz_
                 fx_.par.vec0valuez = now %% 1000.0
-                fx_.par.vec0valuew = 0.0
+                fx_.par.vec0valuew = {'oil': 2.0, 'paint': 1.0}.get(cfg.get('std_mosaic_style', 'oil'), 0.0)          # 风格：oil = 油画（默认），paint = 干笔涂抹，blocks = 旧的彩色色块
             except Exception:
                 pass
             st['fx_amt'] = amt_
@@ -663,7 +663,7 @@ def _update_scene(st):
     st['sc_age'] = st.get('sc_age', 0) + 1
     if st['sc_age'] >= 30:                      # 每约半秒清掉"上次写了什么"的记忆，强制把值重新写给节点（重装脚本会把节点重置，不清的话画面会卡住）
         st['sc_age'] = 0
-        for k_ in ('xf_set', 'xa_set', 'cx_set', 'cm_set', 'std_set', 'mask_set', 'gf_set'):
+        for k_ in ('xf_set', 'xa_set', 'cx_set', 'cm_set', 'std_set', 'mask_set', 'gf_set', 'bd_set'):
             st.pop(k_, None)
     st['std_age'] = st.get('std_age', 99) + 1
     if st['std_age'] >= 6:                         # 手动触发：test_standard.py 写一个时间进 std_test.json，就立刻开始"标准人脸"流程
@@ -697,15 +697,32 @@ def _update_scene(st):
             st['gt_seen'] = t_new
             st['scene'] = 'giant'
             st['scene_t'] = time.time()
+    st['bt_age'] = st.get('bt_age', 99) + 1
+    if st['bt_age'] >= 6:                         # 手动触发：test_board.py 写 board_test.json（mode = hit 命中测试 / show 只看棋盘）
+        st['bt_age'] = 0
+        t_new, mode_new = None, 'show'
+        try:
+            with open(BRIDGE + '/board_test.json', encoding='utf-8') as fh:
+                j_ = json.load(fh)
+            t_new, mode_new = float(j_.get('t', 0.0)), str(j_.get('mode', 'show'))
+        except Exception:
+            t_new = None
+        if st.get('bt_seen') is None:
+            st['bt_seen'] = t_new if t_new is not None else 0.0
+        elif t_new is not None and t_new > st['bt_seen']:
+            st['bt_seen'] = t_new
+            st['scene'] = 'board'
+            st['scene_t'] = time.time()
+            st['btest_req'] = mode_new
     mode = cfg.get('visual_mode', 'auto')
-    valid = ('crowd', 'mirror', 'attn', 'face', 'giant')
+    valid = ('crowd', 'mirror', 'attn', 'face', 'giant', 'board')
     scenes = [x_ for x_ in (cfg.get('scenes') or ['mirror']) if x_ in valid] or ['mirror']
     now = time.time()
     cur = st.get('scene')
     if st.pop('std_forced', False) and cfg.get('standard_on', True):
         _std_begin(st, cfg)
     if mode == 'auto':
-        if cur not in scenes:
+        if cur not in scenes and cur != 'board':                 # 手动触发的棋盘场景不在轮换名单里，但不能被弹回去
             cur = 'mirror' if 'mirror' in scenes else scenes[0]
             st['scene_t'] = now
         if st.get('scene_t') is None:
@@ -714,6 +731,8 @@ def _update_scene(st):
         hold = float(holds.get(cur, cfg.get('scene_auto_sec', 45)))
         if cur == 'face' and cfg.get('standard_on', True):
             hold = 0                                            # 标准人脸流程自己决定什么时候结束（手点完就回到万花筒）
+        if cur == 'board' and st.get('btest') is not None:
+            hold = 0                                            # 命中测试进行中：测试自己决定什么时候结束
         go = st.pop('scene_next', False)
         if st.get('std') is not None:
             go = False                                          # 标准人脸流程进行中：忽略捏合手势，让它一定走完（手点完才回到万花筒）
@@ -749,7 +768,7 @@ def _update_scene(st):
     speed = float(cfg.get('xfade_speed', 0.06))
     if 'crowd' not in scenes:
         tx_ = 0.0                                 # 轮换里没有脸群：始终停在镜像，不让脸群在黑白图切换时透出来
-    elif scene in ('crowd', 'mirror', 'face', 'giant'):
+    elif scene in ('crowd', 'mirror', 'face', 'giant', 'board'):
         tx_ = 1.0 if scene == 'crowd' else 0.0
     else:
         tx_ = st.get('xf', 1.0)
@@ -778,7 +797,7 @@ def _update_scene(st):
     if node2 is not None and abs(xa - st.get('xa_set', -1.0)) > 0.002:
         node2.par.cross = xa
         st['xa_set'] = xa
-    cx = op('castle_xf')
+    cx = op('castle_xf_raw') or op('castle_xf')
     if cx is not None and abs(xa - st.get('cx_set', -1.0)) > 0.002:
         cx.par.cross = xa
         st['cx_set'] = xa
@@ -793,6 +812,12 @@ def _update_scene(st):
         if not st.get('gf_err2'):
             st['gf_err2'] = 1
             print('gz_exec 巨大拼脸出错（只打印一次）:', repr(e))
+    try:
+        _update_board(st, cfg, scene)
+    except Exception as e:
+        if not st.get('bd_err2'):
+            st['bd_err2'] = 1
+            print('gz_exec 棋盘出错（只打印一次）:', repr(e))
 
 
 def _gf_rects(st, cfg):
@@ -863,11 +888,6 @@ def _update_giant(st, cfg, scene):
             if nxt == G['idx'][i]:
                 nxt = (nxt + 1) %% NF
             G['idx'][i] = nxt
-    for i, nm in enumerate('ABCDEF'):
-        sw_ = op('gf_p' + nm)
-        if sw_ is not None and G['set'][i] != G['idx'][i]:
-            sw_.par.index = G['idx'][i]
-            G['set'][i] = G['idx'][i]
     rects = _gf_rects(st, cfg)
     on_ = 0.0 if (rects is None or st.get('gf_err')) else 1.0
     for nm, key in (('gf_top', 'top'), ('gf_mid', 'mid'), ('gf_bot', 'bot')):
@@ -881,6 +901,10 @@ def _update_giant(st, cfg, scene):
             n_.par.vec1valuey = 0.0
             n_.par.vec1valuez = now %% 1000.0
             n_.par.vec1valuew = on_
+            n_.par.vec2valuex, n_.par.vec2valuey, n_.par.vec2valuez, n_.par.vec2valuew = [float(x_) for x_ in G['idx'][0:4]]
+            n_.par.vec3valuex, n_.par.vec3valuey = float(G['idx'][4]), float(G['idx'][5])
+            n_.par.vec3valuez = 0.0
+            n_.par.vec3valuew = 0.0
             st['gf_age'] = st.get('gf_age', 0) + 1
             if st['gf_age'] %% 90 == 1 and not st.get('gf_err'):
                 er_ = str(n_.errors() or '').strip()
@@ -891,6 +915,171 @@ def _update_giant(st, cfg, scene):
             if not st.get('gf_err'):
                 st['gf_err'] = 1
                 print('gz_exec 巨大拼脸参数设置失败，已关闭')
+
+
+def _pool_order(st):
+    """脸池里 12 张脸的新旧顺序（最新的在前），由 gaze_bridge 写在 pool_state.json；每秒读一次。没有就是 None。"""
+    c = st.get('pool_ord')
+    now = time.time()
+    if c is not None and now - c[0] < 1.0:
+        return c[1]
+    order = None
+    try:
+        with open(BRIDGE + '/pool_state.json', encoding='utf-8') as fh:
+            j_ = json.load(fh)
+        if now - float(j_.get('t', 0.0)) < 120.0:
+            order = [int(x_) for x_ in j_.get('order', [])]
+    except Exception:
+        order = None
+    st['pool_ord'] = (now, order)
+    return order
+
+
+def _board_summary(st, T):
+    """命中测试结束：统计、打印、写文件（棋盘 8x8，格子编号 = 行 * 8 + 列，从左上角 0 开始）。"""
+    res = T['res']
+    n = len(res)
+    exact = sum(1 for t_, p_ in res if p_ == t_)
+    near = sum(1 for t_, p_ in res if p_ >= 0 and max(abs(t_ // 8 - p_ // 8), abs(t_ %% 8 - p_ %% 8)) <= 1)
+    none = sum(1 for t_, p_ in res if p_ < 0)
+    msg = '棋盘命中测试结果（8x8）：共 ' + str(n) + ' 个目标；正好看对格子 ' + str(exact) + ' 个（' + str(round(100.0 * exact / max(n, 1))) + ' 百分之）；对或者相邻一格 ' + str(near) + ' 个（' + str(round(100.0 * near / max(n, 1))) + ' 百分之）；没有测到视线 ' + str(none) + ' 个'
+    print('gz_exec ' + msg)
+    try:
+        with open(os.path.join(BRIDGE, '..', 'board_hit_test.txt'), 'w', encoding='utf-8') as fh:
+            fh.write(msg + chr(10) + chr(10) + '目标格 -> 测到的格（-1 表示没测到；格子编号 = 行 * 8 + 列，从左上角 0 开始）' + chr(10))
+            for t_, p_ in res:
+                fh.write(str(t_) + ' -> ' + str(p_) + chr(10))
+    except Exception:
+        pass
+
+
+def _update_board(st, cfg, scene):
+    """棋盘场景（8x8）：四个 4x4 象限，每个象限一种排列：左上 = 实时脸 + 黑格是它的 AI 注意力叠图；右上 = 一张脸 + 黑格反色；左下 = 一张脸 + 黑格蜡笔马赛克；右下 = 黑白格各是不同的脸。
+    各象限自己隔 10~20 秒换脸，换的时候先用蜡笔马赛克盖住。YOU 格（默认 59，靠近观众的边）什么都不放。全屏万花筒不受影响（board_view 把两者交叉淡入淡出）。
+    手动：test_board.py（show 只看棋盘 / hit 命中测试：24 个目标格，每个 3 秒，看亮洋红框的那一格，结束后打印命中率）。"""
+    bt, bv, tb = op('board_tex'), op('board_view'), op('table_out')
+    if bt is None or bv is None:
+        return
+    now = time.time()
+    req = st.pop('btest_req', None)
+    if req:
+        if req == 'hit':
+            st['btest'] = {'t0': now, 'n': -1, 'target': -1, 'samples': [], 'res': [], 'last': -1}
+            print('gz_exec 棋盘命中测试开始：请看亮着洋红色框的格子；共 24 个目标，每个 3 秒')
+        else:
+            st['btest'] = None
+    T = st.get('btest')
+    tgt = 1.0 if (scene == 'board' and cfg.get('board_on', True) and not st.get('bd_err')) else 0.0
+    mix = st.get('bd_mix', 0.0)
+    mix += (tgt - mix) * 0.08
+    if abs(tgt - mix) < 0.003:
+        mix = tgt
+    st['bd_mix'] = mix
+    if abs(mix - st.get('bd_set', -1.0)) > 0.002:
+        bv.par.cross = mix
+        if tb is not None:
+            tb.par.cross = mix
+        bo_ = op('board_only')
+        if bo_ is not None:
+            bo_.par.opacity = mix
+        cxv = op('castle_xf')
+        if cxv is not None and getattr(cxv, 'OPType', '') == 'levelTOP':
+            cxv.par.opacity = 1.0 - mix                         # 棋盘场景：城堡（万花筒方块、小三角、拼脸）淡出，只剩棋盘
+        st['bd_set'] = mix
+    if mix < 0.01:
+        if T is not None and scene != 'board':
+            st['btest'] = None
+        return
+    lo_, hi_ = float(cfg.get('board_change_min', 10.0)), float(cfg.get('board_change_max', 20.0))
+    Q = st.get('bquad')
+    if Q is None:
+        Q = [{'w': 12, 'mode': 0, 'b': 0, 'mos': 0.0, 'phase': 'idle', 't0': now, 'next': now + random.uniform(lo_, hi_)},
+             {'w': 7, 'mode': 1, 'b': 0, 'mos': 0.0, 'phase': 'idle', 't0': now, 'next': now + random.uniform(lo_, hi_)},
+             {'w': 5, 'mode': 2, 'b': 0, 'mos': 0.0, 'phase': 'idle', 't0': now, 'next': now + random.uniform(lo_, hi_)},
+             {'w': 9, 'mode': 3, 'b': 3, 'mos': 0.0, 'phase': 'idle', 't0': now, 'next': now + random.uniform(lo_, hi_)}]
+        st['bquad'] = Q
+    if T is None:
+        for qi_, q_ in enumerate(Q):
+            if q_['phase'] == 'idle' and now >= q_['next']:
+                q_['phase'], q_['t0'] = 'cover', now
+            if q_['phase'] == 'cover':
+                q_['mos'] = min(1.0, (now - q_['t0']) / 0.4)
+                if now - q_['t0'] >= 0.4:
+                    if qi_ == 0:
+                        st['new_face'] = st.get('new_face', 0) + 1                  # 左上象限用实时脸：让 gaze_bridge 画一张新的（连同它的 AI 注意力）
+                    else:
+                        used_ = set(x_['w'] for x_ in Q) | set(x_['b'] for x_ in Q if x_['mode'] == 3)
+                        po_ = _pool_order(st)
+                        cand_ = (po_[:5] if po_ else list(range(12)))                     # 优先用脸池里最新生成的几张
+                        free_ = [k_ for k_ in cand_ if k_ not in used_] or [k_ for k_ in range(12) if k_ not in used_]
+                        q_['w'] = random.choice(free_) if free_ else random.randrange(12)
+                        if q_['mode'] == 3:
+                            free2_ = [k_ for k_ in cand_ if k_ != q_['w'] and k_ not in used_] or [k_ for k_ in range(12) if k_ != q_['w'] and k_ not in used_]
+                            q_['b'] = random.choice(free2_) if free2_ else (q_['w'] + 1) %% 12
+                    q_['phase'], q_['t0'] = 'hold', now
+            elif q_['phase'] == 'hold':
+                q_['mos'] = 1.0
+                if now - q_['t0'] >= (1.0 if qi_ == 0 else 0.5):
+                    q_['phase'], q_['t0'] = 'reveal', now
+            elif q_['phase'] == 'reveal':
+                q_['mos'] = max(0.0, 1.0 - (now - q_['t0']) / 0.8)
+                if now - q_['t0'] >= 0.8:
+                    q_['phase'], q_['mos'] = 'idle', 0.0
+                    q_['next'] = now + random.uniform(lo_, hi_)
+    gcell = -1
+    gz = st.get('gaze_now')
+    if gz and now - st.get('gaze_t', 0.0) < 0.6:
+        x0, w = (1920.0 - 1080.0) / 2.0 / 1920.0, 1080.0 / 1920.0                  # 屏幕预览：棋盘是中间 1080x1080 的方块
+        if x0 <= gz[0] < x0 + w and 0.0 <= gz[1] < 1.0:
+            gcell = int(gz[1] * 8) * 8 + int((gz[0] - x0) / w * 8)
+    tcell = -1
+    if T is not None:
+        age = now - T['t0']
+        slot = int(age / 3.0)
+        if slot != T['n']:
+            if T['n'] >= 0:
+                s_ = T['samples']
+                pred = max(set(s_), key=s_.count) if s_ else -1
+                T['res'].append((T['target'], pred))
+            T['n'] = slot
+            T['samples'] = []
+            if slot >= 24:
+                _board_summary(st, T)
+                st['btest'] = None
+                st['scene_next'] = True
+                T = None
+            else:
+                nt = random.randrange(64)
+                while nt == T['target']:
+                    nt = random.randrange(64)
+                T['target'] = nt
+        if T is not None:
+            tcell = T['target']
+            if (age %% 3.0) > 1.5 and gcell >= 0:
+                T['samples'].append(gcell)
+    try:
+        bt.par.vec0valuex = now %% 1000.0
+        bt.par.vec0valuey = float(gcell)
+        bt.par.vec0valuez = float(tcell)
+        bt.par.vec0valuew = 0.0 if st.get('bd_err') else 1.0
+        for i in range(4):
+            q_ = Q[i]
+            for ch_, v_ in zip('xyzw', (float(q_['w']), float(q_['mode']), float(q_['b']), float(q_['mos']))):
+                setattr(bt.par, 'vec' + str(1 + i) + 'value' + ch_, v_)
+        bt.par.vec5valuex = float(cfg.get('board_you', 59))
+        bt.par.vec5valuey = 0.0
+        bt.par.vec5valuez = 0.0
+        bt.par.vec5valuew = 0.0
+        st['bd_age'] = st.get('bd_age', 0) + 1
+        if st['bd_age'] %% 90 == 1 and not st.get('bd_err'):
+            er_ = str(bt.errors() or '').strip()
+            if er_:
+                st['bd_err'] = 1
+                print('gz_exec 棋盘着色器有错，已关闭（其他照常）:', er_[:300])
+    except Exception:
+        if not st.get('bd_err'):
+            st['bd_err'] = 1
+            print('gz_exec 棋盘参数设置失败，已关闭')
 
 
 def _update_crowd(st):
@@ -1042,6 +1231,8 @@ def _update_output(st):
     if w is None:
         return
     want = '/project1/gz_final' if op('gz_final') is not None else '/project1/gz_over'
+    if op('board_view') is not None:
+        want = '/project1/board_view'                         # 全屏万花筒 <-> 棋盘（棋盘场景之外它就等于 gz_final）
     if cfg.get('mapping_on', False):
         k = op('map_fit')
         if k is not None:
@@ -1782,13 +1973,20 @@ def _angel_peek(st, cfg, now, side, al):
         x0_, x1_ = min(b[0] for b in bxs_), max(b[2] for b in bxs_)
     else:
         x0_, y0_, x1_, y1_ = _castle_box_c(st, cfg)
+    if cfg.get('angel_anchor', 'castle') == 'castle':                # 眼睛紧挨着城堡的侧边探出来（离城堡边 angel_anchor_gap 倍画面宽），不再停在画面最边上、和城堡之间空一段
+        gap_ = float(cfg.get('angel_anchor_gap', 0.07)) * Wc
+        xs = max(0.02 * Wc, (x0_ - gap_) if P['side'] == 'L' else ((Wc - x1_) - gap_))
     free_ = (x0_ - 24.0 - xs) if P['side'] == 'L' else ((Wc - x1_) - 24.0 - xs)
-    w = min(Wc * float(cfg.get('angel_peek_w', 0.75)), 2.0 * max(0.10 * Wc, free_)) * (0.50 + 0.50 * al)   # 眼睛在画面边缘，翅膀一半在画面外；放松（白色）时只有一半大，过度关注（红色）时放大到刚好碰到箱子边
+    w0_ = Wc * float(cfg.get('angel_peek_w', 0.7))
+    if cfg.get('angel_fit_free', False):
+        w0_ = min(w0_, 2.0 * max(0.10 * Wc, free_))                 # （旧做法）宽度不超过箱子外面的空地
+    cs_ = float(cfg.get('angel_calm_scale', 0.4))
+    w = w0_ * (cs_ + (1.0 - cs_) * al)                              # 眼睛在画面边缘，翅膀一半在画面外；放松（白色）时是 calm_scale 倍，过度关注（红色）时放到最大；超出空地的部分被箱子挡住（切掉）
     x = -0.45 * w + (xs + 0.45 * w) * v
     if P['side'] == 'R':
         x = Wc - x
     P['vv'] = v
-    y = 0.40 * Hc + (1.0 - min(1.0, v)) * 0.24 * Hc + 14.0 * math.sin(now * 0.8)               # 从斜下方往上伸进来
+    y = 0.44 * Hc + (1.0 - min(1.0, v)) * 0.24 * Hc + 14.0 * math.sin(now * 0.8)               # 从斜下方往上伸进来（眼睛放在画面高度的 0.44 处：翅膀图是正方形，眼睛在图高的 0.46 处，这样整只翅膀刚好放得进画面，上下都不被切）
     return {'x': x, 'y': y, 'w': w, 'kind': 'left' if P['side'] == 'L' else 'right'}
 
 
@@ -2209,6 +2407,7 @@ def _update_angel(st):
         dd_ = max(0.0, min(1.0, st.get('ang_dev', 0.0))) if link else 0.0
         spread = 1.0 if (link and cfg.get('angel_peek', True)) else ((0.78 + 0.55 * dd_) if link else 1.0)     # 探头模式下，大小已经由 _angel_peek 按偏差决定
         Wp = pos['w'] * (1.0 + 0.015 * math.sin(t * 1.3 + k)) * swell * spread              # 轻轻呼吸 + 随音乐放大
+        Wp = min(Wp, float(cfg.get('angel_max_w', 0.58)) * Wc)                           # 含音乐放大在内，不超过这个宽度，否则翅膀图的上下会跑出画面被切掉
         Hp = Wp * float(m['h']) / float(m['w'])
         kk = Wp / float(m['w'])
         ex, ey = pos['x'], pos['y'] + 4.0 * math.sin(t * 0.9 + k)
@@ -2249,32 +2448,47 @@ def _update_angel(st):
                     if st.get('ang_birth_on'):
                         th_ = 0.0
                     sg_ = 1.0 if pk_.get('side', 'R') == 'R' else -1.0
-                    mg_ = 24.0
-                    tn_.par.vec0valuex = ex
-                    tn_.par.vec0valuey = Hc - ey
-                    tn_.par.vec0valuez = th_
-                    tn_.par.vec0valuew = 1.0 / 2600.0
-                    tn_.par.vec1valuex = sg_
-                    tn_.par.vec1valuey = 1.0 if (cfg.get('angel_clip', True) and not st.get('ang_birth_on')) else 0.0
+                    mg_ = float(cfg.get('angel_clip_margin', 6.0))              # 切掉城堡范围时留的边距（像素）：太大，翅膀和城堡之间会留一条缝
                     vv_ = max(0.0, min(1.0, pk_.get('vv', 1.0)))
-                    tn_.par.vec1valuez = 0.0 if st.get('ang_birth_on') else (-1.0 if pk_.get('side', 'R') == 'L' else 1.0) * float(cfg.get('angel_tilt', 0.30)) * (1.0 + 1.2 * (1.0 - vv_))   # 身体歪着，刚伸进来时歪得更厉害，像木头手斜着出现
+                    phi_ = 0.0 if st.get('ang_birth_on') else (-1.0 if pk_.get('side', 'R') == 'L' else 1.0) * float(cfg.get('angel_tilt', 0.30)) * (1.0 + 1.2 * (1.0 - vv_))   # 身体歪着，刚伸进来时歪得更厉害，像木头手斜着出现
+                    clip_on = bool(cfg.get('angel_clip', True) and not st.get('ang_birth_on'))
                     bl_ = _castle_boxes_c(st, cfg)
-                    for i_ in range(8):
-                        if i_ < len(bl_):
-                            q_ = bl_[i_]
-                            vals_ = (q_[0] - mg_, Hc - q_[3] - mg_, q_[2] + mg_, Hc - q_[1] + mg_)
-                        else:
-                            vals_ = (0.0, 0.0, 0.0, 0.0)
-                        for c_, v_ in zip('xyzw', vals_):
-                            setattr(tn_.par, 'vec' + str(2 + i_) + 'value' + c_, v_)
+                    # ang_turn 只转、不切；ang_clipA（原天使）和 ang_clipB（镜像天使，已翻转）各自按城堡真实位置切（theta=0、无透视 = 原样通过）
+                    for nd_, thx_, pz_, sgx_, phx_, clx_ in ((tn_, th_, 1.0 / 2600.0, sg_, phi_, False), (op('ang_clipA'), 0.0, 0.0, 1.0, 0.0, clip_on), (op('ang_clipB'), 0.0, 0.0, 1.0, 0.0, clip_on)):
+                        if nd_ is None:
+                            continue
+                        nd_.par.vec0valuex = ex
+                        nd_.par.vec0valuey = Hc - ey
+                        nd_.par.vec0valuez = thx_
+                        nd_.par.vec0valuew = pz_
+                        nd_.par.vec1valuex = sgx_
+                        nd_.par.vec1valuey = 1.0 if clx_ else 0.0
+                        nd_.par.vec1valuez = phx_
+                        for i_ in range(8):
+                            if i_ < len(bl_):
+                                q_ = bl_[i_]
+                                vals_ = (q_[0] - mg_, Hc - q_[3] - mg_, q_[2] + mg_, Hc - q_[1] + mg_)
+                            else:
+                                vals_ = (0.0, 0.0, 0.0, 0.0)
+                            for c_, v_ in zip('xyzw', vals_):
+                                setattr(nd_.par, 'vec' + str(2 + i_) + 'value' + c_, v_)
+                    mf_ = op('ang_mir_fade')
+                    if mf_ is not None:
+                        mf_.par.cross = fade.par.cross                           # 镜像天使和原天使同步淡入淡出
                     st['turn_age'] = st.get('turn_age', 0) + 1
                     if st['turn_age'] %% 90 == 1 and not st.get('turn_err'):
-                        er2_ = str(tn_.errors() or '').strip()
+                        er2_ = ''
+                        for nm_ in ('ang_turn', 'ang_clipA', 'ang_clipB'):
+                            o_ = op(nm_)
+                            if o_ is not None:
+                                er2_ += str(o_.errors() or '').strip()
                         if er2_:
                             st['turn_err'] = 1
-                            print('gz_exec 天使转动着色器有错，已绕开（天使照常，只是不转、不切）:', er2_[:200])
+                            print('gz_exec 天使转动/切边着色器有错，已绕开（天使照常，只是不转、不切）:', er2_[:200])
                             try:
                                 fade.inputConnectors[1].connect(op('ang1_mul') or op('ang1_ecomp'))
+                                if op('ang_mir_fade') is not None:
+                                    op('ang_mir_fade').inputConnectors[1].connect(op('ang1_mul') or op('ang1_ecomp'))
                             except Exception:
                                 pass
                 except Exception:
@@ -2322,6 +2536,19 @@ def _update_angel(st):
             if cfg.get('angel_mode', 'birth') != 'birth':
                 _say_tick(st, cfg, now, 0.0 if birth_ else fd, dd_, ex, ey, Wp, Hp, False if birth_ else a.pop('new_app', False))
         a['vis'] = True
+    mir_ = op('ang_mir_lv')
+    if mir_ is not None:                                                  # 两边偏差都高：另一边出现一只镜像的天使（代替原来的单个红眼睛）
+        dvm_ = st.get('dev_val', {})
+        thm_ = float(cfg.get('pair_thr', 0.75))
+        on_m = bool(cfg.get('pair_on', True) and link and insts[0]['phase'] in ('hold', 'glide') and not st.get('ang_birth_on')
+                    and (dvm_.get('L') or 0.0) >= thm_ and (dvm_.get('R') or 0.0) >= thm_ and (st.get('mask') or {}).get('lv', 0.0) > 0.6)
+        lvm_ = st.get('mir_lv', 0.0)
+        lvm_ += ((1.0 if on_m else 0.0) - lvm_) * 0.06
+        st['mir_lv'] = lvm_
+        try:
+            mir_.par.opacity = lvm_
+        except Exception:
+            pass
     try:
         _update_eye2(st, cfg, now)
     except Exception:
@@ -2407,7 +2634,7 @@ def _dev_set(st, side, val):
     tf_ = op('dev_tf_' + side)
     if tf_ is not None:
         try:
-            sc_ = 1.0 + 0.8 * max(0.0, min(1.0, (val - 0.3) / 0.6))      # 偏离度 0.3 以下原大小，0.9 以上放大到 1.8 倍
+            sc_ = 1.0 + 1.0 * max(0.0, min(1.0, (val - 0.3) / 0.6))      # 偏离度 0.3 以下原大小，0.9 以上放大到 2 倍（基础字号是画布宽的 1/16，放大到最大刚好还在画布里，不会被切）
             tf_.par.sx = sc_
             tf_.par.sy = sc_
         except Exception:
@@ -2423,11 +2650,63 @@ def _dev_set(st, side, val):
             print('gz_exec 偏离度文字设置失败，请运行 text_probe.py 看 Text TOP 的参数名')
 
 
+def _update_sing(st, cfg, now):
+    """左右两个面具的脸随音乐"唱歌"：音符（钢琴键和空气乐器的手势音符都在 st['midi'] 里：ch1n<音符号>=力度）按音高分左右：低音 -> 左脸，高音 -> 右脸（sing_split 以下算低）；
+    再加上 GarageBand 进来的声音大小。嘴张得快、合得慢（约 0.2 秒），只在面具亮着的时候动。"""
+    wl, wr = op('mask_L'), op('mask_R')
+    if wl is None or wr is None or getattr(wl, 'OPType', '') != 'glslTOP':
+        return
+    dt = max(0.0, min(0.2, now - st.get('sing_t', now)))
+    st['sing_t'] = now
+    vl, vr = 0.0, 0.0
+    split = int(cfg.get('sing_split', 64))
+    for k_, v_ in (st.get('midi') or {}).items():
+        if not (k_.startswith('ch') and 'n' in k_):
+            continue
+        try:
+            note = int(k_.split('n')[-1])
+        except Exception:
+            continue
+        v_ = float(v_)
+        if v_ <= 0.0:
+            continue
+        if note <= split:
+            vl = max(vl, v_)
+        else:
+            vr = max(vr, v_)
+    lvl = 0.0
+    try:
+        lvl = float(((st.get('snd_dbg') or {}).get('lvl') or {}).get('in') or 0.0)
+    except Exception:
+        lvl = 0.0
+    g_ = float(cfg.get('sing_gain', 1.0))
+    ml = (st.get('mask') or {}).get('lv', 0.0)
+    out = {}
+    for side, v_, w_ in (('L', vl, wl), ('R', vr, wr)):
+        tgt = min(1.0, (v_ + 0.6 * min(1.0, lvl * 2.0)) * g_)
+        if side == 'R' and float(cfg.get('sing_idle', 0.0)) > 0.0:       # 日常"一直在说话"：没有音乐时嘴也一直轻轻开合
+            ph_ = now * 5.4
+            chat_ = max(0.0, math.sin(ph_)) * max(0.0, 0.6 + math.sin(now * 0.8) + 0.5 * math.sin(now * 2.3 + 1.0))
+            tgt = max(tgt, min(1.0, float(cfg.get('sing_idle', 0.0)) * chat_))
+        e_ = st.get('sing_' + side, 0.0)
+        e_ = tgt if tgt > e_ else e_ * math.exp(-dt / 0.20)              # 张得快、合得慢
+        st['sing_' + side] = e_
+        amp = e_ * min(1.0, ml * 1.5) if cfg.get('sing_on', True) else 0.0
+        try:
+            w_.par.vec0valuex = amp
+            w_.par.vec0valuey = float(cfg.get('sing_mouth_x', 0.5))
+            w_.par.vec0valuez = float(cfg.get('sing_mouth_y', 0.695))
+        except Exception:
+            pass
+        out[side] = amp
+    st['sing_amp'] = out
+
+
 def _update_masks(st):
     """两个白面具：只在万花筒场景里偶尔出现。出现时，面具上的脸淡入，同时两个小三角形淡出（castle_tri），走的时候反过来。
     左面具 mask_L = 标准人脸；右面具 mask_R = 此刻的脸。"""
     cfg = _fx_cfg(st)
-    L, R, T = op('mask_L'), op('mask_R'), op('castle_tri')
+    L, R, T = op('mask_L_raw') or op('mask_L'), op('mask_R_raw') or op('mask_R'), op('castle_tri')
     if L is None or R is None or T is None:
         return
     now = time.time()
@@ -2586,6 +2865,9 @@ def onFrameEnd(frame):
         st['air_on'] = not st.get('air_on', False)
         st['y_lo'], st['y_hi'] = None, None
     st['prev_pad'] = pad
+    if st.get('air_boot') is None:
+        st['air_boot'] = True
+        st['air_on'] = bool(_fx_cfg(st).get('air_autostart', True))       # 启动就开着空气乐器（手势），钢琴照样能弹；按 A 键可以关
     try:
         _update_air(st)
     except Exception as e:
@@ -2606,6 +2888,7 @@ def onFrameEnd(frame):
             print('gz_exec 脸群像出错（只打印一次）:', repr(e))
     try:
         _update_masks(st)
+        _update_sing(st, _fx_cfg(st), time.time())
     except Exception as e:
         if not st.get('mask_err'):
             st['mask_err'] = 1
@@ -2715,13 +2998,16 @@ def onFrameEnd(frame):
             if not st.get('err'):
                 st['err'] = 1
                 print('gz_exec 读虹膜出错（只打印一次）:', repr(e))
-        _write(st, g or _read_gaze(st))
+        gz_ = g or _read_gaze(st)
+        st['gaze_now'] = gz_
+        st['gaze_t'] = time.time()
+        _write(st, gz_)
         st['sent_midi'] = dict(st.get('midi') or {})
         st['sent_new'] = st['new_face']
         st['sent_reset'] = st['reset']
 
     if frame %% 2 == 0:
-        for name, fn in (('gz_out', 'out.png'), ('gz_heat', 'heat.png'), ('gz_ai', 'ai_heat.png'), ('gz_attn', 'ai_attn.png')):
+        for name, fn in (('gz_out', 'out.png'), ('gz_heat', 'heat.png'), ('gz_ai', 'ai_heat.png'), ('gz_attn', 'ai_attn.png'), ('face_atlas_img', 'faces_atlas_live.png')):
             try:
                 mt = os.path.getmtime(BRIDGE + '/' + fn)
             except Exception:
@@ -2946,6 +3232,33 @@ def _mk_img(name, rel, x, y):
     return n_
 
 
+def _mk_turn_glsl(name, src, x, y):
+    """建一个 angel_turn_shader.glsl 的 GLSL TOP（ang_turn：转动；ang_clipA / ang_clipB：只按城堡真实位置切掉城堡范围，theta=0 时就是原样通过）。"""
+    n_ = p.op(name) or p.create(glslTOP, name)
+    n_.inputConnectors[0].connect(src)
+    n_.par.outputresolution = 'custom'
+    n_.par.resolutionw = 1920
+    n_.par.resolutionh = 1080
+    try:
+        n_.par.inputextenduv = 'zero'
+    except Exception:
+        pass
+    try:
+        n_.seq.vec.numBlocks = 10
+    except Exception as e_:
+        print(name, '的 vec 序列设置失败:', repr(e_)[:60])
+    n_.par.vec0name = 'uT'
+    n_.par.vec1name = 'uM'
+    for i_ in range(8):
+        setattr(n_.par, 'vec' + str(2 + i_) + 'name', 'uB' + str(i_))
+    px_ = p.op(name + '_pixel')
+    if px_ is not None:
+        with open(_os.path.normpath(_os.path.join(BRIDGE, '..', '..', 'code', 'angel_turn_shader.glsl')), encoding='utf-8') as fh_:
+            px_.text = fh_.read()
+    n_.nodeX, n_.nodeY = x, y
+    return n_
+
+
 def _mk_tf(name, src, x, y):
     t_ = p.op(name) or p.create(transformTOP, name)
     t_.inputConnectors[0].connect(src)
@@ -3094,29 +3407,9 @@ for _k in range(3):
         print('天使着色节点没建成（天使照常，只是不会变红）:', repr(e_)[:80])
     if _k == 0:
         try:                                                          # 天使"转过来" + 切掉箱子范围（GLSL，angel_turn_shader.glsl）
-            _tn = p.op('ang_turn') or p.create(glslTOP, 'ang_turn')
-            _tn.inputConnectors[0].connect(_src)
-            _tn.par.outputresolution = 'custom'
-            _tn.par.resolutionw = 1920
-            _tn.par.resolutionh = 1080
-            try:
-                _tn.par.inputextenduv = 'zero'
-            except Exception:
-                pass
-            try:
-                _tn.seq.vec.numBlocks = 10
-            except Exception as e_:
-                print('ang_turn 的 vec 序列设置失败:', repr(e_)[:60])
-            _tn.par.vec0name = 'uT'
-            _tn.par.vec1name = 'uM'
-            for _i in range(8):
-                setattr(_tn.par, 'vec' + str(2 + _i) + 'name', 'uB' + str(_i))
-            _tpx = p.op('ang_turn_pixel')
-            if _tpx is not None:
-                with open(_os.path.normpath(_os.path.join(BRIDGE, '..', '..', 'code', 'angel_turn_shader.glsl')), encoding='utf-8') as _fh:
-                    _tpx.text = _fh.read()
-            _tn.nodeX, _tn.nodeY = 2100, -1750
-            _src = _tn
+            _tn = _mk_turn_glsl('ang_turn', _src, 2100, -1750)             # 只负责"转过来"（不切边）
+            _ca = _mk_turn_glsl('ang_clipA', _tn, 2250, -1750)             # 原天使：按城堡真实位置切
+            _src = _ca
             print('天使转动就绪（angel_turn_shader.glsl）；着色器有错时程序会自动绕开')
         except Exception as e_:
             print('天使转动没建成（天使照常）:', repr(e_)[:100])
@@ -3128,6 +3421,29 @@ for _k in range(3):
     _nm = 'ang_chain' + str(_k + 1)
     _ch = p.op(_nm) or p.create(overTOP, _nm)
     _ch.inputConnectors[0].connect(_fd)
+    if _k == 0:
+        try:                                                          # 镜像天使：从"转过来之后、切边之前"取一份 -> 淡入 -> 左右翻转 -> 再按城堡真实位置切一遍（城堡不在画面正中间，不能用镜像的切线）-> 亮度（两边都高时才出现）
+            _mf = p.op('ang_mir_fade') or p.create(crossTOP, 'ang_mir_fade')
+            _mf.inputConnectors[0].connect(blank_img)
+            _mf.inputConnectors[1].connect(_tn)
+            _mf.par.cross = 0.0
+            _fl = p.op('ang_mir_flip') or p.create(flipTOP, 'ang_mir_flip')
+            _fl.inputConnectors[0].connect(_mf)
+            try:
+                _fl.par.flipx = True
+            except Exception as e_:
+                print('ang_mir_flip 的 flipx 设置失败:', repr(e_)[:60])
+            _cb = _mk_turn_glsl('ang_clipB', _fl, 2350, -2250)
+            _ml = p.op('ang_mir_lv') or p.create(levelTOP, 'ang_mir_lv')
+            _ml.inputConnectors[0].connect(_cb)
+            _ml.par.opacity = 0.0
+            _mf.nodeX, _mf.nodeY = 2050, -2250
+            _fl.nodeX, _fl.nodeY = 2200, -2250
+            _ml.nodeX, _ml.nodeY = 2500, -2250
+        except Exception as e_:
+            print('镜像天使没建成（天使照常）:', repr(e_)[:100])
+    if _k == 1 and p.op('ang_mir_lv') is not None:
+        _ch.inputConnectors[0].connect(p.op('ang_mir_lv'))
     _ch.inputConnectors[1].connect(_prev_a)
     _cp.nodeX, _cp.nodeY = 1900, -1850 - 300 * _k
     _fd.nodeX, _fd.nodeY = 2050, -1850 - 300 * _k
@@ -3333,28 +3649,87 @@ try:
 except Exception as e:
     print('castle_pre 的 cross 设置失败:', e)
 castle_pre.nodeX, castle_pre.nodeY = 1000, -1350
-castle_xf = p.op('castle_xf') or p.create(crossTOP, 'castle_xf')
-castle_xf.inputConnectors[0].connect(castle_pre)       # 万花筒/叠加中的脸/标准脸（给纸箱每个面用）
-castle_xf.inputConnectors[1].connect(_at)      # 黑白 AI 注意力图（方形）
+castle_xf_raw = p.op('castle_xf_raw')                  # 原来的 castle_xf（Cross：脸 <-> 黑白注意力图）改名为 castle_xf_raw；新的 castle_xf 是它外面包的一层亮度控制，棋盘场景时淡出，城堡/小三角/拼脸一起退场
+if castle_xf_raw is None:
+    _oldx = p.op('castle_xf')
+    if _oldx is not None and _oldx.OPType == 'crossTOP':
+        _oldx.name = 'castle_xf_raw'
+        castle_xf_raw = _oldx
+    else:
+        castle_xf_raw = p.create(crossTOP, 'castle_xf_raw')
+castle_xf_raw.inputConnectors[0].connect(castle_pre)       # 万花筒/叠加中的脸/标准脸（给纸箱每个面用）
+castle_xf_raw.inputConnectors[1].connect(_at)      # 黑白 AI 注意力图（方形）
 try:
-    castle_xf.par.cross = 0.0
+    castle_xf_raw.par.cross = 0.0
 except Exception as e:
-    print('castle_xf 的 cross 设置失败:', e)
-castle_xf.nodeX, castle_xf.nodeY = 950, -1250
-# --- 巨大拼脸：6 个"零件"（额头A/左眼B/右眼C/鼻子D/嘴E/下巴F），每个从 12 张爆开脸 + 此刻的脸里挑一张（Switch）；
-#     三块箱子各用一个 GLSL 把它们按大脸的位置拼好 -> 再和万花筒(castle_xf)混合，成为三块箱子各自的纹理 castle_pc_top/mid/bot ---
+    print('castle_xf_raw 的 cross 设置失败:', e)
+castle_xf = p.op('castle_xf')
+if castle_xf is None or castle_xf.OPType != 'levelTOP':
+    castle_xf = p.create(levelTOP, 'castle_xf')
+castle_xf.inputConnectors[0].connect(castle_xf_raw)
 try:
-    _gf_srcs = [p.op('burst_img' + str(_i)) for _i in range(12)] + [sw]
-    _gf_srcs = [x_ for x_ in _gf_srcs if x_ is not None]
-    for _j, _nm in enumerate('ABCDEF'):
-        _s6 = p.op('gf_p' + _nm) or p.create(switchTOP, 'gf_p' + _nm)
-        for _i2, _src2 in enumerate(_gf_srcs):
-            _s6.inputConnectors[_i2].connect(_src2)
-        try:
-            _s6.par.index = _j
-        except Exception:
-            pass
-        _s6.nodeX, _s6.nodeY = 1000 + 150 * _j, -3500
+    castle_xf.par.opacity = 1.0
+except Exception as e:
+    print('castle_xf 的 opacity 设置失败:', e)
+castle_xf_raw.nodeX, castle_xf_raw.nodeY = 950, -1250
+castle_xf.nodeX, castle_xf.nodeY = 1100, -1250
+try:                                                    # 万一 Kantan 形状的纹理跟着改名指到了 castle_xf_raw，改回 castle_xf（这样它们才会跟着棋盘场景淡出）
+    for _sh in op('/project1/kantanMapper/project/allShapes').children:
+        _pp = _sh.op('parameters')
+        if _pp is not None and hasattr(_pp.par, 'Texture'):
+            _tv = _pp.par.Texture.eval()
+            if str(getattr(_tv, 'path', _tv)) == '/project1/castle_xf_raw':
+                _pp.par.Texture = '/project1/castle_xf'
+except Exception as e:
+    print('检查 Kantan 形状的纹理时出错（不影响）:', repr(e)[:80])
+# --- 脸的图集：face_atlas = 静态图集(12 张爆开脸 + 两个标准脸) + 此刻的实时脸叠在第 12 格；巨大拼脸和棋盘的着色器都只读这一张（每个节点只有 1 个输入）---
+try:
+    for _old in ('gf_pA', 'gf_pB', 'gf_pC', 'gf_pD', 'gf_pE', 'gf_pF'):          # 旧版的 Switch 节点：不再使用
+        if p.op(_old) is not None:
+            p.op(_old).destroy()
+    face_atlas_img = p.op('face_atlas_img') or p.create(moviefileinTOP, 'face_atlas_img')
+    import shutil as _sh
+    _static = _os.path.normpath(_os.path.join(BRIDGE, '..', '..', 'assets', 'atlas', 'faces_atlas.png'))
+    _live = _os.path.join(BRIDGE, 'faces_atlas_live.png')
+    if not _os.path.exists(_live):
+        _sh.copyfile(_static, _live)                       # 还没有会更新的图集时，先用静态的；gaze_bridge 在棋盘/拼脸场景里会不断更新它
+    face_atlas_img.par.file = _live
+    face_live_tf = p.op('face_live_tf') or p.create(transformTOP, 'face_live_tf')
+    face_live_tf.inputConnectors[0].connect(sw)
+    face_live_tf.par.extend = 'zero'
+    face_live_tf.par.outputresolution = 'custom'
+    face_live_tf.par.resolutionw = 1024
+    face_live_tf.par.resolutionh = 1024
+    face_live_tf.par.sx = 0.25
+    face_live_tf.par.sy = 0.25
+    face_live_tf.par.tx = -0.375
+    face_live_tf.par.ty = -0.375
+    face_ai_tf = p.op('face_ai_tf') or p.create(transformTOP, 'face_ai_tf')           # 此刻实时脸的 AI 注意力叠图 -> 图集第 15 格（右下角）
+    face_ai_tf.inputConnectors[0].connect(p.op('gz_ai') or sw)
+    face_ai_tf.par.extend = 'zero'
+    face_ai_tf.par.outputresolution = 'custom'
+    face_ai_tf.par.resolutionw = 1024
+    face_ai_tf.par.resolutionh = 1024
+    face_ai_tf.par.sx = 0.25
+    face_ai_tf.par.sy = 0.25
+    face_ai_tf.par.tx = 0.375
+    face_ai_tf.par.ty = -0.375
+    face_atlas0 = p.op('face_atlas0') or p.create(overTOP, 'face_atlas0')
+    face_atlas0.inputConnectors[0].connect(face_ai_tf)
+    face_atlas0.inputConnectors[1].connect(face_atlas_img)
+    face_atlas = p.op('face_atlas') or p.create(overTOP, 'face_atlas')
+    face_atlas.inputConnectors[0].connect(face_live_tf)
+    face_atlas.inputConnectors[1].connect(face_atlas0)
+    face_ai_tf.nodeX, face_ai_tf.nodeY = 1000, -3700
+    face_atlas0.nodeX, face_atlas0.nodeY = 1200, -3600
+    face_atlas_img.nodeX, face_atlas_img.nodeY = 1000, -3400
+    face_live_tf.nodeX, face_live_tf.nodeY = 1000, -3550
+    face_atlas.nodeX, face_atlas.nodeY = 1200, -3450
+    print('脸的图集就绪：face_atlas（4x4 格：0~11 爆开脸，12 此刻的实时脸，13/14 两个标准脸）')
+except Exception as e_:
+    print('脸的图集没建成（巨大拼脸和棋盘会受影响）:', repr(e_)[:120])
+# --- 巨大拼脸：三块箱子各用一个 GLSL（读图集）拼好自己那一块，再和万花筒(castle_xf)混合，成为各自的纹理 castle_pc_top/mid/bot ---
+try:
     _gpx = _os.path.normpath(_os.path.join(BRIDGE, '..', '..', 'code', 'giant_face_shader.glsl'))
     for _k3, (_nm3, _key3) in enumerate((('gf_top', 'top'), ('gf_mid', 'mid'), ('gf_bot', 'bot'))):
         _g = p.op(_nm3) or p.create(glslTOP, _nm3)
@@ -3362,17 +3737,18 @@ try:
         _g.par.resolutionw = 1024
         _g.par.resolutionh = 1024
         try:
-            _g.seq.vec.numBlocks = 2
+            _g.seq.vec.numBlocks = 4
         except Exception as e_:
             print(_nm3, '的 vec 序列设置失败:', repr(e_)[:60])
         _g.par.vec0name = 'uP'
         _g.par.vec1name = 'uQ'
+        _g.par.vec2name = 'uF0'
+        _g.par.vec3name = 'uF1'
         _px3 = p.op(_nm3 + '_pixel')
         if _px3 is not None:
             with open(_gpx, encoding='utf-8') as _fh:
                 _px3.text = _fh.read()
-        for _j2, _nm2 in enumerate('ABCDEF'):
-            _g.inputConnectors[_j2].connect(p.op('gf_p' + _nm2))
+        _g.inputConnectors[0].connect(face_atlas)
         _c = p.op('castle_pc_' + _key3) or p.create(crossTOP, 'castle_pc_' + _key3)
         _c.inputConnectors[0].connect(castle_xf)
         _c.inputConnectors[1].connect(_g)
@@ -3380,11 +3756,61 @@ try:
             _c.par.cross = 0.0
         except Exception:
             pass
-        _g.nodeX, _g.nodeY = 1000 + 300 * _k3, -3700
-        _c.nodeX, _c.nodeY = 1000 + 300 * _k3, -3850
+        _g.nodeX, _g.nodeY = 1400 + 300 * _k3, -3500
+        _c.nodeX, _c.nodeY = 1400 + 300 * _k3, -3650
     print('巨大拼脸就绪：castle_pc_top / castle_pc_mid / castle_pc_bot（在 Kantan 里用 assign_giant.py 指给三块箱子）')
 except Exception as e_:
     print('巨大拼脸没建成（其他照常）:', repr(e_)[:120])
+# --- 棋盘场景：board_tex（GLSL，读图集，1080x1080）-> board_screen（放在 1920x1080 屏幕中间）-> board_view（和全屏万花筒 gz_final 交叉淡入淡出，窗口读它）；
+#     table_out = 方形万花筒(castle_xf) <-> board_tex，给将来桌子上那一个 Kantan 长方形当纹理 ---
+try:
+    board_tex = p.op('board_tex') or p.create(glslTOP, 'board_tex')
+    board_tex.par.outputresolution = 'custom'
+    board_tex.par.resolutionw = 1080
+    board_tex.par.resolutionh = 1080
+    try:
+        board_tex.seq.vec.numBlocks = 6
+    except Exception as e_:
+        print('board_tex 的 vec 序列设置失败:', repr(e_)[:60])
+    board_tex.par.vec0name = 'uA'
+    for _i in range(4):
+        setattr(board_tex.par, 'vec' + str(1 + _i) + 'name', 'uQ' + str(_i))
+    board_tex.par.vec5name = 'uY'
+    _bpx = p.op('board_tex_pixel')
+    if _bpx is not None:
+        with open(_os.path.normpath(_os.path.join(BRIDGE, '..', '..', 'code', 'board_shader.glsl')), encoding='utf-8') as _fh:
+            _bpx.text = _fh.read()
+    board_tex.inputConnectors[0].connect(face_atlas)
+    board_screen = p.op('board_screen') or p.create(transformTOP, 'board_screen')
+    board_screen.inputConnectors[0].connect(board_tex)
+    board_screen.par.extend = 'zero'
+    board_screen.par.outputresolution = 'custom'
+    board_screen.par.resolutionw = 1920
+    board_screen.par.resolutionh = 1080
+    board_screen.par.sx = 1080.0 / 1920.0
+    board_screen.par.sy = 1.0
+    board_view = p.op('board_view') or p.create(crossTOP, 'board_view')
+    board_view.inputConnectors[0].connect(p.op('gz_final') or p.op('gz_over'))
+    board_view.inputConnectors[1].connect(board_screen)
+    board_view.par.cross = 0.0
+    table_out = p.op('table_out') or p.create(crossTOP, 'table_out')
+    table_out.inputConnectors[0].connect(castle_xf)
+    table_out.inputConnectors[1].connect(board_tex)
+    table_out.par.cross = 0.0
+    board_only = p.op('board_only') or p.create(levelTOP, 'board_only')       # 只在棋盘场景才出现（平时透明）：Kantan 里新画的"棋盘方块"先用它
+    board_only.inputConnectors[0].connect(board_tex)
+    try:
+        board_only.par.opacity = 0.0
+    except Exception as e_:
+        print('board_only opacity 设置失败:', repr(e_)[:60])
+    board_only.nodeX, board_only.nodeY = 2750, -3350
+    board_tex.nodeX, board_tex.nodeY = 2600, -3500
+    board_screen.nodeX, board_screen.nodeY = 2750, -3500
+    board_view.nodeX, board_view.nodeY = 2900, -3500
+    table_out.nodeX, table_out.nodeY = 2750, -3650
+    print('棋盘就绪：board_tex / board_view（窗口）/ board_only（Kantan 新方块先用它，平时透明）/ table_out（将来桌子用）；手动触发 code/test_board.py')
+except Exception as e_:
+    print('棋盘没建成（其他照常）:', repr(e_)[:120])
 # --- 面具：左 = 标准脸，右 = 此刻的脸（裁成椭圆）；三角形用 castle_tri（可淡出的城堡纹理）---
 import os as _os4
 _asm = lambda *r: _os4.path.normpath(_os4.path.join(BRIDGE, '..', '..', 'assets', 'masks', *r))
@@ -3413,12 +3839,49 @@ def _mk_face_tf(name, src):
 mask_live_tf = _mk_face_tf('mask_live_tf', sw)                                   # 此刻 Lucy 画的脸
 mask_rand_tf = _mk_face_tf('mask_rand_tf', p.op('burst_img0') or sw)             # 随机挑的一张脸（右面具用，程序会换里层输入）
 mask_rand_tf_L = _mk_face_tf('mask_rand_tf_L', p.op('burst_img1') or sw)         # 随机挑的一张脸（左面具用）
-mask_L = p.op('mask_L') or p.create(crossTOP, 'mask_L')
-mask_L.inputConnectors[0].connect(blank_sq)
-mask_L.inputConnectors[1].connect(mask_live_tf)
-mask_R = p.op('mask_R') or p.create(crossTOP, 'mask_R')
-mask_R.inputConnectors[0].connect(blank_sq)
-mask_R.inputConnectors[1].connect(mask_live_tf)
+def _mk_mask_pair(side, face_src):
+    """面具纹理 = 原来的 Cross（空白 <-> 脸，cross 随面具淡入淡出）改名 mask_X_raw，外面再包一层 GLSL（mouth_warp_shader.glsl：嘴随音乐张合）叫 mask_X，
+    Kantan 里的形状还指着 mask_X，不用重新指。"""
+    raw_ = p.op('mask_' + side + '_raw')
+    if raw_ is None:
+        old_ = p.op('mask_' + side)
+        if old_ is not None and old_.OPType == 'crossTOP':
+            old_.name = 'mask_' + side + '_raw'
+            raw_ = old_
+        else:
+            raw_ = p.create(crossTOP, 'mask_' + side + '_raw')
+    raw_.inputConnectors[0].connect(blank_sq)
+    raw_.inputConnectors[1].connect(face_src)
+    w_ = p.op('mask_' + side)
+    if w_ is None or w_.OPType != 'glslTOP':
+        w_ = p.create(glslTOP, 'mask_' + side)
+    w_.inputConnectors[0].connect(raw_)
+    w_.par.vec0name = 'uM'
+    w_.par.vec0valuex = 0.0
+    w_.par.vec0valuey = 0.5
+    w_.par.vec0valuez = 0.695
+    px_ = p.op('mask_' + side + '_pixel')
+    if px_ is not None:
+        with open(_os.path.normpath(_os.path.join(BRIDGE, '..', '..', 'code', 'mouth_warp_shader.glsl')), encoding='utf-8') as fh_:
+            px_.text = fh_.read()
+    return raw_, w_
+
+
+mask_L_raw, mask_L = _mk_mask_pair('L', mask_live_tf)
+mask_R_raw, mask_R = _mk_mask_pair('R', mask_live_tf)
+mask_L_raw.nodeX, mask_L_raw.nodeY = 1100, -1500
+mask_R_raw.nodeX, mask_R_raw.nodeY = 1100, -1650
+mask_L.nodeX, mask_L.nodeY = 1250, -1500
+mask_R.nodeX, mask_R.nodeY = 1250, -1650
+try:                                                    # 万一 Kantan 形状的纹理跟着改名指到了 mask_X_raw，改回 mask_X（这样它们才会唱歌）
+    for _sh in op('/project1/kantanMapper/project/allShapes').children:
+        _pp = _sh.op('parameters')
+        if _pp is not None and hasattr(_pp.par, 'Texture'):
+            _tv = str(getattr(_pp.par.Texture.eval(), 'path', _pp.par.Texture.eval()))
+            if _tv in ('/project1/mask_L_raw', '/project1/mask_R_raw'):
+                _pp.par.Texture = _tv.replace('_raw', '')
+except Exception as e:
+    print('检查面具形状纹理时出错（不影响）:', repr(e)[:80])
 _dev_w, _dev_h = 640, 280
 try:                                                    # dev_fit.py 量过你的长方形比例后，画布大小存在 dev_res.json 里，重装也沿用
     _dr = json.load(open(_os.path.join(BRIDGE, 'dev_res.json'), encoding='utf-8'))
@@ -3435,7 +3898,7 @@ for _s in ('L', 'R'):                                  # 偏离度数字：Text 
     except Exception as e:
         print('dev_tf_' + _s, 'extend 设置失败:', repr(e)[:60])
     _v.inputConnectors[0].connect(_tf)
-    for k_, v_ in (('outputresolution', 'custom'), ('resolutionw', _dev_w), ('resolutionh', _dev_h), ('text', 'DEVIATION' + chr(10) + '0.00'), ('fontsizex', 54), ('alignx', 'center'), ('aligny', 'center'),
+    for k_, v_ in (('outputresolution', 'custom'), ('resolutionw', _dev_w), ('resolutionh', _dev_h), ('text', 'DEVIATION' + chr(10) + '0.00'), ('fontsizex', round(0.0625 * _dev_w, 1)), ('alignx', 'center'), ('aligny', 'center'),
                    ('fontcolorr', 0.55), ('fontcolorg', 1.0), ('fontcolorb', 0.8), ('bgcolorr', 0.0), ('bgcolorg', 0.0), ('bgcolorb', 0.0), ('bgalpha', 0.0)):
         try:
             setattr(_t.par, k_, v_)
@@ -3448,7 +3911,7 @@ for _s in ('L', 'R'):                                  # 偏离度数字：Text 
 castle_tri = p.op('castle_tri') or p.create(crossTOP, 'castle_tri')
 castle_tri.inputConnectors[0].connect(castle_xf)
 castle_tri.inputConnectors[1].connect(blank_sq)
-for _n in (mask_L, mask_R, castle_tri):
+for _n in (mask_L_raw, mask_R_raw, castle_tri):
     try:
         _n.par.cross = 0.0
     except Exception as e:

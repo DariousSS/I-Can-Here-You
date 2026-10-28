@@ -1,0 +1,28 @@
+# 右边墙上打印的字（对方的视角，几次住宿合成的"缩影"）。草稿 v3，可改。
+# 声音 VOICE: MAIN = 主角（天真好奇，童声，白色大字）  ADULT = 大人谈钱（灰色小字，不出声）  PHONE = 电话里的朋友/聊天（淡青色，字只有一半，像隔着墙听到）
+# 类型 TYPE : A = 我确定听到的原话（实线，逐字）  C = 想象/合成（虚线、淡一点）
+# 何时 WHEN : CALM = 卧室平静时慢慢打出  INVADE = 入侵时（声音越过墙，更清楚）；故事按顺序走，每个 CALM 打 2~3 句，每个 INVADE 打 1~2 句，走完循环
+# 作品旁边可以写一句：根据几次住宿的经历合成（composite），不指向任何一个具体的人
+
+# 第一幕：家里需要钱
+CALM   | ADULT | C | We need to rent out a room.                            # 我们得把一个房间租出去
+CALM   | ADULT | C | Just for a few months.                                 # 就几个月
+CALM   | ADULT | C | It will help with the bills.                           # 能补贴点开销
+
+# 第二幕：来了陌生人
+CALM   | MAIN  | C | Someone is moving in!                                  # 有人要搬进来了！
+CALM   | MAIN  | C | A stranger. In our house.                              # 一个陌生人，在我们家
+CALM   | MAIN  | A | Why did she just drag her large suitcase up the stairs? # （原话）她为什么拖着那么大的箱子上楼？
+CALM   | MAIN  | C | Nothing ever happens here. Now something is happening.  # 这里从来没什么事，现在有事了
+INVADE | MAIN  | A | She looks amazing, I got blush on me.                  # （原话）她看起来好棒，我都脸红了
+
+# 第三幕：聊天越说越多，说的人不知道声音会穿过墙
+CALM   | PHONE | C | ...you won't believe it, there's a girl upstairs...    # ……你不会相信，楼上有个女生……
+CALM   | PHONE | C | ...her room is right next to mine...                   # ……她的房间就在我隔壁……
+CALM   | PHONE | C | ...I can hear everything...                            # ……我什么都听得到……
+INVADE | MAIN  | C | It's just talking. It's not a big deal.                  # 只是聊聊天，没什么大不了
+INVADE | MAIN  | C | The walls are thin. Everything goes both ways.          # 墙很薄，声音两边都能听见
+INVADE | MAIN  | A | I feel so bad about myself.                             # （原话）我觉得自己好糟糕
+
+# 结尾（两边同时）
+INVADE | BOTH  | A | I'm in my own room.                                    # （原话）我在我自己的房间里

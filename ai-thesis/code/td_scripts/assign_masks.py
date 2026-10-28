@@ -2,7 +2,7 @@
 #  - 面具：你在 Kantan 里新画的、还没有城堡纹理的两个形状（自动认），x 更靠左的是 左面具(mask_L=标准脸)，靠右的是 右面具(mask_R=此刻的脸)
 #  - 小三角形：名字在 audio_fx.json 的 tri_names 里（默认 Freeform16、Freeform17）-> castle_tri（可淡出的城堡纹理）
 import json
-KNOWN = ('/project1/castle_xf', '/project1/castle_tri', '/project1/castle_ball_tf', '/project1/scene_all', '/project1/scene_out', '/project1/hand_out', '/project1/mask_L', '/project1/mask_R', '/project1/castle_pc_top', '/project1/castle_pc_mid', '/project1/castle_pc_bot')
+KNOWN = ('/project1/castle_xf', '/project1/castle_tri', '/project1/castle_ball_tf', '/project1/scene_all', '/project1/scene_out', '/project1/hand_out', '/project1/mask_L', '/project1/mask_R', '/project1/castle_pc_top', '/project1/castle_pc_mid', '/project1/castle_pc_bot', '/project1/table_out')
 CANVAS_AREA = 1920 * 1080
 try:
     tri_names = json.load(open('/Users/shanzeyang/Desktop/I can Here You/ai-thesis/td_live/gaze_bridge/audio_fx.json', encoding='utf-8')).get('tri_names', ['Freeform16', 'Freeform17'])

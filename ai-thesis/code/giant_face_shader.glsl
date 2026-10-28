@@ -1,21 +1,27 @@
 // 城堡上的巨大拼脸（TouchDesigner GLSL TOP 的像素着色器）
 // 整个城堡被当成一张大脸：顶上小方块 = 额头和头发，中间宽长方形 = 眼睛带（左眼、右眼），下面大方块 = 鼻子、嘴、下巴。
-// 6 个零件各自来自不同的脸（输入 0~5 = 额头A、左眼B、右眼C、鼻子D、嘴E、下巴F），每块箱子各用一份这个着色器，只算自己那一块。
+// 6 个零件各自来自不同的脸（用哪张由 uF0/uF1 给：额头A、左眼B、右眼C、鼻子D、嘴E、下巴F），脸来自输入 0 的图集（4x4 格：0~11 爆开脸，12 此刻的实时脸）；每块箱子各用一份这个着色器，只算自己那一块。
 // uP = (这块箱子在"大脸"里的范围 左, 上, 右, 下)（0~1，y 向下）
 // uQ = (接缝线强度 0~1, 像素化格数（0 = 照片）, 时间, 总开关 0~1)
 uniform vec4 uP;
 uniform vec4 uQ;
+uniform vec4 uF0;
+uniform vec4 uF1;
 
 out vec4 fragColor;
 
 vec4 pick(int part, vec2 f)
 {
-	if (part == 0) { return texture(sTD2DInputs[0], f); }
-	if (part == 1) { return texture(sTD2DInputs[1], f); }
-	if (part == 2) { return texture(sTD2DInputs[2], f); }
-	if (part == 3) { return texture(sTD2DInputs[3], f); }
-	if (part == 4) { return texture(sTD2DInputs[4], f); }
-	return texture(sTD2DInputs[5], f);
+	float k = uF0.x;
+	if (part == 1) { k = uF0.y; }
+	if (part == 2) { k = uF0.z; }
+	if (part == 3) { k = uF0.w; }
+	if (part == 4) { k = uF1.x; }
+	if (part == 5) { k = uF1.y; }
+	float col = mod(k, 4.0);
+	float row = floor(k / 4.0);
+	vec2 ff = clamp(f, 0.004, 0.996);
+	return texture(sTD2DInputs[0], vec2((col + ff.x) / 4.0, (3.0 - row + ff.y) / 4.0));
 }
 
 void main()
