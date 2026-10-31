@@ -1237,6 +1237,8 @@ def _update_output(st):
         k = op('map_fit')
         if k is not None:
             want = k.path
+    if op('sc_perfstage') is not None:                        # 表演模式黑屏切换：有舞台时让窗口显示舞台（舞台里的开关 0=map_fit，1=黑屏）
+        want = '/project1/sc_perfstage'
     if str(w.par.winop.eval()) != want:
         w.par.winop = want
         print('gz_exec 输出已切换为', want)

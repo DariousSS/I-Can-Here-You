@@ -58,6 +58,9 @@ CALM = (%f, %f)
 INV = (%f, %f)
 ROOM_SEC, ROOM_FADE = %f, %f
 BASE = %r
+ANG_CALM = 0.0      # 平时天使有多亮（0~1，0 = 平时完全看不见，只在报警那一句出现；想要一直淡淡地在就改成 0.5）
+ANG_SIZE = 0.95     # 红色天使占形状高度的多少
+ANG_WHITE = 0.8     # 白色天使出现时有多亮（0~1）
 
 def onFrameEnd(frame):
     now = time.time()
@@ -67,6 +70,9 @@ def onFrameEnd(frame):
         s = {'phase': 'calm', 'next': now + random.uniform(*CALM), 'inv': 0.0, 'last': now, 'room': 0, 'room_next': now + ROOM_SEC, 'fade_t0': None, 'front': 'A'}
     dt = min(0.2, now - s['last'])
     s['last'] = now
+    for k_ in ('inv', 'snd', 'wl', 'wbl'):      # 数字衰减到接近 0 时直接归零（太小的数写进参数会变成 1.8e308，把左面具冲白、拉扯条变绿）
+        if abs(s.get(k_, 0.0)) < 0.0005:
+            s[k_] = 0.0
     force = me.fetch('force', None)
     if force:
         me.store('force', None)
@@ -83,7 +89,11 @@ def onFrameEnd(frame):
     s['inv'] += (target - s['inv']) * min(1.0, dt / 1.5)
     lid = p.op('sc_lid')
     if lid is not None:
-        lid.par.vec1valuex = s['inv']
+        gt_ = me.fetch('gl_target', None)                     # 房间故障由字幕直接控制（{glitch1}/{glitch2}/{glitchoff}）；字幕没在管时才跟着入侵走
+        if gt_ is None:
+            gt_ = s['inv']
+        s['gl'] = s.get('gl', 0.0) + (gt_ - s.get('gl', 0.0)) * min(1.0, dt / 0.35)
+        lid.par.vec1valuex = s['gl']
         lid.par.vec1valuey = now %% 1000.0
     snd = 0.0
     try:
@@ -142,6 +152,36 @@ def onFrameEnd(frame):
             pass
         pl.par.vec1valuez = s['inv'] * (0.7 + 0.3 * s['snd'])
         pl.par.vec1valuew = now %% 1000.0
+    ag = p.op('sc_angel')
+    if ag is not None:
+        al_ = me.fetch('alarm', None)                         # 字幕那一句带 {alarm} 时，字幕引擎会写入 (开始时间, 结束时间)
+        tg_ = 1.0 if (al_ and al_[0] <= now <= al_[1]) else 0.0
+        a0_ = s.get('alarm', 0.0)
+        a0_ += (tg_ - a0_) * min(1.0, dt / (0.10 if tg_ > a0_ else 2.5))     # 上升很快（突然），回落很慢
+        s['alarm'] = a0_
+        try:                                                  # 每帧读 item4（天使所在）和 item5（行李箱盖子）的位置，让瞳孔盯着盖子
+            bq2_ = {}
+            for c_ in op('/project1/kantanMapper/project/allShapes').children:
+                if c_.name in ('item4', 'item5'):
+                    pts_ = [(q_.x, q_.y) for q_ in c_.op('script1').points]
+                    bq2_[c_.name] = (min(q_[0] for q_ in pts_), max(q_[0] for q_ in pts_), min(q_[1] for q_ in pts_), max(q_[1] for q_ in pts_))
+            if len(bq2_) == 2:
+                ax0_, ax1_, ay0_, ay1_ = bq2_['item4']
+                lx0_, lx1_, ly0_, ly1_ = bq2_['item5']
+                ag.par.vec0valuex = (ax1_ - ax0_) / max(1.0, ay1_ - ay0_)
+                ag.par.vec1valuex = ((lx0_ + lx1_) / 2.0 - ax0_) / max(1.0, ax1_ - ax0_)
+                ag.par.vec1valuey = ((ly0_ + ly1_) / 2.0 - ay0_) / max(1.0, ay1_ - ay0_)
+        except Exception:
+            pass
+        ag.par.vec0valuey = now %% 1000.0
+        wt_, wbt_ = me.fetch('wa', 0.0), me.fetch('wb', 0.0)          # 白色天使：出现 / 放大（由字幕的 {white} {whitebig} {whiteoff} 控制）
+        s['wl'] = s.get('wl', 0.0) + (wt_ - s.get('wl', 0.0)) * min(1.0, dt / (0.6 if wt_ > s.get('wl', 0.0) else 1.2))
+        s['wbl'] = s.get('wbl', 0.0) + (wbt_ - s.get('wbl', 0.0)) * min(1.0, dt / 0.5)
+        ag.par.vec0valuez = a0_
+        ag.par.vec0valuew = max(ANG_CALM, ANG_WHITE * s['wl'], a0_)
+        ag.par.vec1valuew = s['wl'] * (0.28 + 0.30 * s['wbl'])      # 白色天使的眼睛睁开一点（放大时再多一点），不变红
+        sw_ = 0.55 + 0.35 * s['wbl']
+        ag.par.vec1valuez = sw_ * (1.0 - a0_) + ANG_SIZE * (1.0 + 0.2 * a0_) * a0_
     ml = p.op('sc_maskL')
     if ml is not None:
         ml.par.opacity = s['inv']

@@ -9,6 +9,7 @@ VOICE_DIR = '__VOICE__'
 SFX_VOL = 0.3                # 拍照声的音量（0~1，想更小就改小）
 VOL = {}                     # 不再用苹果的朗读声音（想恢复就写回 {'MAIN': 1.0, 'BOTH': 1.0, 'PHONE': 0.55, 'CHORUS': 0.8}）
 SPEED, HOLD, GAP, FADE_IN, FADE_OUT, END_PAUSE = 22.0, 2.0, 0.6, 0.3, 0.6, 8.0
+ECHO_STEP, ECHO_MAX = 0.7, 4   # {echo} 那一句打完后，每隔多少秒把最后一句再叠出来一遍 / 最多叠几遍（还会按墙上放得下的行数自动再限制）
 FONT = 56   # 所有人的字号统一（想大想小只改这个数）
 STY = {k: (1.0, 1.0, 1.0, FONT) for k in ('MAIN', 'ADULT', 'PHONE', 'BOTH', 'CHORUS')}   # 全部同色同字号，谁在说话让观众自己想象
 ALPHA = {'A': 1.0, 'B': 0.6, 'C': 0.82}
@@ -24,14 +25,21 @@ def _load():
                 parts = [x.strip() for x in ln.split('|', 3)]
                 if len(parts) == 4 and parts[0] in ('CALM', 'INVADE'):
                     tx_ = parts[3].split('#')[0].strip()
-                    mm_ = re.search(r'[{]([A-Za-z0-9_]+)[}][ ]*$', tx_)
-                    sfx_ = mm_.group(1) if mm_ else None
+                    mm_ = re.search(r'((?:[{][A-Za-z0-9_]+[}][ ]*)+)$', tx_)
+                    tags_ = re.findall(r'[{]([A-Za-z0-9_]+)[}]', mm_.group(1)) if mm_ else []
                     if mm_:
                         tx_ = tx_[:mm_.start()].strip()
-                    L.append((parts[0].lower(), parts[1], parts[2], tx_, sfx_))
+                    sfx_ = ([g_ for g_ in tags_ if g_.startswith('shutter')] or [None])[0]
+                    L.append((parts[0].lower(), parts[1], parts[2], tx_, sfx_, [g_ for g_ in tags_ if not g_.startswith('shutter')]))
     except Exception as e:
         print('字幕文件读取失败:', repr(e)[:80])
     return L
+
+def _reset(ex):
+    if ex is not None:
+        ex.store('wa', 0.0)
+        ex.store('wb', 0.0)
+        ex.store('gl_target', 0.0)
 
 def onFrameEnd(frame):
     p = op('/project1')
@@ -47,12 +55,13 @@ def onFrameEnd(frame):
         except Exception:
             idx = {}
         S = {'L': _load(), 'i': 0, 'cur': None, 'next': now + 1.0, 'asked': None, 'idx': idx}
+        _reset(p.op('sc_exec'))
     ex = p.op('sc_exec')
     sx = (ex.fetch('s', None) if ex is not None else None) or {}
     phase, inv = sx.get('phase', 'calm'), sx.get('inv', 0.0)
     cur = S['cur']
     if cur is None and now >= S['next'] and S['L']:
-        voice_when, voice, typ, full, sfx = S['L'][S['i']]
+        voice_when, voice, typ, full, sfx, flags = S['L'][S['i']]
         ready = (phase == voice_when) and (voice_when == 'calm' or inv > 0.5)
         if not ready:
             if phase != voice_when and S['asked'] != voice_when and ex is not None:
@@ -72,6 +81,7 @@ def onFrameEnd(frame):
                 if S['i'] >= len(S['L']):
                     S['i'] = 0
                     S['next'] = now + END_PAUSE
+                    _reset(ex)
             else:
                 if sfx:
                     try:
@@ -91,19 +101,51 @@ def onFrameEnd(frame):
                         spd = max(10.0, min(40.0, len(wrapped) / max(0.5, info['dur'] * 0.95)))
                     except Exception:
                         pass
-                cur = S['cur'] = {'wrapped': wrapped, 'alpha': ALPHA.get(typ, 0.8), 't0': now, 'shown': None, 'spd': spd}
+                cur = S['cur'] = {'wrapped': wrapped, 'alpha': ALPHA.get(typ, 0.8), 't0': now, 'shown': None, 'spd': spd, 'extra': 0.0}
+                if 'echo' in flags:                                  # 这一句打完后，最后一句在原处一遍一遍叠出来（像卡住的录音）
+                    sent_ = re.findall(r'[^.?!]+[.?!]', full)
+                    unit_ = chr(10).join(textwrap.wrap((sent_[-1] if sent_ else full).strip(), width))
+                    try:
+                        avail_ = int(float(txt.par.resolutionh) / (FONT * 1.25))
+                    except Exception:
+                        avail_ = 8
+                    nmax_ = max(1, min(ECHO_MAX, (avail_ - wrapped.count(chr(10)) - 1) // (unit_.count(chr(10)) + 1)))
+                    cur['echo'] = (unit_, nmax_)
+                    cur['extra'] = ECHO_STEP * nmax_ + 1.0
+                if 'alarm' in flags and ex is not None:             # 通知 sc_exec：天使这一段时间变大变红
+                    ex.store('alarm', (now, now + len(wrapped) / spd + HOLD + cur['extra'] + 0.5))
+                if ex is not None:                                   # 开始这句时触发的：白色天使出现/放大，房间故障轻/重
+                    if 'white' in flags or 'whitebig' in flags:
+                        ex.store('wa', 1.0)
+                    if 'whitebig' in flags:
+                        ex.store('wb', 1.0)
+                    if 'glitch1' in flags:
+                        ex.store('gl_target', 0.35)
+                    if 'glitch2' in flags:
+                        ex.store('gl_target', 1.0)
+                cur['off'] = [g_ for g_ in flags if g_.endswith('off')]
     op_ = 0.0
     if cur is not None:
         n = min(len(cur['wrapped']), int((now - cur['t0']) * cur['spd']) + 1)
         shown = cur['wrapped'][:n]
+        if cur.get('echo') and n >= len(cur['wrapped']):
+            k_ = int((now - cur['t0'] - len(cur['wrapped']) / cur['spd']) / ECHO_STEP)
+            if k_ > 0:
+                shown = cur['wrapped'] + (chr(10) + cur['echo'][0]) * min(cur['echo'][1], k_)
         if shown != cur['shown']:
             cur['shown'] = shown
             txt.par.text = shown
-        te = cur['t0'] + len(cur['wrapped']) / cur['spd'] + HOLD
+        te = cur['t0'] + len(cur['wrapped']) / cur['spd'] + HOLD + cur.get('extra', 0.0)
         fin = min(1.0, (now - cur['t0']) / FADE_IN)
         fout = max(0.0, min(1.0, (te + FADE_OUT - now) / FADE_OUT))
         op_ = fin * fout * cur['alpha']
         if now > te + FADE_OUT:
+            if ex is not None:                                       # 这句播完（含淡出）以后才消失的
+                if 'whiteoff' in cur.get('off', []):
+                    ex.store('wa', 0.0)
+                    ex.store('wb', 0.0)
+                if 'glitchoff' in cur.get('off', []):
+                    ex.store('gl_target', 0.0)
             S['cur'] = None
             txt.par.text = ''
             S['i'] += 1
@@ -111,6 +153,7 @@ def onFrameEnd(frame):
             if S['i'] >= len(S['L']):
                 S['i'] = 0
                 S['next'] = now + END_PAUSE
+                _reset(ex)
     lv.par.opacity = op_
     me.store('S', S)
 '''

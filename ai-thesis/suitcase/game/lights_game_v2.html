@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Seven days</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+html, body { margin: 0; height: 100%; background: #050507; overflow: hidden; }
+canvas { display: block; cursor: none; touch-action: none; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<script>
+// ===== 可以改的设置 =====
+var FLASH_R = 0.17;           // 手电筒大小（占房间边长的比例）
+var CLAP_THRESH = 0.35;       // 拍手多响才算（0~1，开麦克风后左下角有音量条可以对照）
+var HINT_AFTER = 28;          // 这么多秒还没找到，光点会在圈外轻轻闪一下提示
+var REVEAL_AFTER = 55;        // 这么多秒还没找到，光点会很亮地自己显出来
+var TYPE_CPS = 30, HOLD_SEC = 2.4, FONT_PX = 34;
+var DAYS = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
+var POOL = [
+  ['We need to rent out a room.', 'Someone is moving in!', 'I put a little bell on my door.', 'I told them: please don\'t come into my room.', 'Why did she just drag her large suitcase up the stairs?', 'What did she put in the fridge? I\'m so curious.'],
+  ['…you won\'t believe it, there\'s a girl upstairs…', '…she doesn\'t talk much, does she?…', '…what is she doing up there all day?…', '…cultural background… completely different…'],
+  ['She has gone out!', 'The door is open. Just a little.', 'Let me go in. Just a quick look.', '…I\'m in her room… right now…', 'Going through her trash…', '…look at these photos… sending them to my friends…'],
+  ['The bell rang.', 'It kept ringing. It wouldn\'t stop.', 'Then the bell stopped.', 'Someone was in my room.'],
+  ['Don\'t go into her room again.', 'What do I do? I already told the child not to go into her room.', 'She\'s so smart. I didn\'t even know opening a door could be recorded.', 'I can\'t lose this income.', 'I\'m so busy at work. I really don\'t want to deal with this.', 'I didn\'t think she\'d actually tell Mom.', 'She looked easy to push around.', 'Why don\'t you go play at your friend\'s house today?', '…she\'s a… liar…'],
+  ['Listen up. We\'re a family. We stick together.', 'You must be mistaken.', 'Going into her room? That never happened.', 'It\'s just talking. It\'s not a big deal.', 'This is my house.'],
+  ['I\'m in my own room.', 'She has moved out at last.', 'Another guest will come.']
+];
+var TINTS = ['rgba(255,200,150,0.0)', 'rgba(150,190,255,0.08)', 'rgba(255,170,150,0.08)', 'rgba(190,150,255,0.10)', 'rgba(150,255,200,0.07)', 'rgba(255,230,150,0.08)', 'rgba(120,120,140,0.20)'];
+// ===== 画布 =====
+var cv = document.getElementById('c'), cx = cv.getContext('2d');
+var W = 0, H = 0, HW = 0, dpr = 1, RS = 0, RX = 0, RY = 0;
+function resize() {
+  dpr = window.devicePixelRatio || 1; W = window.innerWidth; H = window.innerHeight; HW = W / 2;
+  cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); cv.style.width = W + 'px'; cv.style.height = H + 'px'; cx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  RS = Math.min(H * 0.92, HW * 0.96); RX = HW / 2 - RS / 2; RY = H / 2 - RS / 2;
+}
+window.addEventListener('resize', resize); resize();
+function now() { return performance.now() / 1000; }
+function rnd(a, b) { return a + Math.random() * (b - a); }
+// ===== 房间图：优先用 room_day1.png ~ room_day7.png，没有就用替身图 =====
+var BASEIMG = new Image(); BASEIMG.src = 'bedroom_sims_sq_noui.png';
+var dayImg = [];
+for (var di = 0; di < 7; di++) { (function (i) { var im = new Image(); im.onload = function () { dayImg[i] = im; }; im.src = 'room_day' + (i + 1) + '.png'; })(di); }
+function roomImage(d) { return dayImg[d] || (BASEIMG.complete && BASEIMG.naturalWidth ? BASEIMG : null); }
+var RC = document.createElement('canvas'); RC.width = RC.height = 512; var rc = RC.getContext('2d');
+var FC = document.createElement('canvas'); FC.width = FC.height = 512; var fc = FC.getContext('2d');
+var TC = document.createElement('canvas'); TC.width = TC.height = 48; var tcx = TC.getContext('2d');
+var strips = [], stripT = 0;
+function renderRoom(img, hx, hy, R, t) {
+  rc.clearRect(0, 0, 512, 512); rc.imageSmoothingEnabled = false;
+  tcx.clearRect(0, 0, 48, 48); tcx.drawImage(img, 0, 0, 48, 48);
+  rc.globalAlpha = 0.55; rc.drawImage(TC, 0, 0, 512, 512); rc.globalAlpha = 1;
+  if (t - stripT > 0.12) { stripT = t; strips = []; for (var i = 0; i < 14; i++) strips.push({ y: rnd(0, 480), h: rnd(8, 44), dx: rnd(-70, 70), a: rnd(0.25, 0.6) }); }
+  rc.imageSmoothingEnabled = true;
+  for (var s = 0; s < strips.length; s++) { var st = strips[s], iw = img.naturalWidth || 512; rc.globalAlpha = st.a; rc.drawImage(img, 0, st.y / 512 * iw, iw, st.h / 512 * iw, st.dx, st.y, 512, st.h); }
+  rc.globalAlpha = 1;
+  if (hx > -900) {
+    fc.clearRect(0, 0, 512, 512); fc.globalCompositeOperation = 'source-over'; fc.drawImage(img, 0, 0, 512, 512);
+    var g = fc.createRadialGradient(hx, hy, R * 0.55, hx, hy, R); g.addColorStop(0, 'rgba(0,0,0,1)'); g.addColorStop(1, 'rgba(0,0,0,0)');
+    fc.globalCompositeOperation = 'destination-in'; fc.fillStyle = g; fc.fillRect(0, 0, 512, 512); fc.globalCompositeOperation = 'source-over';
+    rc.drawImage(FC, 0, 0);
+  }
+}
+// ===== 声音 =====
+var AC = null, muted = false;
+function audio() { if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { AC = null; } } if (AC && AC.state === 'suspended') AC.resume(); return AC; }
+function tone(freq, dur, vol, type, delay) {
+  var a = audio(); if (!a || muted || !isFinite(freq) || !isFinite(vol) || !isFinite(dur)) return;
+  var t = a.currentTime + (delay || 0), o = a.createOscillator(), g = a.createGain();
+  o.type = type || 'sine'; o.frequency.value = freq;
+  g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  o.connect(g); g.connect(a.destination); o.start(t); o.stop(t + dur + 0.05);
+}
+var SCALE = [261.6, 293.7, 329.6, 392.0, 440.0, 523.3, 587.3];
+function pianoNote(f, d) { d = d || 0; tone(f * (1 + d), 1.6, 0.14, 'triangle'); tone(f * 2 * (1 + d), 0.9, 0.04, 'sine'); }
+function ding(delay) { tone(1318, 0.9, 0.10, 'sine', delay); tone(2637, 0.5, 0.03, 'sine', delay); }
+function stuckBell() { var t = 0; for (var i = 0; i < 16; i++) { ding(t); t += 0.12 + Math.random() * 0.22; } }
+// ===== 手：鼠标 / 摄像头 =====
+var hand = { x: -999, y: -999, seen: 0 };
+var cam = { on: false, video: null, octx: null, prev: null, mask: null, cw: 80, ch: 60, mass: 0, msg: '' };
+function attachStream(stream) {
+  var v = document.createElement('video'); v.muted = true; v.playsInline = true; v.srcObject = stream; v.play && v.play();
+  var off = document.createElement('canvas'); off.width = cam.cw; off.height = cam.ch;
+  cam.video = v; cam.off = off; cam.octx = off.getContext('2d', { willReadFrequently: true });
+  cam.prev = new Float32Array(cam.cw * cam.ch); cam.mask = new Float32Array(cam.cw * cam.ch); cam.on = true; cam.msg = '';
+}
+function startCam() {
+  if (cam.on) { cam.on = false; try { cam.video.srcObject.getTracks().forEach(function (tr) { tr.stop(); }); } catch (e) {} return; }
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { cam.msg = 'camera not available here'; return; }
+  navigator.mediaDevices.getUserMedia({ video: { width: 320, height: 240 }, audio: false }).then(attachStream).catch(function () { cam.msg = 'camera blocked or not found'; });
+}
+function camUpdate() {
+  if (!cam.on || !cam.video || cam.video.readyState < 2) return;
+  cam.octx.drawImage(cam.video, 0, 0, cam.cw, cam.ch);
+  var im = cam.octx.getImageData(0, 0, cam.cw, cam.ch).data, N = cam.cw * cam.ch, mass = 0, sx = 0, sy = 0;
+  for (var i = 0; i < N; i++) {
+    var g = 0.3 * im[i * 4] + 0.59 * im[i * 4 + 1] + 0.11 * im[i * 4 + 2], df = Math.abs(g - cam.prev[i]); cam.prev[i] = g;
+    var m = df > 18 ? Math.min(1, (df - 18) / 40) : 0; cam.mask[i] = Math.max(cam.mask[i] * 0.84, m);
+    if (cam.mask[i] > 0.2) { mass += cam.mask[i]; sx += (i % cam.cw) * cam.mask[i]; sy += Math.floor(i / cam.cw) * cam.mask[i]; }
+  }
+  cam.mass = mass;
+  if (mass > 25) { var tx = HW - (sx / mass + 0.5) / cam.cw * HW, ty = (sy / mass + 0.5) / cam.ch * H; hand.x += (tx - hand.x) * 0.35; hand.y += (ty - hand.y) * 0.35; hand.seen = now(); }
+}
+cv.addEventListener('pointermove', function (e) { if (!cam.on) { hand.x = e.clientX; hand.y = e.clientY; hand.seen = now(); } });
+// ===== 麦克风拍手 =====
+var mic = { on: false, an: null, buf: null, last: 0, prev: 0, level: 0, msg: '' };
+function startMic() {
+  if (mic.on) { mic.on = false; return; }
+  var a = audio(); if (!a || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { mic.msg = 'microphone not available here'; return; }
+  navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false }, video: false }).then(function (s) {
+    var src = a.createMediaStreamSource(s); mic.an = a.createAnalyser(); mic.an.fftSize = 1024; src.connect(mic.an); mic.buf = new Float32Array(1024); mic.on = true; mic.msg = '';
+  }).catch(function () { mic.msg = 'microphone blocked or not found'; });
+}
+function micUpdate(t) {
+  if (!mic.on || !mic.an) return;
+  mic.an.getFloatTimeDomainData(mic.buf); var pk = 0; for (var i = 0; i < mic.buf.length; i++) { var v = Math.abs(mic.buf[i]); if (v > pk) pk = v; }
+  mic.level = mic.level * 0.85 + pk * 0.15;
+  if (pk > CLAP_THRESH && mic.prev < CLAP_THRESH * 0.6 && t - mic.last > 0.5) { mic.last = t; doClap(); }
+  mic.prev = pk;
+}
+// ===== 游戏状态 =====
+var day = 0, week = 1, count = 0, state = 'search', stateT = now(), dayStart = now();
+var dot = null, flash = { scale: 1, t0: -9, tx: 0, ty: 0, hit: false, center: null };
+var flyers = [], rings = [], sentence = '', typed = 0, sentT = 0, lit = [false, false, false, false, false, false, false], fade = 1, jarPulse = 0;
+function newDay() {
+  var m = 0.16; dot = { u: rnd(m, 1 - m), v: rnd(0.2, 1 - m), found: false };
+  dayStart = now(); state = 'search'; stateT = now(); sentence = '';
+}
+newDay();
+function jarPos() { return { x: Math.max(70, HW * 0.12), y: H - 110 }; }
+function dotScreen() { return { x: RX + dot.u * RS, y: RY + dot.v * RS }; }
+function flashR() { return RS * FLASH_R; }
+function doClap() {
+  audio();
+  if (state !== 'search' || now() - flash.t0 < 0.9) return;
+  flash.t0 = now(); flash.hit = false; flash.center = null;
+  var ds = dotScreen();
+  if (hand.x > -900 && Math.hypot(ds.x - hand.x, ds.y - hand.y) < flashR() * 1.05) { flash.hit = true; flash.center = ds; }
+  else tone(180, 0.25, 0.08, 'triangle');
+}
+window.addEventListener('keydown', function (e) {
+  var k = e.key.toLowerCase();
+  if (e.key === ' ') { e.preventDefault(); doClap(); }
+  if (k === 'm') muted = !muted;
+  if (k === 'c') startCam();
+  if (k === 'k') startMic();
+  if (k === 'h') window.showDot = !window.showDot;
+  if (k === 'n' && state === 'search') { var ds = dotScreen(); hand.x = ds.x; hand.y = ds.y; hand.seen = now(); doClap(); }
+});
+cv.addEventListener('pointerdown', function () { audio(); doClap(); });
+function foundDot() {
+  var d = dotScreen(), jp = jarPos(); dot.found = true; state = 'found'; stateT = now();
+  rings.push({ x: d.x, y: d.y, t0: now() });
+  flyers.push({ sx: d.x, sy: d.y, tx: jp.x, ty: jp.y, t0: now() + 0.35, dur: 0.9 });
+  var pool = POOL[day]; sentence = pool[Math.floor(Math.random() * pool.length)]; typed = 0; sentT = now() + 0.9; lit[day] = true;
+  if (/kept ringing/.test(sentence)) setTimeout(stuckBell, 900); else if (/bell rang/.test(sentence)) setTimeout(function () { ding(0); }, 900);
+}
+function cellPos(i) { var w = HW * 0.84, x0 = HW + (HW - w) / 2, cw = w / 7; return { x: x0 + cw * (i + 0.5), y: H * 0.16, w: cw * 0.86, h: 52 }; }
+function glow(x, y, r, a, hue) {
+  var g = cx.createRadialGradient(x, y, 0, x, y, r * 4);
+  g.addColorStop(0, 'hsla(' + hue + ',100%,88%,' + a + ')'); g.addColorStop(0.25, 'hsla(' + hue + ',100%,70%,' + (a * 0.45) + ')'); g.addColorStop(1, 'hsla(' + hue + ',100%,60%,0)');
+  cx.fillStyle = g; cx.beginPath(); cx.arc(x, y, r * 4, 0, 6.2832); cx.fill();
+}
+function drawJar() {
+  var jp = jarPos(), jw = 62, jh = 94, x = jp.x - jw / 2, y = jp.y - jh / 2;
+  cx.save(); cx.strokeStyle = 'rgba(190,210,230,0.55)'; cx.lineWidth = 2;
+  cx.beginPath(); cx.moveTo(x + 8, y); cx.lineTo(x + jw - 8, y); cx.moveTo(x + 4, y + 10); cx.lineTo(x + jw - 4, y + 10);
+  cx.moveTo(x + 4, y + 10); cx.lineTo(x, y + 26); cx.lineTo(x, y + jh - 10); cx.quadraticCurveTo(x, y + jh, x + 10, y + jh);
+  cx.lineTo(x + jw - 10, y + jh); cx.quadraticCurveTo(x + jw, y + jh, x + jw, y + jh - 10); cx.lineTo(x + jw, y + 26); cx.lineTo(x + jw - 4, y + 10); cx.stroke();
+  cx.globalCompositeOperation = 'lighter';
+  if (count > 0) glow(jp.x, jp.y + 12, 18 + count * 4 + jarPulse * 10, 0.18 + count * 0.05, 48);
+  for (var i = 0; i < count; i++) glow(jp.x + Math.sin(i * 2.4 + now() * 0.8) * 14, y + jh - 18 - (i % 4) * 16 - Math.floor(i / 4) * 4 + Math.cos(i * 1.7 + now() * 1.1) * 3, 4.2, 0.95, 48);
+  cx.restore();
+  cx.fillStyle = 'rgba(210,220,235,0.75)'; cx.font = '15px ui-monospace, Menlo, monospace'; cx.textAlign = 'center'; cx.fillText(count + ' / 7', jp.x, jp.y + jh / 2 + 24);
+}
+function wrapText(text, maxW) {
+  var words = text.split(' '), lines = [], cur = '';
+  for (var i = 0; i < words.length; i++) { var test = cur ? cur + ' ' + words[i] : words[i]; if (cx.measureText(test).width > maxW && cur) { lines.push(cur); cur = words[i]; } else cur = test; }
+  if (cur) lines.push(cur); return lines;
+}
+var lastT = now();
+function frame() { try { inner(); } catch (e) { console.error(e); } requestAnimationFrame(frame); }
+function inner() {
+  var t = now(), dt = Math.min(0.05, t - lastT); lastT = t;
+  camUpdate(); micUpdate(t);
+  cx.clearRect(0, 0, W, H); cx.fillStyle = '#050507'; cx.fillRect(0, 0, W, H);
+  // ---- 左边：被弄乱的房间 + 手电筒 ----
+  var img = roomImage(day), seen = hand.x > -900 && (cam.on ? t - hand.seen < 4 : true);
+  var u = (t - flash.t0) / 1.1, sc = 1, hx = hand.x, hy = hand.y;
+  if (u >= 0 && u < 1) {
+    var e = u < 0.35 ? u / 0.35 : 1, back = u > 0.6 ? (u - 0.6) / 0.4 : 0;
+    sc = 1 - 0.78 * (1 - Math.pow(1 - e, 3)) + 0.78 * back * back;
+    if (flash.hit && flash.center && u > 0.18) { var k = Math.min(1, (u - 0.18) / 0.2); hx = hand.x + (flash.center.x - hand.x) * k; hy = hand.y + (flash.center.y - hand.y) * k; }
+    if (flash.hit && !dot.found && u > 0.38) foundDot();
+  }
+  var R = flashR() * sc;
+  if (img) {
+    renderRoom(img, seen ? (hx - RX) / RS * 512 : -999, (hy - RY) / RS * 512, R / RS * 512, t);
+    cx.drawImage(RC, RX, RY, RS, RS);
+    cx.fillStyle = TINTS[day]; cx.fillRect(RX, RY, RS, RS);
+  }
+  if (seen) {
+    cx.save(); cx.globalCompositeOperation = 'lighter'; cx.lineWidth = 2.2; cx.strokeStyle = 'rgba(255,225,150,0.75)';
+    cx.beginPath(); cx.arc(hx, hy, R, 0, 6.2832); cx.stroke(); glow(hx, hy, 6, 0.35, 48); cx.restore();
+  }
+  // ---- 光点：只在手电筒里看得见 ----
+  if (dot && !dot.found) {
+    var ds = dotScreen(), inside = seen && Math.hypot(ds.x - hand.x, ds.y - hand.y) < flashR() * 0.95, el = t - dayStart, a = 0;
+    if (inside) a = 0.55 + 0.45 * Math.sin(t * 5); else if (el > REVEAL_AFTER) a = 0.5 + 0.4 * Math.sin(t * 4); else if (el > HINT_AFTER) a = 0.10 + 0.10 * Math.max(0, Math.sin(t * 2.2));
+    if (window.showDot) a = Math.max(a, 0.5);
+    if (a > 0.01) { cx.save(); cx.globalCompositeOperation = 'lighter'; glow(ds.x, ds.y, 9, a, 48); cx.restore(); }
+  }
+  // 收紧时的圆圈
+  cx.save(); cx.globalCompositeOperation = 'lighter'; cx.lineWidth = 2;
+  for (var ri = rings.length - 1; ri >= 0; ri--) { var rg = rings[ri], ru = (t - rg.t0) / 0.5; if (ru >= 1) { rings.splice(ri, 1); continue; } cx.strokeStyle = 'rgba(255,225,150,' + (0.85 * (1 - ru)) + ')'; cx.beginPath(); cx.arc(rg.x, rg.y, 70 * (1 - (1 - Math.pow(1 - ru, 2))) + 6, 0, 6.2832); cx.stroke(); }
+  for (var k2 = flyers.length - 1; k2 >= 0; k2--) {
+    var f = flyers[k2], fu = (t - f.t0) / f.dur; if (fu < 0) continue;
+    if (fu >= 1) { count = Math.min(7, count + 1); jarPulse = 1; pianoNote(SCALE[day % 7], (week - 1) * 0.012); flyers.splice(k2, 1); continue; }
+    var fe = fu < 0.5 ? 2 * fu * fu : 1 - Math.pow(-2 * fu + 2, 2) / 2;
+    glow(f.sx + (f.tx - f.sx) * fe, f.sy + (f.ty - f.sy) * fe, 7, 1, 48);
+  }
+  cx.restore(); jarPulse = Math.max(0, jarPulse - dt * 3);
+  // ---- 中间的墙 ----
+  var g = cx.createLinearGradient(HW - 9, 0, HW + 9, 0); g.addColorStop(0, '#0b0b0d'); g.addColorStop(0.5, '#1a1a1e'); g.addColorStop(1, '#0b0b0d'); cx.fillStyle = g; cx.fillRect(HW - 9, 0, 18, H);
+  drawJar();
+  cx.fillStyle = 'rgba(220,225,235,0.8)'; cx.font = '16px ui-monospace, Menlo, monospace'; cx.textAlign = 'left'; cx.fillText('Week ' + week + '   ' + DAYS[Math.min(6, day)], 24, 34);
+  // ---- 右边：日历 + 句子 ----
+  for (var c = 0; c < 7; c++) {
+    var cp = cellPos(c), lt = lit[c], curr = c === day && state !== 'search';
+    cx.strokeStyle = lt ? 'rgba(255,225,150,0.95)' : (c === day ? 'rgba(210,215,230,0.5)' : 'rgba(180,190,210,0.28)'); cx.lineWidth = lt ? 2 : 1;
+    cx.fillStyle = lt ? 'rgba(255,215,120,' + (curr ? 0.28 : 0.12) + ')' : 'rgba(255,255,255,0.02)';
+    cx.beginPath(); cx.rect(cp.x - cp.w / 2, cp.y - cp.h / 2, cp.w, cp.h); cx.fill(); cx.stroke();
+    cx.fillStyle = lt ? 'rgba(255,240,200,0.95)' : 'rgba(180,190,210,0.45)'; cx.font = '14px ui-monospace, Menlo, monospace'; cx.textAlign = 'center'; cx.fillText(DAYS[c], cp.x, cp.y + 5);
+  }
+  if (sentence && t > sentT) {
+    typed = Math.min(sentence.length, Math.floor((t - sentT) * TYPE_CPS));
+    cx.font = FONT_PX + 'px -apple-system, "Helvetica Neue", Arial, sans-serif'; cx.textAlign = 'center';
+    var lines = wrapText(sentence.slice(0, typed), HW * 0.76), full = wrapText(sentence, HW * 0.76), lh = FONT_PX * 1.35, y0 = H * 0.52 - (full.length - 1) * lh / 2;
+    cx.fillStyle = 'rgba(210,215,230,0.55)'; cx.font = '15px ui-monospace, Menlo, monospace'; cx.fillText(DAYS[day], HW + HW / 2, y0 - FONT_PX * 1.2);
+    cx.font = FONT_PX + 'px -apple-system, "Helvetica Neue", Arial, sans-serif'; cx.fillStyle = '#fff';
+    for (var l = 0; l < lines.length; l++) cx.fillText(lines[l], HW + HW / 2, y0 + l * lh);
+    if (state === 'found' && typed >= sentence.length && t - sentT > sentence.length / TYPE_CPS + HOLD_SEC) {
+      if (day >= 6) { state = 'end'; stateT = t; } else { day++; newDay(); sentence = ''; }
+    }
+  }
+  if (state === 'end') {
+    var fa = Math.max(0, Math.min(1, (t - stateT - 2.2) / 1.2)); cx.fillStyle = 'rgba(0,0,0,' + fa + ')'; cx.fillRect(HW + 9, 0, HW, H);
+    if (t - stateT > 3.6) { day = 0; week++; count = 0; lit = [false, false, false, false, false, false, false]; sentence = ''; newDay(); }
+  }
+  // ---- 提示和状态 ----
+  var hint = day === 0 && state === 'search' && t - dayStart < 20 && count === 0;
+  if (hint) { cx.fillStyle = 'rgba(210,215,230,0.6)'; cx.font = '16px -apple-system, Arial, sans-serif'; cx.textAlign = 'center'; cx.fillText(cam.on ? 'Move your hand like a flashlight. Clap when you find a light.' : 'Move like a flashlight. Click (or press Space) when you find a light.', HW / 2, H - 28); }
+  cx.font = '13px ui-monospace, Menlo, monospace'; cx.textAlign = 'left'; cx.fillStyle = 'rgba(255,170,150,0.8)';
+  if (cam.msg) cx.fillText(cam.msg, 24, H - 16); else if (mic.msg) cx.fillText(mic.msg, 24, H - 16);
+  if (mic.on) { cx.fillStyle = 'rgba(210,220,235,0.4)'; cx.fillRect(HW - 60, H - 14, 120, 4); cx.fillStyle = 'rgba(255,225,150,0.8)'; cx.fillRect(HW - 60, H - 14, Math.min(120, mic.level * 120 / CLAP_THRESH * 0.6), 4); }
+  if (muted) { cx.fillStyle = 'rgba(210,215,230,0.5)'; cx.textAlign = 'right'; cx.fillText('muted (M)', W - 16, H - 16); }
+}
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>

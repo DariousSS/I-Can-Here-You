@@ -36,12 +36,22 @@ void main()
 	float r2 = hash(vec2(row, 3.0 + floor(T * 4.0)));
 	float u = clamp(0.5 + (r1 - 0.5) * 0.35 + (r2 - 0.5) * 0.2, 0.05, 0.95);
 	float v = 0.5 + dy / (2.0 * hh);
-	vec2 q = vec2(u, v);
+	float vv = clamp(v, 0.25, 0.75);
+	vec4 s0 = vec4(0.0);
+	for (int i = 0; i < 5; i++) {
+		vec2 qi = vec2(mix(u, 0.5, float(i) * 0.25), vv);
+		s0 = texture(sTD2DInputs[0], qi);
+		if (s0.a > 0.5) { break; }
+	}
 	float sp = 0.03 * amt;
-	vec3 col;
-	col.r = texture(sTD2DInputs[0], q + vec2(sp, 0.0)).r;
-	col.g = texture(sTD2DInputs[0], q).g;
-	col.b = texture(sTD2DInputs[0], q - vec2(sp, 0.0)).b;
+	vec3 col = s0.rgb;
+	if (s0.a > 0.5) {
+		vec2 qc = vec2(clamp(u, 0.1, 0.9), vv);
+		col.r = texture(sTD2DInputs[0], qc + vec2(sp, 0.0)).r;
+		col.b = texture(sTD2DInputs[0], qc - vec2(sp, 0.0)).b;
+	} else {
+		col = vec3(0.95, 0.45, 0.62);
+	}
 	float scan = step(0.965, hash(vec2(row, tick + 11.0)));
 	col += vec3(0.55, 1.0, 0.9) * scan * 0.7;
 	float ends = smoothstep(0.0, 0.18, t) * smoothstep(0.0, 0.12, 1.0 - t);

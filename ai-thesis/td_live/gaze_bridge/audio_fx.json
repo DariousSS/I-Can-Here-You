@@ -66,7 +66,7 @@
   "ball_need_hand": true,
   "ball_hand_sec": 4.0,
   "castle_ball_phys_aspect": 0,
-  "castle_tiles_min": 5,
+  "castle_tiles_min": 1,
   "castle_spin_deg_s": 6.0,
   "puppet_on": false,
   "puppet_every_switches": 0,

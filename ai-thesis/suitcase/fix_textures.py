@@ -1,19 +1,29 @@
 # 在 TD 的 Textport 里运行：把每个 Kantan 形状的纹理对回去（按内部编号），并自动检查、必要时再改一遍。
 # 运行前：先在 Kantan 画布的空白处点一下，取消所有形状的选中状态（Kantan 里选中多个形状时，改一个会同步改到所有选中的）。
 WANT = {
-    'item4':  'sc_blob',    # 云朵气泡（万花筒云朵）
+    'item4':  'sc_left',    # 左边：天使叠在云朵上（没装天使就改回 sc_blob）
     'item5':  'sc_lid',     # 盖子（卧室）
     'item15': 'sc_pull',    # 整屏：入侵时的电视机故障拉扯
     'item18': 'sc_maskL',   # 左面具（入侵时出现脸）
     'item19': 'sc_maskR',   # 右脸（一直说话）
     'item23': 'sc_sub',     # 墙上的字幕
 }
+_g = op('/project1/sc_game_exec')
+if _g is not None and _g.par.active:      # 游戏开着时，盖子用游戏画面
+    WANT['item5'] = 'sc_gamelid'
 BLACK = ['item10', 'item11', 'item14', 'item16', 'item17', 'item20', 'item21', 'item22']   # 旧形状 + 你命名为"床头柜"的 item14：全透明
 SHOW = ['item4', 'item5', 'item15', 'item18', 'item19', 'item23']
 for k_ in BLACK:
     WANT[k_] = 'sc_black'
 p = op('/project1')
 shapes = {}
+for c_ in op('/project1/kantanMapper/project/allShapes').children:     # 「光点数」牌子：游戏开着时显示 sc_count，不要被改回透明
+    if c_.op('parameters') is not None and hasattr(c_.op('parameters').par, 'Name') and str(c_.op('parameters').par.Name.eval()).strip() == '光点数' and p.op('sc_count') is not None:
+        WANT[c_.name] = 'sc_count'
+    if c_.op('parameters') is not None and hasattr(c_.op('parameters').par, 'Name') and str(c_.op('parameters').par.Name.eval()).strip() == '日历' and p.op('sc_cal') is not None:
+        WANT[c_.name] = 'sc_cal'
+    if c_.op('parameters') is not None and hasattr(c_.op('parameters').par, 'Name') and str(c_.op('parameters').par.Name.eval()).strip() == '封面' and p.op('sc_intro') is not None:
+        WANT[c_.name] = 'sc_intro'
 for c in op('/project1/kantanMapper/project/allShapes').children:
     if c.op('parameters') is not None and hasattr(c.op('parameters').par, 'Texture'):
         shapes[c.name] = c

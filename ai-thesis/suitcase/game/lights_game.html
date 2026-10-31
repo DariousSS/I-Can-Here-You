@@ -1,0 +1,434 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Seven lights</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+html, body { margin: 0; height: 100%; background: #050507; overflow: hidden; }
+canvas { display: block; cursor: crosshair; touch-action: none; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<script>
+// ===== 可以改的设置 =====
+var MODE = 'wave';            // 'wave' = 挥手：手动得越多，光点越被吸过来，碰到光圈就被收走（只需要挥手，不需要任何手势）；'grab' = 聚拢后握拳；'lasso' = 画圈。运行时按 W / G / L 切换
+var WAVE_FULL = 450;          // 手速达到这个值（像素/秒）光圈最大、吸力最强
+var WAVE_CATCH_GAP = 0.9;     // 挥手时最快多久收走一个光点（秒）：越大越慢，一轮越长
+var REACH = 230;              // 张开的手多远能把光点聚过来（像素）
+var MAX_PER_GRAB = 3;         // 一次握拳最多抓几个（最近的优先）
+var GRAB_R = 100;             // 握拳时抓住多大范围内的光点（像素）
+var CALM_SPEED = 260;         // 手慢于这个速度才聚得拢（像素/秒）；快于 SCARE_SPEED 会把光点吓散
+var SCARE_SPEED = 700;
+var NEED = 7;                 // 抓几个光点算一瓶（7 = 一周）
+var MAX_DOTS = 9;             // 左边同时飘几个光点
+var DOT_LIFE = [14, 22];      // 光点能活多少秒（没被抓住就慢慢熄灭，再出新的）
+var TYPE_CPS = 30;            // 句子打字速度（每秒几个字）
+var HOLD_SEC = 1.6;           // 每句打完停几秒
+var SWAP_CHANCE = 0.25;       // 周三和周四互换的几率（让故事顺序偶尔乱一点）
+var FONT_PX = 34;             // 右边句子的字号（统一）
+var DAYS = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
+// 每一天的句子池：每次这一天从自己的池子里随机抽一句。想改句子就改这里。
+var POOL = [
+  ['We need to rent out a room.', 'Someone is moving in!', 'I put a little bell on my door.', 'I told them: please don\'t come into my room.', 'Why did she just drag her large suitcase up the stairs?', 'What did she put in the fridge? I\'m so curious.'],
+  ['…you won\'t believe it, there\'s a girl upstairs…', '…she doesn\'t talk much, does she?…', '…what is she doing up there all day?…', '…cultural background… completely different…'],
+  ['She has gone out!', 'The door is open. Just a little.', 'Let me go in. Just a quick look.', '…I\'m in her room… right now…', 'Going through her trash…', '…look at these photos… sending them to my friends…'],
+  ['The bell rang.', 'It kept ringing. It wouldn\'t stop.', 'Then the bell stopped.', 'Someone was in my room.'],
+  ['Don\'t go into her room again.', 'What do I do? I already told the child not to go into her room.', 'She\'s so smart. I didn\'t even know opening a door could be recorded.', 'I can\'t lose this income.', 'I\'m so busy at work. I really don\'t want to deal with this.', 'I didn\'t think she\'d actually tell Mom.', 'She looked easy to push around.', 'Why don\'t you go play at your friend\'s house today?', '…everyone, come on… tonight I\'ll tell you all about… the girl living in my house…', '…she\'s a… liar…'],
+  ['Listen up. We\'re a family. We stick together.', 'You must be mistaken.', 'Going into her room? That never happened.', 'It\'s just talking. It\'s not a big deal.', 'This is my house.'],
+  ['I\'m in my own room.', 'She has moved out at last.', 'Another guest will come.']
+];
+// ===== 画布 =====
+var cv = document.getElementById('c'), cx = cv.getContext('2d');
+var W = 0, H = 0, dpr = 1, HW = 0;
+function resize() {
+  dpr = window.devicePixelRatio || 1;
+  W = window.innerWidth; H = window.innerHeight; HW = W / 2;
+  cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
+  cv.style.width = W + 'px'; cv.style.height = H + 'px';
+  cx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+window.addEventListener('resize', resize); resize();
+var roomImg = new Image(); roomImg.src = 'bedroom_sims_sq_noui.png';
+// ===== 摄像头：只画"在动的东西"的轮廓（帧差），画面只在这个网页里处理，不保存、不上传 =====
+var cam = { on: false, video: null, off: null, octx: null, prev: null, mask: null, cw: 80, ch: 60, mass: 0, mx: 0, my: 0, msg: '' };
+function attachStream(stream) {
+  var v = document.createElement('video'); v.muted = true; v.playsInline = true; v.srcObject = stream;
+  v.play && v.play();
+  cam.video = v; cam.off = document.createElement('canvas'); cam.off.width = cam.cw; cam.off.height = cam.ch;
+  cam.octx = cam.off.getContext('2d', { willReadFrequently: true });
+  cam.prev = new Float32Array(cam.cw * cam.ch); cam.mask = new Float32Array(cam.cw * cam.ch); cam.on = true; cam.msg = '';
+}
+function startCam() {
+  if (cam.on) { cam.on = false; try { cam.video.srcObject.getTracks().forEach(function (tr) { tr.stop(); }); } catch (e) {} cam.msg = ''; return; }
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { cam.msg = 'camera not available here'; return; }
+  navigator.mediaDevices.getUserMedia({ video: { width: 320, height: 240 }, audio: false }).then(attachStream).catch(function () { cam.msg = 'camera blocked or not found'; });
+}
+function camUpdate() {
+  if (!cam.on || !cam.video || cam.video.readyState < 2) return;
+  cam.octx.drawImage(cam.video, 0, 0, cam.cw, cam.ch);
+  var im = cam.octx.getImageData(0, 0, cam.cw, cam.ch).data, N = cam.cw * cam.ch, mass = 0, sx = 0, sy = 0;
+  for (var i = 0; i < N; i++) {
+    var g = 0.3 * im[i * 4] + 0.59 * im[i * 4 + 1] + 0.11 * im[i * 4 + 2], df = Math.abs(g - cam.prev[i]);
+    cam.prev[i] = g;
+    var m = df > 18 ? Math.min(1, (df - 18) / 40) : 0;
+    cam.mask[i] = Math.max(cam.mask[i] * 0.84, m);
+    if (cam.mask[i] > 0.2) { mass += cam.mask[i]; sx += (i % cam.cw) * cam.mask[i]; sy += Math.floor(i / cam.cw) * cam.mask[i]; }
+  }
+  cam.mass = mass;
+  if (mass > 25) { var px = HW - (sx / mass + 0.5) / cam.cw * HW, py = (sy / mass + 0.5) / cam.ch * H; cam.mx = px; cam.my = py; mouse.x = px; mouse.y = py; }
+  handSpeed = Math.min(WAVE_FULL * 1.3, mass / 140 * WAVE_FULL);
+}
+function maskAtScreen(x, y) {
+  if (!cam.on || !cam.mask || x < 0 || x > HW) return 0;
+  var cxx = Math.floor((HW - x) / HW * cam.cw), cyy = Math.floor(y / H * cam.ch);
+  if (cxx < 0 || cxx >= cam.cw || cyy < 0 || cyy >= cam.ch) return 0;
+  return cam.mask[cyy * cam.cw + cxx];
+}
+function drawSilhouette() {
+  if (!cam.on || !cam.mask) return;
+  var cw = HW / cam.cw, ch = H / cam.ch;
+  cx.save(); cx.globalCompositeOperation = 'lighter';
+  for (var yy = 0; yy < cam.ch; yy++) for (var xx = 0; xx < cam.cw; xx++) {
+    var m = cam.mask[yy * cam.cw + xx];
+    if (m > 0.12) { cx.fillStyle = 'rgba(255,214,140,' + (m * 0.5) + ')'; cx.fillRect(HW - (xx + 1) * cw, yy * ch, cw + 0.6, ch + 0.6); }
+  }
+  cx.restore();
+}
+// ===== 声音 =====
+var AC = null, muted = false;
+function audio() { if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { AC = null; } } if (AC && AC.state === 'suspended') AC.resume(); return AC; }
+function tone(freq, dur, vol, type, delay) {
+  var a = audio(); if (!a || muted || !isFinite(freq) || !isFinite(vol) || !isFinite(dur)) return;
+  var t = a.currentTime + (delay || 0), o = a.createOscillator(), g = a.createGain();
+  o.type = type || 'sine'; o.frequency.value = freq;
+  g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  o.connect(g); g.connect(a.destination); o.start(t); o.stop(t + dur + 0.05);
+}
+var SCALE = [261.6, 293.7, 329.6, 392.0, 440.0, 523.3, 587.3];
+function pianoNote(f, detune) { var d = detune || 0; tone(f * (1 + d), 1.6, 0.14, 'triangle'); tone(f * 2 * (1 + d), 0.9, 0.04, 'sine'); }
+function ding(delay) { tone(1318, 0.9, 0.10, 'sine', delay); tone(2637, 0.5, 0.03, 'sine', delay); }
+function stuckBell() { var t = 0; for (var i = 0; i < 16; i++) { ding(t); t += 0.12 + Math.random() * 0.22; } }
+// ===== 状态 =====
+var dots = [], flyers = [], trail = [], fadeTrails = [];
+var count = 0, week = 1, jarPulse = 0, hintAlpha = 1, state = 'play';
+var rel = null;   // 释放阶段的数据
+function rnd(a, b) { return a + Math.random() * (b - a); }
+function jarPos() { return { x: Math.max(70, HW * 0.12), y: H - 110 }; }
+function spawnDot() {
+  var m = 70, jp = jarPos(), tries = 0, x, y;
+  do { x = rnd(m, HW - m); y = rnd(m + 40, H - m); tries++; } while (tries < 20 && Math.hypot(x - jp.x, y - jp.y) < 150);
+  dots.push({ x: x, y: y, vx: rnd(-20, 20), vy: rnd(-20, 20), ang: rnd(0, 6.28), ph: rnd(0, 6.28), r: rnd(7, 11), born: now(), life: rnd(DOT_LIFE[0], DOT_LIFE[1]), caught: false, a: 0 });
+}
+function now() { return performance.now() / 1000; }
+var rings = [];
+function addRing(x, y) { rings.push({ x: x, y: y, t0: now() }); }
+var mouse = { x: -999, y: -999 }, handSpeed = 0, fistT = -9, lastMove = 0, lastMX = -999, lastMY = -999;
+// ===== 画圈 =====
+function inPoly(px, py, poly) {
+  var inside = false;
+  for (var i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    var xi = poly[i].x, yi = poly[i].y, xj = poly[j].x, yj = poly[j].y;
+    if (((yi > py) !== (yj > py)) && (px < (xj - xi) * (py - yi) / (yj - yi) + xi)) inside = !inside;
+  }
+  return inside;
+}
+function area(poly) { var s = 0; for (var i = 0, j = poly.length - 1; i < poly.length; j = i++) s += (poly[j].x + poly[i].x) * (poly[j].y - poly[i].y); return Math.abs(s / 2); }
+function segInter(p1, p2, p3, p4) {
+  var d = (p2.x - p1.x) * (p4.y - p3.y) - (p2.y - p1.y) * (p4.x - p3.x);
+  if (Math.abs(d) < 1e-9) return null;
+  var t = ((p3.x - p1.x) * (p4.y - p3.y) - (p3.y - p1.y) * (p4.x - p3.x)) / d;
+  var u = ((p3.x - p1.x) * (p2.y - p1.y) - (p3.y - p1.y) * (p2.x - p1.x)) / d;
+  if (t >= 0 && t <= 1 && u >= 0 && u <= 1) return { x: p1.x + t * (p2.x - p1.x), y: p1.y + t * (p2.y - p1.y) };
+  return null;
+}
+function catchInside(poly) {
+  if (state !== 'play' || poly.length < 3 || area(poly) < 600) return;
+  var n = 0, jp = jarPos();
+  for (var i = 0; i < dots.length; i++) {
+    var d = dots[i];
+    if (!d.caught && inPoly(d.x, d.y, poly)) {
+      d.caught = true; n++; addRing(d.x, d.y);
+      flyers.push({ x: d.x, y: d.y, sx: d.x, sy: d.y, tx: jp.x, ty: jp.y, t0: now() + n * 0.08, dur: 0.75, kind: 'jar', r: d.r });
+    }
+  }
+  dots = dots.filter(function (d) { return !d.caught; });
+  if (n > 0) hintAlpha = 0;
+}
+var drawing = false;
+function grabAt(x, y) {
+  if (state !== 'play') return;
+  var n = 0, jp = jarPos(); fistT = now();
+  var near = dots.filter(function (q) { return !q.caught && Math.hypot(q.x - x, q.y - y) < GRAB_R; });
+  near.sort(function (a, b) { return Math.hypot(a.x - x, a.y - y) - Math.hypot(b.x - x, b.y - y); });
+  for (var i = 0; i < near.length && i < MAX_PER_GRAB; i++) {
+    var d = near[i];
+    {
+      d.caught = true; n++; addRing(d.x, d.y);
+      flyers.push({ x: d.x, y: d.y, sx: d.x, sy: d.y, tx: jp.x, ty: jp.y, t0: now() + n * 0.08, dur: 0.75, kind: 'jar', r: d.r });
+    }
+  }
+  dots = dots.filter(function (d) { return !d.caught; });
+  if (n > 0) hintAlpha = 0;
+}
+cv.addEventListener('pointerdown', function (e) { audio(); if (MODE === 'wave') return; if (MODE === 'grab') { mouse.x = e.clientX; mouse.y = e.clientY; grabAt(e.clientX, e.clientY); return; } drawing = true; trail = [{ x: e.clientX, y: e.clientY }]; try { cv.setPointerCapture(e.pointerId); } catch (x) {} });
+cv.addEventListener('pointermove', function (e) {
+  var tn = now();
+  if (lastMX > -900) { var dtm = Math.max(0.008, tn - lastMove); handSpeed = handSpeed * 0.6 + (Math.hypot(e.clientX - lastMX, e.clientY - lastMY) / dtm) * 0.4; }
+  lastMove = tn; lastMX = e.clientX; lastMY = e.clientY;
+  mouse.x = e.clientX; mouse.y = e.clientY;
+  if (!drawing) return;
+  var last = trail[trail.length - 1];
+  if (Math.hypot(e.clientX - last.x, e.clientY - last.y) < 5) return;
+  var p = { x: e.clientX, y: e.clientY };
+  trail.push(p);
+  var n = trail.length;
+  if (n > 8) {
+    for (var i = 0; i < n - 4; i++) {
+      var hit = segInter(trail[n - 2], trail[n - 1], trail[i], trail[i + 1]);
+      if (hit) {
+        var poly = [hit].concat(trail.slice(i + 1, n - 1));
+        catchInside(poly);
+        fadeTrails.push({ pts: trail.slice(), t0: now() });
+        trail = [p];
+        return;
+      }
+    }
+  }
+});
+function endDraw() {
+  if (!drawing) return; drawing = false;
+  if (trail.length > 10 && Math.hypot(trail[0].x - trail[trail.length - 1].x, trail[0].y - trail[trail.length - 1].y) < 70) catchInside(trail);
+  if (trail.length > 1) fadeTrails.push({ pts: trail.slice(), t0: now() });
+  trail = [];
+}
+cv.addEventListener('pointerup', endDraw); cv.addEventListener('pointercancel', endDraw);
+window.addEventListener('keydown', function (e) {
+  if (e.key === 'm' || e.key === 'M') muted = !muted;
+  if (e.key === 'c' || e.key === 'C') startCam();
+  if (e.key === 'w' || e.key === 'W') { MODE = 'wave'; trail = []; drawing = false; }
+  if (e.key === 'g' || e.key === 'G') { MODE = 'grab'; trail = []; drawing = false; }
+  if (e.key === 'l' || e.key === 'L') MODE = 'lasso';
+  if ((e.key === 'r' || e.key === 'R') && state === 'play') { count = NEED; startRelease(); }
+});
+// ===== 释放：七个光点冲到右边，落进一周七天，再一天一天读出句子 =====
+function pickWeek() {
+  var s = POOL.map(function (p) { return p[Math.floor(Math.random() * p.length)]; });
+  if (Math.random() < SWAP_CHANCE) { var t = s[2]; s[2] = s[3]; s[3] = t; }
+  return s;
+}
+function cellPos(i) {
+  var w = HW * 0.84, x0 = HW + (HW - w) / 2, cw = w / 7;
+  return { x: x0 + cw * (i + 0.5), y: H * 0.16, w: cw * 0.86, h: 52 };
+}
+function startRelease() {
+  state = 'release';
+  var jp = jarPos(), t = now();
+  rel = { sentences: pickWeek(), lit: [false, false, false, false, false, false, false], idx: -1, text: '', typed: 0, tStart: 0, phase: 'fly', tEnd: 0, fade: 1 };
+  var det = (week - 1) * 0.012;
+  [SCALE[0] * 0.5, SCALE[2] * 0.5, SCALE[3] * 0.5, SCALE[0]].forEach(function (f0, i) { pianoNote(f0, det * (i + 1)); });
+  for (var i = 0; i < 7; i++) {
+    var c = cellPos(i);
+    flyers.push({ x: jp.x, y: jp.y, sx: jp.x, sy: jp.y, tx: c.x, ty: c.y, t0: t + i * 0.12, dur: 1.5, kind: 'cell', cell: i, r: 9, arc: rnd(80, 200) * (i % 2 ? 1 : -1) });
+  }
+  rel.flyEnd = t + 6 * 0.12 + 1.5 + 0.2;
+}
+function nextSentence(t) {
+  rel.idx++;
+  if (rel.idx >= 7) { rel.phase = 'end'; rel.tEnd = t; return; }
+  rel.text = rel.sentences[rel.idx]; rel.typed = 0; rel.tStart = t; rel.phase = 'type';
+  rel.lit[rel.idx] = true;
+  if (/kept ringing/.test(rel.text)) stuckBell(); else if (/bell rang/.test(rel.text)) ding(0);
+  pianoNote(SCALE[(rel.idx * 2 + week) % 7], (week - 1) * 0.012 * (rel.idx % 3));
+}
+function updateRelease(t) {
+  if (rel.phase === 'fly' && t > rel.flyEnd) { rel.phase = 'wait'; rel.tEnd = t; }
+  if (rel.phase === 'wait' && t - rel.tEnd > 0.6) nextSentence(t);
+  if (rel.phase === 'type') {
+    rel.typed = Math.min(rel.text.length, Math.floor((t - rel.tStart) * TYPE_CPS));
+    if (rel.typed >= rel.text.length && t - rel.tStart > rel.text.length / TYPE_CPS + HOLD_SEC) nextSentence(t);
+  }
+  if (rel.phase === 'end') {
+    rel.fade = Math.max(0, 1 - (t - rel.tEnd - 2.5) / 1.2);
+    if (t - rel.tEnd > 3.7) { rel = null; state = 'play'; count = 0; week++; }
+  }
+}
+// ===== 画 =====
+function glow(x, y, r, a, hue) {
+  var g = cx.createRadialGradient(x, y, 0, x, y, r * 4);
+  g.addColorStop(0, 'hsla(' + hue + ',100%,88%,' + a + ')');
+  g.addColorStop(0.25, 'hsla(' + hue + ',100%,70%,' + (a * 0.45) + ')');
+  g.addColorStop(1, 'hsla(' + hue + ',100%,60%,0)');
+  cx.fillStyle = g; cx.beginPath(); cx.arc(x, y, r * 4, 0, 6.2832); cx.fill();
+}
+function drawJar() {
+  var jp = jarPos(), jw = 62, jh = 94, x = jp.x - jw / 2, y = jp.y - jh / 2;
+  cx.save();
+  cx.strokeStyle = 'rgba(190,210,230,0.55)'; cx.lineWidth = 2;
+  cx.beginPath(); cx.moveTo(x + 8, y); cx.lineTo(x + jw - 8, y); cx.moveTo(x + 4, y + 10); cx.lineTo(x + jw - 4, y + 10);
+  cx.moveTo(x + 4, y + 10); cx.lineTo(x, y + 26); cx.lineTo(x, y + jh - 10); cx.quadraticCurveTo(x, y + jh, x + 10, y + jh);
+  cx.lineTo(x + jw - 10, y + jh); cx.quadraticCurveTo(x + jw, y + jh, x + jw, y + jh - 10); cx.lineTo(x + jw, y + 26); cx.lineTo(x + jw - 4, y + 10); cx.stroke();
+  cx.globalCompositeOperation = 'lighter';
+  var shown = (state === 'release') ? 0 : count;
+  if (shown > 0) glow(jp.x, jp.y + 12, 18 + shown * 4 + jarPulse * 10, 0.18 + shown * 0.05, 48);
+  for (var i = 0; i < shown; i++) {
+    var px = jp.x + Math.sin(i * 2.4 + now() * 0.8) * 14, py = y + jh - 18 - (i % 4) * 16 - Math.floor(i / 4) * 4 + Math.cos(i * 1.7 + now() * 1.1) * 3;
+    glow(px, py, 4.2, 0.95, 48);
+  }
+  cx.restore();
+  cx.fillStyle = 'rgba(210,220,235,0.75)'; cx.font = '15px ui-monospace, Menlo, monospace'; cx.textAlign = 'center';
+  cx.fillText((state === 'release' ? 0 : count) + ' / ' + NEED, jp.x, jp.y + jh / 2 + 24);
+}
+function wrapText(text, maxW) {
+  var words = text.split(' '), lines = [], cur = '';
+  for (var i = 0; i < words.length; i++) {
+    var test = cur ? cur + ' ' + words[i] : words[i];
+    if (cx.measureText(test).width > maxW && cur) { lines.push(cur); cur = words[i]; } else cur = test;
+  }
+  if (cur) lines.push(cur); return lines;
+}
+var lastT = now();
+function frame() {
+  try { frameInner(); } catch (e) { console.error(e); }
+  requestAnimationFrame(frame);
+}
+function frameInner() {
+  var t = now(), dt = Math.min(0.05, t - lastT); lastT = t;
+  cx.clearRect(0, 0, W, H);
+  cx.fillStyle = '#050507'; cx.fillRect(0, 0, W, H);
+  // 左边：房间（淡淡的）
+  if (roomImg.complete && roomImg.naturalWidth) {
+    var s = Math.min(H * 0.94, HW * 0.98);
+    cx.globalAlpha = 0.30; cx.drawImage(roomImg, HW / 2 - s / 2, H / 2 - s / 2, s, s); cx.globalAlpha = 1;
+  }
+  // 中间的墙
+  var g = cx.createLinearGradient(HW - 9, 0, HW + 9, 0);
+  g.addColorStop(0, '#0b0b0d'); g.addColorStop(0.5, '#1a1a1e'); g.addColorStop(1, '#0b0b0d');
+  cx.fillStyle = g; cx.fillRect(HW - 9, 0, 18, H);
+  // 左上角：Day
+  camUpdate(); drawSilhouette();
+  cx.fillStyle = 'rgba(220,225,235,0.8)'; cx.font = '16px ui-monospace, Menlo, monospace'; cx.textAlign = 'left';
+  cx.fillText('Week ' + week + '   Day ' + Math.min(NEED, count + (state === 'release' ? 0 : 1)), 24, 34);
+  // 光点
+  if (state === 'play') {
+    var alive = dots.filter(function (d) { return !d.caught; }).length;
+    if (alive < MAX_DOTS && Math.random() < dt * 1.2) spawnDot();
+  }
+  handSpeed *= Math.exp(-dt * 5);
+  cx.save(); cx.globalCompositeOperation = 'lighter';
+  for (var i = dots.length - 1; i >= 0; i--) {
+    var d = dots[i], age = t - d.born;
+    d.ang += rnd(-1, 1) * dt * 2.2; d.vx += Math.cos(d.ang) * 28 * dt; d.vy += Math.sin(d.ang) * 28 * dt;
+    var dm = Math.hypot(mouse.x - d.x, mouse.y - d.y), mx = 55;
+    if (MODE === 'lasso') {
+      if (dm < 120 && dm > 0.1) { d.vx -= (mouse.x - d.x) / dm * 260 * dt * (1 - dm / 120); d.vy -= (mouse.y - d.y) / dm * 260 * dt * (1 - dm / 120); }
+    } else if (MODE === 'wave') {
+      var en0 = Math.min(1, handSpeed / WAVE_FULL);
+      if (en0 > 0.05 && dm < REACH * (0.45 + 0.55 * en0) && dm > 0.1) {
+        var wx = (mouse.x - d.x) / dm, wy = (mouse.y - d.y) / dm, kk = (1 - dm / REACH) * en0;
+        d.vx += (wx * 150 - wy * 60) * kk * dt * 3.6; d.vy += (wy * 150 + wx * 60) * kk * dt * 3.6; mx = 95;
+      }
+    } else if (dm < REACH && dm > 0.1) {
+      var ux = (mouse.x - d.x) / dm, uy = (mouse.y - d.y) / dm;
+      if (handSpeed > SCARE_SPEED) { d.vx -= ux * 700 * dt; d.vy -= uy * 700 * dt; mx = 140; }
+      else if (handSpeed < CALM_SPEED) { var k = (1 - dm / REACH) * (1 - handSpeed / CALM_SPEED); d.vx += (ux * 150 - uy * 70) * k * dt * 3; d.vy += (uy * 150 + ux * 70) * k * dt * 3; mx = 80; }
+    }
+    var sp = Math.hypot(d.vx, d.vy); if (sp > mx) { d.vx *= mx / sp; d.vy *= mx / sp; }
+    d.x += d.vx * dt; d.y += d.vy * dt;
+    if (d.x < 40) d.vx += 80 * dt; if (d.x > HW - 40) d.vx -= 80 * dt; if (d.y < 60) d.vy += 80 * dt; if (d.y > H - 40) d.vy -= 80 * dt;
+    d.a = Math.min(1, age / 1.2) * Math.max(0, Math.min(1, (d.life - age) / 2.5));
+    if (age > d.life) { dots.splice(i, 1); continue; }
+    var fl = 0.78 + 0.22 * Math.sin(t * 3 + d.ph);
+    glow(d.x, d.y, d.r * 0.55, d.a * fl, 48);
+  }
+  // 飞行中的光
+  for (var k = flyers.length - 1; k >= 0; k--) {
+    var f = flyers[k], u = (t - f.t0) / f.dur;
+    if (u < 0) continue;
+    if (u >= 1) {
+      if (f.kind === 'jar') { if (count < NEED) { count++; pianoNote(SCALE[Math.floor(Math.random() * SCALE.length)], (week - 1) * 0.012 * Math.random()); jarPulse = 1; if (count >= NEED && state === 'play') startRelease(); } }
+      flyers.splice(k, 1); continue;
+    }
+    var e = u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2;
+    var arc = (f.arc || 0) * Math.sin(Math.PI * e);
+    var fx = f.sx + (f.tx - f.sx) * e, fy = f.sy + (f.ty - f.sy) * e - Math.abs(arc) * 0.6;
+    glow(fx, fy, f.r * 0.7, 1, 48); glow(f.sx + (f.tx - f.sx) * Math.max(0, e - 0.06), f.sy + (f.ty - f.sy) * Math.max(0, e - 0.06) - Math.abs(arc) * 0.6, f.r * 0.4, 0.5, 48);
+  }
+  cx.restore();
+  jarPulse = Math.max(0, jarPulse - dt * 3);
+  cx.save(); cx.globalCompositeOperation = 'lighter'; cx.lineWidth = 2;
+  for (var ri = rings.length - 1; ri >= 0; ri--) {
+    var rg = rings[ri], ru = (t - rg.t0) / 0.5;
+    if (ru >= 1) { rings.splice(ri, 1); continue; }
+    var re = 1 - Math.pow(1 - ru, 2);
+    cx.strokeStyle = 'rgba(255,225,150,' + (0.85 * (1 - ru)) + ')';
+    cx.beginPath(); cx.arc(rg.x, rg.y, 78 * (1 - re) + 6, 0, 6.2832); cx.stroke();
+  }
+  cx.restore();
+  if (MODE === 'wave' && mouse.x > -900 && state === 'play') {
+    var en = Math.min(1, handSpeed / WAVE_FULL), ringR = 55 + 60 * en;
+    if (handSpeed > 120 && t - (window.lastWave || 0) > WAVE_CATCH_GAP) {
+      var best = null, bd = 1e9;
+      for (var wi = 0; wi < dots.length; wi++) { var wd = dots[wi], dd2 = Math.hypot(wd.x - mouse.x, wd.y - mouse.y); var hit = cam.on ? maskAtScreen(wd.x, wd.y) > 0.35 : dd2 < ringR; if (!wd.caught && hit && dd2 < bd) { best = wd; bd = dd2; } }
+      if (best) {
+        best.caught = true; addRing(best.x, best.y); window.lastWave = t; var jp2 = jarPos(); hintAlpha = 0;
+        flyers.push({ x: best.x, y: best.y, sx: best.x, sy: best.y, tx: jp2.x, ty: jp2.y, t0: t, dur: 0.75, kind: 'jar', r: best.r });
+        dots = dots.filter(function (q) { return !q.caught; });
+      }
+    }
+    cx.save(); cx.globalCompositeOperation = 'lighter'; cx.lineWidth = 2;
+    cx.strokeStyle = 'rgba(255,225,150,' + (0.25 + 0.55 * en) + ')';
+    if (!cam.on) { cx.beginPath(); cx.arc(mouse.x, mouse.y, ringR, 0, 6.2832); cx.stroke(); }
+    cx.strokeStyle = 'rgba(255,225,150,0.10)'; cx.beginPath(); cx.arc(mouse.x, mouse.y, REACH * (0.45 + 0.55 * en), 0, 6.2832); cx.stroke();
+    if (en > 0.2) glow(mouse.x, mouse.y, 10 + 10 * en, 0.5 * en, 48);
+    cx.restore();
+  }
+  if (MODE === 'grab' && mouse.x > -900 && state === 'play') {
+    var fa = Math.max(0, 1 - (t - fistT) / 0.5), calm = handSpeed < CALM_SPEED, scared = handSpeed > SCARE_SPEED;
+    cx.save(); cx.globalCompositeOperation = 'lighter'; cx.lineWidth = 2;
+    cx.strokeStyle = scared ? 'rgba(255,120,100,0.5)' : 'rgba(255,225,150,' + (calm ? 0.55 : 0.3) + ')';
+    cx.beginPath(); cx.arc(mouse.x, mouse.y, GRAB_R * (1 - 0.55 * fa), 0, 6.2832); cx.stroke();
+    cx.strokeStyle = 'rgba(255,225,150,0.12)'; cx.beginPath(); cx.arc(mouse.x, mouse.y, REACH, 0, 6.2832); cx.stroke();
+    if (fa > 0) glow(mouse.x, mouse.y, 14, fa, 48);
+    cx.restore();
+  }
+  drawJar();
+  // 圈的轨迹
+  cx.save(); cx.globalCompositeOperation = 'lighter'; cx.lineCap = 'round'; cx.lineJoin = 'round';
+  function stroke(pts, a) { if (pts.length < 2) return; cx.strokeStyle = 'rgba(255,225,150,' + a + ')'; cx.lineWidth = 3; cx.shadowColor = 'rgba(255,200,90,' + a + ')'; cx.shadowBlur = 12; cx.beginPath(); cx.moveTo(pts[0].x, pts[0].y); for (var j = 1; j < pts.length; j++) cx.lineTo(pts[j].x, pts[j].y); cx.stroke(); }
+  stroke(trail, 0.9);
+  for (var q = fadeTrails.length - 1; q >= 0; q--) { var ft = fadeTrails[q], aa = 0.8 - (t - ft.t0) * 1.6; if (aa <= 0) fadeTrails.splice(q, 1); else stroke(ft.pts, aa); }
+  cx.restore();
+  // 右边：一周的日历
+  for (var c = 0; c < 7; c++) {
+    var cp = cellPos(c), lit = rel && rel.lit[c], cur = rel && rel.idx === c && rel.phase === 'type', landed = rel && rel.phase !== 'fly' ? true : false;
+    cx.strokeStyle = lit ? 'rgba(255,225,150,0.95)' : 'rgba(180,190,210,0.28)'; cx.lineWidth = lit ? 2 : 1;
+    cx.fillStyle = lit ? 'rgba(255,215,120,' + (cur ? 0.28 : 0.12) + ')' : 'rgba(255,255,255,0.02)';
+    cx.beginPath(); cx.rect(cp.x - cp.w / 2, cp.y - cp.h / 2, cp.w, cp.h); cx.fill(); cx.stroke();
+    cx.fillStyle = lit ? 'rgba(255,240,200,0.95)' : 'rgba(180,190,210,0.45)'; cx.font = '14px ui-monospace, Menlo, monospace'; cx.textAlign = 'center';
+    cx.fillText(DAYS[c], cp.x, cp.y + 5);
+    if (rel && (rel.phase !== 'fly' || true)) {
+      var fl2 = flyers.filter(function (f) { return f.kind === 'cell' && f.cell === c; }).length;
+      if (!fl2 && rel && !lit && rel.phase !== 'end') { cx.save(); cx.globalCompositeOperation = 'lighter'; glow(cp.x, cp.y + cp.h / 2 + 12, 5, 0.7, 48); cx.restore(); }
+    }
+  }
+  // 右边：句子
+  if (rel && rel.phase === 'type') {
+    cx.font = FONT_PX + 'px -apple-system, "Helvetica Neue", Arial, sans-serif'; cx.textAlign = 'center';
+    var lines = wrapText(rel.text.slice(0, rel.typed), HW * 0.76), full = wrapText(rel.text, HW * 0.76), lh = FONT_PX * 1.35, y0 = H * 0.52 - (full.length - 1) * lh / 2;
+    cx.fillStyle = 'rgba(210,215,230,0.55)'; cx.font = '15px ui-monospace, Menlo, monospace'; cx.fillText(DAYS[rel.idx], HW + HW / 2, y0 - FONT_PX * 1.2);
+    cx.font = FONT_PX + 'px -apple-system, "Helvetica Neue", Arial, sans-serif'; cx.fillStyle = '#ffffff';
+    for (var l = 0; l < lines.length; l++) cx.fillText(lines[l], HW + HW / 2, y0 + l * lh);
+  }
+  if (rel && rel.phase === 'end') { cx.fillStyle = 'rgba(0,0,0,' + (1 - rel.fade) + ')'; cx.fillRect(HW + 9, 0, HW, H); }
+  if (rel) updateRelease(t);
+  // 提示
+  if (hintAlpha > 0.01 && state === 'play') { cx.fillStyle = 'rgba(210,215,230,' + (0.6 * hintAlpha) + ')'; cx.font = '16px -apple-system, Arial, sans-serif'; cx.textAlign = 'center'; cx.fillText(MODE === 'wave' ? (cam.on ? 'Wave your hand in front of the camera.' : 'Wave your hand near the lights.  (press C for camera)') : (MODE === 'grab' ? 'Hold your hand still near the lights. Then close your fist.' : 'Draw a loop around the lights.'), HW / 2, H - 28); }
+  if (cam.msg) { cx.fillStyle = 'rgba(255,170,150,0.8)'; cx.font = '13px ui-monospace, Menlo, monospace'; cx.textAlign = 'left'; cx.fillText(cam.msg, 24, H - 16); }
+  if (!muted) {} else { cx.fillStyle = 'rgba(210,215,230,0.5)'; cx.font = '13px ui-monospace, Menlo, monospace'; cx.textAlign = 'right'; cx.fillText('muted (M)', W - 16, H - 16); }
+}
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>
