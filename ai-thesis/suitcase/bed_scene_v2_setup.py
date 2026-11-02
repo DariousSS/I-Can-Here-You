@@ -10,13 +10,15 @@ else:
     hd = p.op('sc_woodhand') or p.create(moviefileinTOP, 'sc_woodhand')
     hd.par.file = BASE + '/assets/hand/hand_sprite.png'
     hd.nodeX, hd.nodeY = 1900, -4300
-    bs.inputConnectors[1].connect(room)
+    kal = p.op('castle_xf') or p.op('gz_switch') or p.op('gz_over')
+    bs.inputConnectors[1].connect(kal if kal is not None else room)
+    print('第二个场景输入 1（左床方块的万花筒人脸）=', kal.name if kal is not None else '没找到，暂用房间图')
     bs.inputConnectors[2].connect(hd)
     try:
-        bs.seq.vec.numBlocks = 6
+        bs.seq.vec.numBlocks = 8
     except Exception as e_:
         print('vec 序列设置失败：', repr(e_)[:80])
-    for i, nm in enumerate(['uS', 'uA', 'uD', 'uH', 'uR', 'uP']):
+    for i, nm in enumerate(['uS', 'uA', 'uD', 'uH', 'uR', 'uP', 'uL', 'uK']):
         setattr(bs.par, 'vec%dname' % i, nm)
     px = p.op('sc_bedscene_pixel')
     if px is not None:
@@ -27,3 +29,4 @@ else:
     if sw is not None:
         sw.inputConnectors[1].connect(bs)
         print('OK: 表演模式开关的第 1 路 = sc_bedscene（第二个场景），第 0 路 = 装置画面')
+

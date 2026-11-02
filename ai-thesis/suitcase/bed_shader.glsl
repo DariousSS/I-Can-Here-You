@@ -2,9 +2,12 @@
 // 输入 0 = 天使（sc_angel，默认关）；输入 1 = 当天的房间图（sc_room）；输入 2 = 木头手图（sc_woodhand）
 // uS = (时间（秒）, 是否转 180 度 0/1（天花板投影仪倒挂时用）, 画布宽高比, 天使亮度 0~1)
 // uA = (天使中心 x, y, 天使高度（占画布高度的比例）, 天使图的宽高比)
-// uD = (光点 x, y（房间图坐标 0~1）, 亮度 0~1（0 = 还没找到）, 出生时间（秒，和 uS.x 同一个钟）)
+// uD = (光点 x, y（画布坐标 0~1，已缩进光点区 bed_dotbox）, 亮度 0~1（0 = 还没找到）, 出生时间（秒，和 uS.x 同一个钟）)
 // uH = (木头手/圈 x, y（房间图坐标）, 手的透明度 0~1, 戳的程度 0~1)
 // uR = (房间图宽高比, 房间图放大倍数, 房间的暗度（圈外亮度）, 圈的半径（房间图高度的比例）)
+// uL = (方块左下角 x0, y0, 右上角 x1, y1，画布 0~1，转 180 度之后的画面坐标)
+// uT = (镜像字小块的 x0, y0, x1, y1，画布 0~1；对位模式下有黄线框)
+// uK = (对位模式 0/1（绿线框 + 红点=(x1,y1) 角 + 蓝点=(x0,y0) 角）, 万花筒亮度 0~1, 镜像字亮度 0~1, 0)；输入 1 = 万花筒人脸（原来是房间图，现在不用房间了）
 // uP = (木头手大小（占画布高度）, 手悬浮上下晃的幅度, 是否画房间图 0/1（默认 0 = 背景黑）, 0)
 uniform vec4 uS;
 uniform vec4 uA;
@@ -12,6 +15,9 @@ uniform vec4 uD;
 uniform vec4 uH;
 uniform vec4 uR;
 uniform vec4 uP;
+uniform vec4 uL;
+uniform vec4 uK;
+uniform vec4 uT;
 out vec4 fragColor;
 
 void main()
@@ -41,7 +47,7 @@ void main()
 
 	// 光点本身（画在房间上面）
 	if (uD.z > 0.01) {
-		vec2 dp = 0.5 + (uD.xy - 0.5) * rsize;
+		vec2 dp = uD.xy;                                  // 已经由游戏缩进"光点区"（落在床上），直接是画布坐标
 		float d = length((uv - dp) * vec2(asp, 1.0));
 		float breath = 0.78 + 0.22 * sin(t * 1.6);
 		float core = 1.5 * smoothstep(0.03, 0.0, d) + 0.75 * exp(-d * 13.0);
@@ -78,5 +84,38 @@ void main()
 			col = mix(col, h.rgb, h.a * uH.z);
 		}
 	}
+	// 左床方块（现在是矩形）：万花筒人脸（输入 1）完整放进 (x0,y0)-(x1,y1) 里，不会超出
+	{
+		vec2 lo = uL.xy, hi = max(uL.zw, uL.xy + 0.01);
+		vec2 lq = (uv - lo) / (hi - lo);
+		if (lq.x > 0.0 && lq.x < 1.0 && lq.y > 0.0 && lq.y < 1.0 && uK.y > 0.001) {
+			vec2 e = min(lq, 1.0 - lq);
+			float edge = smoothstep(0.0, 0.03, min(e.x, e.y));
+			col = mix(col, texture(sTD2DInputs[1], lq).rgb, uK.y * edge);
+		}
+		if (uK.x > 0.5) {
+			vec2 dd = max(lo - uv, uv - hi);
+			float line = 1.0 - smoothstep(0.0, 0.004, abs(max(dd.x, dd.y)));
+			col = mix(col, vec3(0.1, 1.0, 0.3), line);
+			col = mix(col, vec3(1.0, 0.1, 0.1), 1.0 - smoothstep(0.012, 0.016, length((uv - hi) * vec2(asp, 1.0))));
+			col = mix(col, vec3(0.2, 0.4, 1.0), 1.0 - smoothstep(0.012, 0.016, length((uv - lo) * vec2(asp, 1.0))));
+		}
+	}
+
+	// 镜像字（输入 0 = sc_mirror_flip，左右反写的字，黑底）：单独一小块 (x0,y0)-(x1,y1)，暖白色
+	if (uK.z > 0.001) {
+		vec2 tlo = uT.xy, thi = max(uT.zw, uT.xy + 0.01);
+		vec2 tq = (uv - tlo) / (thi - tlo);
+		if (tq.x > 0.0 && tq.x < 1.0 && tq.y > 0.0 && tq.y < 1.0) {
+			vec3 tx = texture(sTD2DInputs[0], tq).rgb;
+			float ta = max(tx.r, max(tx.g, tx.b)) * uK.z;
+			col = mix(col, vec3(1.0, 0.94, 0.78), clamp(ta, 0.0, 1.0));
+		}
+		if (uK.x > 0.5) {
+			vec2 dt = max(tlo - uv, uv - thi);
+			col = mix(col, vec3(1.0, 0.8, 0.1), 1.0 - smoothstep(0.0, 0.003, abs(max(dt.x, dt.y))));
+		}
+	}
+
 	fragColor = TDOutputSwizzle(vec4(col, 1.0));
 }

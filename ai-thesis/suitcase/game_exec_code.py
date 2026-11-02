@@ -16,12 +16,16 @@ def _c(k, d):
     return c.get(k, d)
 HINT_AFTER, REVEAL_AFTER = 28.0, 55.0
 TELL_MAX, TELL_IDLE, TELL_FIRST = 4, 4.5, 10.0
+END_ANGEL = 9.0                                   # 结尾：巨大的天使 + 祝贺的话 出现多久（秒），之后一下子消失，开始红字结算
+CONGRATS = 'Congratulations.' + chr(10) + 'You found her secret.'
+SUM_CPS, SUM_HOLD = 45.0, 8.0                      # 结算：每秒打几个字、全部打完后停多久
 TYPE_CPS, HOLD_SEC, TYPE_GAP = 18.0, 7.0, 0.8     # 一句一句打出来：每秒几个字、全部打完后留多久、两句之间停多久
 INTRO = [
     "You live in this house with your family. To pay the bills, you rent out a room.",
     "A girl has just moved in. She keeps her door closed. She keeps a secret.",
     "Find the lights hidden in the house.",
-    "Wave your hand to look around. Make a fist to catch a light. Press a key to listen.",
+    "Wave your hand to look around. Hold still on a light to catch it.",
+    "Each piano key holds a different piece of the story. Press one key, then listen.",
     "Press any key to begin.",
 ]
 FONT_PX = 44
@@ -30,19 +34,45 @@ CLAP_MIN, CLAP_RATIO = 0.1, 6.0
 NOTE_OFFSET = 1
 WHITE_PC = (0, 2, 4, 5, 7, 9, 11)
 BLACK_PC = (1, 3, 6, 8, 10)
-D2 = ['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU']
+D2 = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN']
 SENT = [
-    "We need to rent out a room.", "Someone is moving in!", "The stairs creak every night at ten.", "Why did she just drag her large suitcase up the stairs?",
-    "What did she put in the fridge? I'm so curious.", "\u2026you won't believe it, there's a girl upstairs\u2026", "\u2026she doesn't talk much, does she?\u2026", "\u2026what is she doing up there all day?\u2026",
-    "\u2026cultural background\u2026 completely different\u2026", "She says she's moved so many times.", "She put a little bell on her door.", "She told us: please don't go into her room.",
-    "The bell is off when she's home. It's on when she's out.", "The bell was taped above the door. Not very firmly.", "She has gone out!", "The door is open. Just a little.",
-    "The bell rang.", "It kept ringing. It wouldn't stop.", "Then the bell stopped.", "The door was shut again. Nobody said a word.",
-    "Don't go into her room again.", "What do I do? I already told the child not to go into her room.", "She's so smart. I didn't even know opening a door could be recorded.", "I can't lose this income.",
-    "I'm so busy at work. I really don't want to deal with this.", "I didn't think she'd actually tell Mom.", "She looked easy to push around.", "Why don't you go play at your friend's house today?",
-    "Listen up. We're a family. We stick together.", "You must be mistaken.", "Going into her room? That never happened.", "It's just talking. It's not a big deal.",
-    "She said: \"I'm in my own room.\"", "She has moved out at last.", "Another guest will come.", "The door is closed. The room is clean."
+    'We need to rent out a room.',
+    'Someone is moving in!',
+    "It kept ringing. It wouldn't stop.",
+    'Why did she just drag her large suitcase up the stairs?',
+    "What did she put in the fridge? I'm so curious.",
+    "…you won't believe it, there's a girl upstairs…",
+    "…she doesn't talk much, does she?…",
+    '…what is she doing up there all day?…',
+    '…cultural background… completely different…',
+    'I opened her wardrobe. She hid it well, but I still found it.',
+    'She put a little bell on her door.',
+    "She told us: please don't go into her room.",
+    "The bell is off when she's home. It's on when she's out.",
+    'The bell was taped above the door. Not very firmly.',
+    'She has gone out!',
+    'The door is open. Just a little.',
+    'The bell rang.',
+    'I went through the trash in her room. She really does have a secret! Gotcha!',
+    'Then the bell stopped.',
+    'The door was shut again. Nobody said a word.',
+    "Don't go into her room again.",
+    'What do I do? I already told the child not to go into her room.',
+    "She's so smart. I didn't even know opening a door could be recorded.",
+    "I can't lose this income.",
+    "I'm so busy at work. I really don't want to deal with this.",
+    "I didn't think she'd actually tell Mom.",
+    'She looked easy to push around.',
+    "Why don't you go play at your friend's house today?",
+    "Listen up. We're a family. We stick together.",
+    'You must be mistaken.',
+    'Going into her room? That never happened.',
+    "It's just talking. It's not a big deal.",
+    "She said: \"I'm in my own room.\"",
+    'She has moved out at last.',
+    'Another guest will come.',
+    'The door is closed. The room is clean.',
 ]
-# 25 个黑键，从最低的黑键到最高的黑键："她"（那个女孩）的声音
 BSENT = [
     "Mom says someone is moving in.", "She put a bell on her door? What?", "Why would anyone put a bell on a door?", "She told me not to go into her room.",
     "But she's out. How could she possibly know?", "I don't believe it.", "I watched her door when she was home.", "She opened it. She closed it. No bell.",
@@ -67,6 +97,29 @@ def _new_day(G, now):
     r = op('/project1/sc_room')
     if r is not None:
         r.par.file = BASE + '/game/room_day' + str(G['day'] + 1) + '.png'
+
+MY_FILE = BASE + '/my_perspective.txt'
+MY_MAP = [   # (他们那句话里的一小段, 对应「我的视角」第几句（my_perspective.txt 的第几行，从 1 开始）)
+    ('large suitcase', 1), ('went through the trash', 2), ('opened her wardrobe', 2), ('little bell on her door', 3), ('please don', 4),
+    ('The bell is off when', 5), ('taped above the door', 5), ('She has gone out', 6), ('door is open', 7), ('The bell rang', 8), ('kept ringing', 8),
+    ('could be recorded', 9), ('girl upstairs', 10), ('talk much', 10), ('doing up there', 10), ('in my own room', 10), ('You must be mistaken', 11),
+    ('never happened', 11), ('Then the bell stopped', 12), ('Nobody said a word', 12), ('just talking', 13), ('cultural background', 14),
+    ('moved out at last', 15), ('room is clean', 15), ('Another guest', 16), ('lose this income', 17), ('deal with this', 17),
+    ('told me not to go', 4), ('bell on her door? What', 3), ('Why would anyone put a bell', 3), ('switched off', 5), ('turned it off when', 5),
+    ('Just a quick look', 6), ('only looked', 7), ('bell is ringing', 8), ("Why won't it stop", 8), ("ll know", 9),
+]
+
+def _my_line(sentence):
+    # 找出和这句话对应的「我的视角」，没有对应就返回 None
+    for key_, n_ in MY_MAP:
+        if key_ in sentence:
+            try:
+                with open(MY_FILE, encoding='utf-8') as f_:
+                    L_ = [x_.strip() for x_ in f_ if x_.strip()]
+                return L_[n_ - 1] if 0 < n_ <= len(L_) else None
+            except Exception:
+                return None
+    return None
 
 def _hand(G, now):
     real = _real_hand(G)
@@ -225,12 +278,23 @@ def _add_told(G, text, now):
         ptext, pt0 = T['told'][-1]
         start = max(now, pt0 + len(ptext) / _c('type_cps', TYPE_CPS) + TYPE_GAP)      # 排队：上一句打完、停一下，才打这一句
     T['told'].append((text, start))
+    G.setdefault('week_told', []).append(text)
     G['lit'][G['day']] = True
     sfx = T.setdefault('sfx', [])
     if 'kept ringing' in text or 'is ringing' in text:
         sfx.append((start, 'bell_stuck'))
     elif 'bell rang' in text:
         sfx.append((start, 'bell'))
+
+def _set_my(G, sentence):
+    # 按下的琴键对应的「我的视角」：右边开始打字后淡入，句子打完再多停一会儿淡出
+    tx_ = _my_line(sentence)
+    T_ = G.get('tell')
+    if tx_ is None or not T_ or not T_.get('told'):
+        G['my'] = None
+        return
+    l0_ = T_['told'][-1][1]
+    G['my'] = (tx_, l0_, len(sentence) / _c('type_cps', TYPE_CPS) + _c('my_hold', 2.5))
 
 def _press(G, key, now):
     T = G['tell']
@@ -239,10 +303,18 @@ def _press(G, key, now):
         _new_day(G, now)          # 观众按了一下琴键：封面消失，游戏开始
         return
     if G['state'] == 'tell' and T is not None and now >= T['t0'] and T['n'] < TELL_MAX:
+        if _c('key_wait', True) and T['told']:
+            lt_, l0_ = T['told'][-1]
+            if now < l0_ + len(lt_) / _c('type_cps', TYPE_CPS) + 0.6:
+                return                  # 上一句还在打：先忽略这次按键，一个键对应一句话才分得清（想关掉：cfg key_wait=False）
         if kind == 'b' and 0 <= idx < len(BSENT):
             _add_told(G, BSENT[idx], now)
+            G['piano'] = (2, idx, now)
+            _set_my(G, BSENT[idx])
         elif kind == 'w' and 0 <= idx < len(SENT):
             _add_told(G, SENT[idx], now)
+            G['piano'] = (1, idx, now)
+            _set_my(G, SENT[idx])
     elif G['state'] == 'search':
         G['hint_t'] = now
 
@@ -271,6 +343,14 @@ def _show_cards(G):
     except Exception as e_:
         print('开关牌子失败：', repr(e_)[:80])
 
+def _uniq(L):
+    seen_, out_ = set(), []
+    for s_ in L:
+        if s_ not in seen_:
+            seen_.add(s_)
+            out_.append(s_)
+    return out_
+
 def _text(G, now):
     cal = []
     for i in range(7):
@@ -285,7 +365,19 @@ def _text(G, now):
     if G['state'] == 'intro':
         return '' if op('/project1/sc_intro') is not None else _intro_text(WRAP)
     if G['state'] == 'end':
-        return ''
+        e_ = now - G['state_t']
+        if e_ < _c('end_angel', END_ANGEL):
+            return ''                          # 天使在的时候不打字，祝贺的话由机械声音读出来（见 _frame 里的 end_said）
+        # 天使一下子消失后：把这一周找到的所有句子（去掉重复的）按顺序快速重新打一遍（红色，往上滚）
+        remaining = int(max(0.0, e_ - _c('end_angel', END_ANGEL) - _c('sum_delay', 1.5)) * _c('sum_cps', SUM_CPS))
+        flat = []
+        for s_ in _uniq(G.get('week_told', [])):
+            take = min(len(s_), remaining)
+            if take <= 0:
+                break
+            flat.extend(textwrap.wrap(s_[:take], WRAP))
+            remaining -= len(s_)
+        return chr(10).join(flat[-11:])
     if T is not None:
         body = []
         for text, t0 in T['told']:
@@ -301,13 +393,11 @@ def _text(G, now):
             flat.extend(b)
         flat = flat[-maxl:]
         lines.extend(flat)
-        if T['n'] == 0 and now > T['t0']:
-            lines.append('(press a key)' if int(now * 2) % 2 == 0 else '')
     elif G['state'] == 'search':
         seen_ = now - G['seen_t'] < 3.0
         near_ = seen_ and math.hypot((G['dot'][0] - G['hx']) * LID_ASPECT, G['dot'][1] - G['hy']) < _c('flash_r', FLASH_R) * 0.95
         if near_:
-            lines.append(_c('fist_hint', 'Make a fist' + chr(10) + 'to catch the light.'))
+            lines.append(_c('fist_hint', 'Hold your hand' + chr(10) + 'on the light.'))
         elif seen_:
             lines.append(_c('move_hint', 'Move your hand' + chr(10) + 'to find a light.'))
         else:
@@ -348,7 +438,14 @@ def _frame():
     seen = now - G['seen_t'] < 3.0
     state = G['state']
     # --- 拍手（手电筒收紧） ---
-    if _grab(G) and state == 'search' and now - G['flash_t0'] > 0.9:
+    near_ = bool(seen and math.hypot((G['dot'][0] - G['hx']) * LID_ASPECT, G['dot'][1] - G['hy']) < _c('flash_r', FLASH_R) * 0.9)
+    if near_ and state == 'search':
+        G.setdefault('dwell_t0', now)
+    else:
+        G.pop('dwell_t0', None)
+    auto_ = _c('auto_catch', True) and 'dwell_t0' in G and now - G['dwell_t0'] > _c('auto_catch_s', 0.7)     # 手停在光点上 0.7 秒自动收集（也可以握拳）
+    if (_grab(G) or auto_) and state == 'search' and now - G['flash_t0'] > 0.9:
+        G.pop('dwell_t0', None)
         G['flash_t0'] = now
         dx, dy = (G['dot'][0] - G['hx']) * LID_ASPECT, G['dot'][1] - G['hy']
         G['hit'] = bool(seen and math.hypot(dx, dy) < _c('flash_r', FLASH_R) * 1.05)
@@ -414,13 +511,23 @@ def _frame():
                     G['day'] += 1
                     _new_day(G, now)
                     state = G['state']
-    if state == 'end' and now - G['state_t'] > 3.6:
+    if state == 'end' and now - G['state_t'] > _c('end_angel', END_ANGEL) + _c('sum_delay', 1.5) + sum(len(s_) for s_ in _uniq(G.get('week_told', []))) / _c('sum_cps', SUM_CPS) + _c('sum_hold', SUM_HOLD):
+        G['week_told'] = []
         G['day'] = 0
         G['week'] += 1
         G['count'] = 0
         G['lit'] = [False] * 7
         _new_day(G, now)
+        if _c('intro', True):
+            G['state'] = 'intro'                        # 一周结束后回到封面，等观众按键重新开始（不是直接进入周一）
+            G['intro_t0'] = now
         state = G['state']
+    if state == 'end' and G.get('end_said') != G['week'] and now - G['state_t'] > _c('end_say_delay', 1.2):
+        G['end_said'] = G['week']
+        try:
+            subprocess.Popen(['say', '-v', _c('end_voice', 'Zarvox'), '-r', str(int(_c('end_rate', 120))), _c('end_say', 'Congratulations. You found her secret.')], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        except Exception:
+            pass
     # --- 光点：只在手电筒里看得见 ---
     a = 0.0
     if state == 'search':
@@ -466,11 +573,13 @@ def _frame():
         bed.par.vec1valuex, bed.par.vec1valuey = _c('bed_angel_pos', (0.5, 0.7))
         bed.par.vec1valuez = _c('bed_angel_size', 0.5)
         bed.par.vec1valuew = 1920.0 / 1080.0
-        bed.par.vec2valuex, bed.par.vec2valuey = G['dot']
-        bed.par.vec2valuez = G['bed_da'] * hide
+        zx0, zy0, zx1, zy1 = _c('bed_dotbox', (0.06, 0.28, 0.38, 0.82))     # 光点区：不管盒盖上光点在哪，投到被子上都缩进这个框（默认在左床，没有万花筒的那张）
+        bed.par.vec2valuex = zx0 + (G['dot'][0] - 0.08) / 0.84 * (zx1 - zx0)
+        bed.par.vec2valuey = zy0 + (G['dot'][1] - 0.2) / 0.6 * (zy1 - zy0)
+        bed.par.vec2valuez = G['bed_da'] * hide * _c('bed_dot_gain', 1.4)
         bed.par.vec2valuew = G['bed_found_t'] if G.get('bed_found_t') is not None else 0.0
         bed.par.vec3valuex, bed.par.vec3valuey = fx, fy
-        bed.par.vec3valuez = G['bed_ha'] * hide
+        bed.par.vec3valuez = G['bed_ha'] * hide * (1.0 if _c('bed_hand', False) else 0.0)     # 默认不显示木头手和光圈（被子不平，投上去不好看）
         bed.par.vec3valuew = max(0.0, min(1.0, 1.0 - sc))
         bed.par.vec4valuex = LID_ASPECT
         bed.par.vec4valuey = _c('bed_room_scale', 1.0)
@@ -478,7 +587,40 @@ def _frame():
         bed.par.vec4valuew = R
         bed.par.vec5valuex = _c('bed_hand_size', 0.55)
         bed.par.vec5valuey = _c('bed_hand_bob', 0.012)
+        bed.par.vec6valuex, bed.par.vec6valuey, bed.par.vec6valuez, bed.par.vec6valuew = _c('bed_box', (0.6, 0.2, 0.975, 0.8))   # 人脸万花筒矩形（右床）：x0, y0, x1, y1
+        bed.par.vec7valuex = 1.0 if _c('bed_frame', False) else 0.0
+        bed.par.vec7valuey = _c('bed_kal', 1.0) * hide
+        bed.par.vec8valuex, bed.par.vec8valuey, bed.par.vec8valuez, bed.par.vec8valuew = _c('bed_tbox', (0.06, 0.30, 0.39, 0.40))     # 镜像字的小块：x0, y0, x1, y1
+        bed.par.vec7valuez = _c('bed_text', 1.0) * hide * (G['bed_da'] if _c('bed_text_follow', False) else 1.0)     # 镜像字：默认一直显示；bed_text_follow=True 时找到光点才浮现
         bed.par.vec5valuez = 1.0 if _c('bed_room', False) else 0.0       # 默认不画房间（背景黑，之后用 Kantan 把光投到被子和杂物上）
+    # --- 左边「我的视角」（sc_my_txt / sc_my）：跟着右边那句话走，没有对应的就不出现 ---
+    mt_, ml_ = p.op('sc_my_txt'), p.op('sc_my')
+    if mt_ is not None and ml_ is not None and _c('my_follow', True):
+        mex_ = p.op('sc_my_exec')
+        if mex_ is not None and mex_.par.active.eval():
+            mex_.par.active = False                       # 关掉自己循环播放的老脚本，改由琴键驱动
+        my_ = G.get('my')
+        a_ = 0.0
+        if my_ is not None and G['state'] == 'tell':
+            e_ = now - my_[1] - _c('my_delay', 0.6)
+            if e_ >= 0.0:
+                a_ = min(1.0, e_ / 0.6, max(0.0, (my_[2] - e_) / 0.9))
+            if G.get('my_shown') != (my_[0], my_[1]):
+                G['my_shown'] = (my_[0], my_[1])
+                mt_.par.text = chr(10).join(textwrap.wrap(my_[0], int(_c('my_chars', 24))))
+                mt_.par.fontsizex = _c('my_px', 44)
+        ml_.par.opacity = max(0.0, a_)
+    # --- 提示层（sc_hint_txt，另一种字体、更大）：只在抓到光点后、第一次按键之前显示 ---
+    ht_ = p.op('sc_hint_txt')
+    if ht_ is not None:
+        T_ = G['tell']
+        want_ = ''
+        if G['state'] == 'tell' and T_ is not None and now > T_['t0'] and T_['n'] == 0:
+            want_ = _c('key_hint', 'Each piano key is' + chr(10) + 'a different sentence.' + chr(10) + chr(10) + 'Press one,' + chr(10) + 'then listen.')
+        if want_ != G.get('last_hint'):
+            G['last_hint'] = want_
+            ht_.par.text = want_ if want_ else ' '
+            ht_.par.fontsizex = _c('hint_px', 70)
     # --- 写给右墙 ---
     txt = p.op('sc_sub_txt')
     lv = p.op('sc_sub')
@@ -489,6 +631,70 @@ def _frame():
             txt.par.text = s
             txt.par.fontsizex = FONT_PX
         lv.par.opacity = 1.0
+        red_ = G['state'] == 'end' and now - G['state_t'] >= _c('end_angel', END_ANGEL)
+        if red_ != G.get('last_red'):
+            G['last_red'] = red_
+            for k_, v_ in (('fontcolorr', 1.0), ('fontcolorg', 0.12 if red_ else 1.0), ('fontcolorb', 0.12 if red_ else 1.0)):
+                try:
+                    setattr(txt.par, k_, v_)
+                except Exception:
+                    pass
+    # --- 结尾的天使：就是 Kantan 里「云朵气泡」（item4）显示的那只红色眨眼天使；平时关掉，第 7 天结尾打开并触发警报（变大变红震动）。把形状拖到右边放大即可 ---
+    try:
+        if G.get('ang_path') is None:
+            for c_ in op('/project1/kantanMapper/project/allShapes').children:
+                if c_.name == _c('ang_shape', 'item4'):
+                    G['ang_path'] = c_.path
+        ang_ = op(G['ang_path']) if G.get('ang_path') else None
+        if ang_ is not None:
+            e_ = now - G['state_t'] if G['state'] == 'end' else -1.0
+            on_ = _c('ang_always', False) or (0.0 <= e_ < _c('end_angel', END_ANGEL))
+            if on_ != G.get('ang_on'):
+                G['ang_on'] = on_
+                ang_.par.render = on_
+            if G['state'] == 'end' and G.get('ang_alarm') != G['week'] and e_ >= 0.0:
+                G['ang_alarm'] = G['week']
+                ex_ = op('/project1/sc_exec')
+                if ex_ is not None:
+                    ex_.store('alarm', (now, now + _c('end_angel', END_ANGEL) - 0.3))
+    except Exception as e_:
+        if G.get('ang_err') != repr(e_)[:80]:
+            G['ang_err'] = repr(e_)[:80]
+            print('sc_game_exec 天使开关出错：', G['ang_err'])
+    # --- 钢琴形状（钢琴书）只在听故事时显示，其余时候（尤其是结尾）整个关掉，不会挡住天使 ---
+    try:
+        if G.get('pshape_path') is None:
+            for c_ in op('/project1/kantanMapper/project/allShapes').children:
+                sp_ = c_.op('parameters')
+                if sp_ is not None and hasattr(sp_.par, 'Name') and str(sp_.par.Name.eval()).strip() == _c('piano_shape', '钢琴书'):
+                    G['pshape_path'] = c_.path
+        ps_ = op(G['pshape_path']) if G.get('pshape_path') else None
+        if ps_ is not None:
+            pon_ = _c('piano_edit', False) or G['state'] == 'tell' or G.get('piano_vis', 0.0) > 0.02     # piano_edit=True：编辑模式，钢琴形状一直显示，方便在 Kantan 里调
+            if pon_ != G.get('pshape_on'):
+                G['pshape_on'] = pon_
+                ps_.par.render = pon_
+    except Exception as e_:
+        if G.get('pshape_err') != repr(e_)[:80]:
+            G['pshape_err'] = repr(e_)[:80]
+            print('sc_game_exec 钢琴形状开关出错：', G['pshape_err'])
+    # --- 字幕下面的小钢琴（Kantan 里叫「钢琴书」的形状，纹理 sc_piano）：按下的键亮着直到这句打完，再慢慢暗掉 ---
+    pn_ = p.op('sc_piano')
+    if pn_ is not None:
+        k_, i_, t_ = G.get('piano', (0, 0, -99.0))
+        T_ = G['tell']
+        hold_ = t_ + 0.5
+        if T_ is not None and T_['told']:
+            lt_, l0_ = T_['told'][-1]
+            hold_ = max(hold_, l0_ + len(lt_) / _c('type_cps', TYPE_CPS) + 0.4)
+        b_ = 1.0 if now < hold_ else math.exp(-(now - hold_) / 0.8)
+        if G['state'] != 'tell' or b_ < 0.01:
+            k_, b_ = 0, 0.0
+        pn_.par.vec0valuey, pn_.par.vec0valuez, pn_.par.vec0valuew = float(k_), float(i_), b_
+        pn_.par.vec1valuex = pn_.par.vec1valuey = pn_.par.vec1valuez = pn_.par.vec1valuew = 0.0   # 不记录按过的键，只亮当前按下的那个
+        tgt_ = 1.0 if (G['state'] == 'tell' or _c('piano_edit', False)) else 0.0                  # 钢琴只在"该按键听故事"的时候出现
+        G['piano_vis'] = G.get('piano_vis', 0.0) + (tgt_ - G.get('piano_vis', 0.0)) * min(1.0, dt_ * 6.0)
+        pn_.par.vec2valuex = G['piano_vis']
     _show_cards(G)
     # --- 写给封面牌子（Kantan 里叫 封面 的形状） ---
     cov = p.op('sc_intro')
@@ -497,6 +703,11 @@ def _frame():
         if cv != G.get('last_cover'):
             G['last_cover'] = cv
             cov.par.text = cv
+            n_ = max(1, len(cv.split(chr(10))))
+            try:
+                cov.par.fontsizex = max(16, min(32, int(_c('intro_h', 720) / (n_ * 1.28))))      # 行数多就自动缩小字号，不超出画面
+            except Exception:
+                pass
     # --- 写给日历牌子（Kantan 里叫 日历 的形状，和字幕分开） ---
     cal_t = p.op('sc_cal')
     if cal_t is not None:
@@ -515,7 +726,7 @@ def _frame():
     # --- 写给光点数牌子 ---
     ctx = p.op('sc_count')
     if ctx is not None:
-        cs_ = ' ' if G['state'] == 'intro' else str(G['count']) + ' / 7' + chr(10) + ' '.join(['*' if i < G['count'] else '.' for i in range(7)])
+        cs_ = ' ' if G['state'] == 'intro' else _c('count_label', 'Lights collected') + chr(10) + str(G['count']) + ' / 7'
         if cs_ != G.get('last_count'):
             G['last_count'] = cs_
             ctx.par.text = cs_
@@ -537,7 +748,45 @@ def _frame():
         print('状态', G['state'], '| 第', G['week'], '周 第', G['day'] + 1, '天 | 收集', G['count'], '/ 7 | 手(盖子坐标)', round(G['hx'], 2), round(G['hy'], 2), '看得到手' if seen else '没看到手', '| 光点', round(G['dot'][0], 2), round(G['dot'][1], 2), '| 原始手', G.get('last_raw'), '| 四指弯曲比', G.get('fist_dbg'), '(小于1.25算弯)', '| 游戏帧率', round(G.get('fps', 0)), '| 手数据每秒更新', round(G.get('hand_hz', 0), 1), '次', '| 游戏代码每帧耗时', round(G.get('ms', 0.0), 1), '毫秒')
     me.store('G', G)
 
+FXJSON = BASE + '/../td_live/gaze_bridge/audio_fx.json'
+
+def _bed_display():
+    # 被子投影仪的屏幕号：cfg['bed_display'] 优先；否则读 audio_fx.json 里的 bed_display（重开 TD 不会丢）；再不行用 1
+    v = _c('bed_display', None)
+    if v is not None:
+        return int(v)
+    try:
+        import json as _j
+        t_ = me.fetch('bd_t', 0.0)
+        if time.time() - t_ > 5.0:
+            me.store('bd_t', time.time())
+            with open(FXJSON, encoding='utf-8') as fh_:
+                me.store('bd_v', int(_j.load(fh_).get('bed_display', 1)))
+        return int(me.fetch('bd_v', 1))
+    except Exception:
+        return 1
+
+def _keep_bed_window(frame):
+    # 表演窗口开着、被子窗口没开时，自动把被子窗口（第二个场景）打开到屏幕 bed_display；想关掉：cfg 里 bed_autoopen=False
+    if frame % 60 != 0 or not _c('bed_autoopen', True):
+        return
+    g_, b_ = op('/project1/gz_win'), op('/project1/sc_win2')
+    if g_ is None or b_ is None or not g_.isOpen or b_.isOpen:
+        return
+    b_.par.justifyoffsetto = 'specifydisplay'
+    b_.par.display = _bed_display()
+    b_.par.justifyh, b_.par.justifyv = 'left', 'top'
+    b_.par.winoffsetx = b_.par.winoffsety = 0
+    b_.par.winw, b_.par.winh = 1920, 1200
+    b_.par.borders = False
+    b_.par.winopen.pulse()
+    print('sc_game_exec：被子窗口没开，已自动打开（屏幕 %d）' % _bed_display())
+
 def onFrameEnd(frame):
+    try:
+        _keep_bed_window(frame)
+    except Exception as e:
+        print('sc_game_exec 自动开被子窗口失败：', repr(e)[:100])
     try:
         t0_ = time.perf_counter()
         _frame()
@@ -559,6 +808,12 @@ def onStart():
                 if hasattr(mp.par, n):
                     setattr(mp.par, n, False)
         me.store('G', None)
+        if not _c('perf_auto', False):
+            for n_ in ('sc_perfswitch', 'sc_viewswitch'):          # 表演窗口固定显示游戏、被子窗口固定显示第二个场景（不再 3 秒自动切换）
+                o_ = op('/project1/' + n_)
+                if o_ is not None:
+                    o_.par.index.mode = ParMode.CONSTANT
+                    o_.par.index = 0
         print('sc_game_exec 启动：已关掉用不到的 MediaPipe 检测，游戏回到封面')
     except Exception as e:
         print('sc_game_exec 启动设置失败：', repr(e)[:100])
