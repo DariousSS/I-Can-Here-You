@@ -1177,7 +1177,7 @@ def _update_view(st):
         m = NOTE_RE.match(nm)
         if m and v > 0 and ((int(m.group(1)) - NOTE_OFFSET) %% 12) in BLACK_PC:
             held = True
-    idx = 2 if held else (1 if st.get('view', 0) else 0)
+    idx = 0                                   # 已去掉热力图：按黑键 / V 键都不再切到 AI 注意力图或目光热图，一直是脸（万花筒）
     if idx != st.get('sw_idx'):
         sw = op('gz_switch')
         if sw is not None:
