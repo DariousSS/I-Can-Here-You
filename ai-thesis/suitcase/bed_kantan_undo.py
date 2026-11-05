@@ -6,4 +6,14 @@ if sv is not None and bs is not None:
 k = p.op('sc_bedkantan')
 if k is not None:
     k.destroy()
+ge = op('/project1/sc_game_exec')
+cfg = dict(ge.fetch('cfg', {}) or {})
+cfg.pop('bed_flip', None)              # 恢复成默认（转 180 度）
+ge.store('cfg', cfg)
+for n in ('sc_bedkantan_rot', 'sc_bed_face', 'sc_bed_dot'):
+    if p.op(n) is not None:
+        p.op(n).destroy()
+sl = p.op('sc_bedkantan_sel')
+if sl is not None:
+    sl.destroy()
 print('已回退：被子窗口 = sc_bedscene，sc_bedkantan 已删除')

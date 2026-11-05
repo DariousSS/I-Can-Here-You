@@ -14,12 +14,17 @@ else:
     k.nodeX, k.nodeY = 2600, -4300
     print('OK: 已新建 /project1/' + k.name)
 k = p.op('sc_bedkantan')
+if k is not None and k.op('out1') is None and k.op('kantanMapper') is not None:
+    k = k.op('kantanMapper')                            # 载入后外面多包了一层，真正的 Kantan 在里面
 if k is not None:
     out = k.op('out1')
     sv = p.op('sc_viewswitch')
     if out is not None and sv is not None:
-        sv.inputConnectors[0].connect(out)
+        sel = p.op('sc_bedkantan_sel') or p.create(selectTOP, 'sc_bedkantan_sel')   # 穿不过组件边界直接连线，用 Select 取出来
+        sel.nodeX, sel.nodeY = 2600, -4500
+        sel.par.top = out.path
+        sv.inputConnectors[0].connect(sel)
         print('OK: 被子窗口现在显示 sc_bedkantan 的输出（你在里面画的东西会出现在被子投影仪上）')
     if out is not None:
         print('sc_bedkantan 输出大小：', out.width, 'x', out.height, '（被子投影仪是 1920x1200）')
-    print('下一步：k = op("/project1/sc_bedkantan"); k.par.Open.pulse()  # 打开编辑窗口')
+    print('下一步：打开编辑窗口：op("' + k.path + '").par.Open.pulse()' if k is not None else '')

@@ -25,8 +25,7 @@ INTRO = [
     "A girl has just moved in. She keeps her door closed. She keeps a secret.",
     "Find the lights hidden in the house.",
     "Wave your hand to look around. Hold still on a light to catch it.",
-    "Each piano key holds a different piece of the story. Press one key, then listen.",
-    "Press any key to begin.",
+    "Each page of this book holds a piece of the story. Catch a light, then wave your hand to turn the page.",
 ]
 FONT_PX = 44
 WRAP = 24
@@ -277,6 +276,8 @@ def _add_told(G, text, now):
     if T['told']:
         ptext, pt0 = T['told'][-1]
         start = max(now, pt0 + len(ptext) / _c('type_cps', TYPE_CPS) + TYPE_GAP)      # 排队：上一句打完、停一下，才打这一句
+    if _book_on():
+        start = max(start, now + _c('book_flip_s', 1.3) * 0.8)       # 书翻到一半，新的字才开始出现
     T['told'].append((text, start))
     G.setdefault('week_told', []).append(text)
     G['lit'][G['day']] = True
@@ -286,23 +287,79 @@ def _add_told(G, text, now):
     elif 'bell rang' in text:
         sfx.append((start, 'bell'))
 
-def _set_my(G, sentence):
-    # 按下的琴键对应的「我的视角」：右边开始打字后淡入，句子打完再多停一会儿淡出
-    tx_ = _my_line(sentence)
-    T_ = G.get('tell')
-    if tx_ is None or not T_ or not T_.get('told'):
-        G['my'] = None
+def _book_on():
+    # 听故事时是否用"翻页动画"（线框书翻页）。默认关：书只当柜门上的封面用。想恢复翻页：cfg book_play=True
+    return op('/project1/sc_book') is not None and _c('book_mode', True) and _c('book_play', True)
+
+def _cover_on():
+    # 柜门上的书本封面（sc_book 的封面模式）：游戏开始时先出现，等观众"开门"（或几秒后自动）才显示游戏规则
+    return op('/project1/sc_book') is not None and _c('book_mode', True) and _c('cover_book', True)
+
+def _bed_shape(G, key, name, now, kan='/project1/sc_bedkantan/kantanMapper'):
+    # 在 Kantan 里按名字找形状（默认是被子的 sc_bedkantan，kan 换成 '/project1/kantanMapper' 就是盖子那份），找到后记住路径；没找到每 3 秒再试一次
+    if G.get(key) is None and now - G.get(key + '_try', -9.0) > 3.0:
+        G[key + '_try'] = now
+        root_ = op(kan + '/project/allShapes')
+        if root_ is not None:
+            for c_ in root_.findChildren(maxDepth=4):
+                sp_ = c_.op('parameters')
+                if sp_ is not None and hasattr(sp_.par, 'Name') and str(sp_.par.Name.eval()).strip() == name:
+                    G[key] = c_.path
+    return op(G[key]) if G.get(key) else None
+
+def _pages(day):
+    # 这一天书里的页：故事按时间顺序切成 7 段，每天的白键（屋子里的声音）和黑键（她）交替排成页。想自己定：cfg day_pages = {天号 0~6: [('w', 编号 0~35) 或 ('b', 编号 0~24), ...]}
+    dp_ = _c('day_pages', None)
+    if dp_ and day in dp_:
+        return list(dp_[day])
+    w0_, w1_ = round(36 * day / 7.0), round(36 * (day + 1) / 7.0)
+    b0_, b1_ = round(25 * day / 7.0), round(25 * (day + 1) / 7.0)
+    W_ = [('w', i_) for i_ in range(w0_, w1_)]
+    B_ = [('b', i_) for i_ in range(b0_, b1_)]
+    out_ = []
+    for i_ in range(max(len(W_), len(B_))):
+        if i_ < len(W_):
+            out_.append(W_[i_])
+        if i_ < len(B_):
+            out_.append(B_[i_])
+    return out_
+
+def _wave(G, now):
+    # 挥手翻页：手在画面里、左右移动得够快（vx 是手每秒横向移动的盖子宽度），并且离上次翻页超过 1.2 秒
+    if now - G.get('seen_t', -9.0) > 0.4 or now - G.get('wave_t', -9.0) < _c('wave_gap', 1.2):
+        return False
+    return abs(G.get('vx', 0.0)) > _c('wave_v', 1.6)
+
+def _book_turn(G, kind, idx, sentence, now):
+    # 按下琴键：书翻一页（线框动画，sc_book 画）。中间偏左的键 → 从左往右翻；偏右的键 → 从右往左翻。字不在书里，仍然显示在原来的两个长方形（右 = 她们的话，左 = 我的视角）
+    if not _book_on():
         return
-    l0_ = T_['told'][-1][1]
-    G['my'] = (tx_, l0_, len(sentence) / _c('type_cps', TYPE_CPS) + _c('my_hold', 2.5))
+    left_half = idx < (18 if kind == 'w' else 13)
+    d_ = -1.0 if left_half else 1.0
+    if _c('book_fixed_dir', True):
+        d_ = -1.0                                  # 衣柜像一本从左往右翻开的书：每一页都是从左往右翻
+    if _c('book_dir_flip', False):
+        d_ = -d_
+    G['bk'] = {'t0': now, 'dir': d_, 'p': 0.0}
+
+def _set_my(G, sentence):
+    # 这一句对应的「我的视角」：和右边那句同时出现（直接出现，不打字），一直停到右边换成下一句，再一起消失。没有对应的就是空
+    T_ = G.get('tell')
+    if not T_ or not T_.get('told'):
+        return
+    G['my_prev'] = G.get('my')
+    G['my'] = (_my_line(sentence), T_['told'][-1][1])
 
 def _press(G, key, now):
     T = G['tell']
     kind, idx = key
     if G['state'] == 'intro':
-        _new_day(G, now)          # 观众按了一下琴键：封面消失，游戏开始
-        return
-    if G['state'] == 'tell' and T is not None and now >= T['t0'] and T['n'] < TELL_MAX:
+        if _cover_on() and not G.get('door_open'):
+            if _c('cover_anykey', False):
+                G['door_open'] = True     # 想让任意琴键都能开门：cfg cover_anykey=True；默认只认空格键（键盘回调里存 door_open），琴键不会误触发
+            return
+        return                    # 规则显示期间，按键和手都不会让游戏提前开始（只靠 intro_auto_s 的计时，默认 10 秒）
+    if G['state'] == 'tell' and T is not None and now >= T['t0'] and T['n'] < TELL_MAX and not T.get('closed'):
         if _c('key_wait', True) and T['told']:
             lt_, l0_ = T['told'][-1]
             if now < l0_ + len(lt_) / _c('type_cps', TYPE_CPS) + 0.6:
@@ -311,10 +368,12 @@ def _press(G, key, now):
             _add_told(G, BSENT[idx], now)
             G['piano'] = (2, idx, now)
             _set_my(G, BSENT[idx])
+            _book_turn(G, 'b', idx, BSENT[idx], now)
         elif kind == 'w' and 0 <= idx < len(SENT):
             _add_told(G, SENT[idx], now)
             G['piano'] = (1, idx, now)
             _set_my(G, SENT[idx])
+            _book_turn(G, 'w', idx, SENT[idx], now)
     elif G['state'] == 'search':
         G['hint_t'] = now
 
@@ -326,11 +385,14 @@ def _intro_text(wrap):
     return chr(10).join(out).strip(chr(10))
 
 def _show_cards(G):
-    # 封面期间：把「日历」「光点数」两块牌子整个关掉（它们的黑色底会挡住封面）；游戏开始后再打开，同时关掉封面
+    # 封面期间：把「日历」「光点数」两块牌子整个关掉（它们的黑色底会挡住封面）；游戏开始后再打开，同时关掉封面。
+    # 柜门上的书本封面阶段（door_open 还是 False）：游戏规则（封面形状）也先不出现
     want = G['state'] != 'intro'
-    if G.get('cards_on') == want:
+    rules_on = (not want) and (G.get('door_open') or not _cover_on())
+    key_ = (want, rules_on)
+    if G.get('cards_on') == key_:
         return
-    G['cards_on'] = want
+    G['cards_on'] = key_
     try:
         for c in op('/project1/kantanMapper/project/allShapes').children:
             if c.op('parameters') is None or not hasattr(c.op('parameters').par, 'Name'):
@@ -339,7 +401,7 @@ def _show_cards(G):
             if nm in ('日历', '光点数'):
                 c.par.render = want
             elif nm == '封面':
-                c.par.render = not want
+                c.par.render = rules_on
     except Exception as e_:
         print('开关牌子失败：', repr(e_)[:80])
 
@@ -380,19 +442,32 @@ def _text(G, now):
         return chr(10).join(flat[-11:])
     if T is not None:
         body = []
-        for text, t0 in T['told']:
+        told_ = T['told']
+        if (_book_on() or _c('one_page', True)) and told_:
+            # 他人视角那块只显示"这一页"的话（最新的一句）。新一句还没开始打时，旧的留到翻页动画一半（没动画就马上换）
+            lt_, l0_ = told_[-1]
+            if now >= l0_:
+                told_ = [told_[-1]]
+            elif len(told_) > 1 and now < l0_ - (_c('book_flip_s', 1.3) * 0.4 if _book_on() else 0.0):
+                told_ = [told_[-2]]
+            else:
+                told_ = []
+        for text, t0 in told_:
             if now < t0:
                 continue
             nshow = min(len(text), int((now - t0) * _c('type_cps', TYPE_CPS)))
             shown = text[:max(0, nshow)]
             if shown:
-                body.append(textwrap.wrap(shown, WRAP))
+                body.append(textwrap.wrap(shown, int(_c('sub_wrap', WRAP))))
         maxl = 11
         flat = []
         for b in body:
             flat.extend(b)
         flat = flat[-maxl:]
         lines.extend(flat)
+        if T['n'] == 0 and now > T['t0'] and op('/project1/sc_hint_txt') is None:
+            lines.extend(textwrap.wrap(_c('book_hint', 'Every key opens a page.'), WRAP))
+            lines.extend(['', 'Press one,', 'then read.'])
     elif G['state'] == 'search':
         seen_ = now - G['seen_t'] < 3.0
         near_ = seen_ and math.hypot((G['dot'][0] - G['hx']) * LID_ASPECT, G['dot'][1] - G['hy']) < _c('flash_r', FLASH_R) * 0.95
@@ -416,6 +491,7 @@ def _frame():
         if _c('intro', True):
             G['state'] = 'intro'
             G['intro_t0'] = now
+            G['door_open'] = False
     dt_ = max(0.001, min(0.2, now - G.get('t_prev', now - 0.016)))
     G['t_prev'] = now
     G['fps'] = G.get('fps', 60.0) * 0.95 + (1.0 / dt_) * 0.05
@@ -483,8 +559,24 @@ def _frame():
     R = _c('flash_r', FLASH_R) * sc
     # --- 琴键 ---
     for key in _keys(G):
+        if state == 'tell' and _c('page_mode', True) and not _c('keys_in_page_mode', False):
+            continue          # 挥手翻页模式下，空气钢琴/键盘的音符不再决定"出哪一句"（声音照常响），句子只由翻页决定，避免重复
         _press(G, key, now)
-    # --- 开场介绍 ---
+    # --- 开场介绍：先是柜门上的书本封面，门打开（或 cover_s 秒后自动）才出现游戏规则 ---
+    if state == 'intro' and not G.get('door_open'):
+        if not _cover_on() or me.fetch('door_open', False) or (_c('cover_s', 0.0) > 0 and now - G.get('intro_t0', now) > _c('cover_s', 0.0)):
+            G['door_open'] = True
+        me.store('door_open', False)
+    elif me.fetch('door_open', False):
+        me.store('door_open', False)            # 不是封面阶段按的空格不留着（否则下次回到封面会立刻开始）
+    if state == 'intro' and G.get('door_open') and _c('intro_hand_start', True):
+        if G.get('door_t') is None:
+            G['door_t'] = now
+        elif now - G['door_t'] > _c('intro_auto_s', 10.0):
+            _new_day(G, now)                              # 规则文字显示 intro_auto_s 秒（默认 10）后自动进入游戏，不用按键也不用举手
+            state = G['state']
+    elif state == 'intro' and not G.get('door_open'):
+        G.pop('door_t', None)
     if state == 'intro' and me.fetch('skip_intro', False):
         me.store('skip_intro', False)
         _new_day(G, now)
@@ -497,13 +589,40 @@ def _frame():
             T['sfx'] = [x for x in T['sfx'] if x[0] > now]
             for x in due:
                 _play(x[1])
+    if state == 'tell' and T is not None and _c('page_mode', True) and now >= T['t0'] and T['n'] < TELL_MAX and not T.get('closed'):
+        pages_ = _pages(G['day'])
+        if pages_:
+            go_ = _wave(G, now) or (T['n'] == 0 and now - T['t0'] > _c('flip_auto_s', 5.0))      # 挥手翻页；第一页如果没人挥手，几秒后自动翻
+            if go_:
+                pi_ = T.get('pi')
+                if pi_ is None:
+                    pi_ = min(len(pages_) - 1, max(0, int((G['dot'][0] - 0.08) / 0.84 * len(pages_))))     # 第一页：光点在盖子上的位置（左→右）对应这一天的页（前→后）
+                else:
+                    pi_ = (pi_ + 1) % len(pages_)
+                n0_ = T['n']
+                _press(G, pages_[pi_], now)
+                if T['n'] > n0_:
+                    T['pi'] = pi_
+                    G['wave_t'] = now
     if state == 'tell' and T is not None:
-        if T['n'] == 0 and now - T['t0'] > TELL_FIRST:
-            _add_told(G, random.choice(SENT), now)
+        if T['n'] == 0 and now - T['t0'] > TELL_FIRST and not _c('page_mode', True):
+            ri_ = random.randrange(len(SENT))
+            _add_told(G, SENT[ri_], now)
+            _set_my(G, SENT[ri_])
+            _book_turn(G, 'w', ri_, SENT[ri_], now)
         if T['told']:
             ltext, lt0 = T['told'][-1]
             over = now > lt0 + len(ltext) / _c('type_cps', TYPE_CPS) + _c('hold', HOLD_SEC)
-            if over:
+            if over and not T.get('closed'):
+                # 今天结束前，先出现一句话告诉观众"今天到这里了"（不记进一周的总结里），再过一会儿才换天
+                T['closed'] = True
+                ct_ = _c('week_end_text', "That's all for this week.") if G['day'] >= 6 else _c('day_end_text', "That's all for today.")
+                cs_ = now + (_c('book_flip_s', 1.3) * 0.8 if _book_on() else 0.0)
+                T['told'].append((ct_, cs_))
+                G['my_prev'] = G.get('my')
+                G['my'] = (None, cs_)
+                _book_turn(G, 'w', 35, ct_, now)
+            elif over:
                 if G['day'] >= 6:
                     G['state'] = state = 'end'
                     G['state_t'] = now
@@ -521,6 +640,7 @@ def _frame():
         if _c('intro', True):
             G['state'] = 'intro'                        # 一周结束后回到封面，等观众按键重新开始（不是直接进入周一）
             G['intro_t0'] = now
+            G['door_open'] = False
         state = G['state']
     if state == 'end' and G.get('end_said') != G['week'] and now - G['state_t'] > _c('end_say_delay', 1.2):
         G['end_said'] = G['week']
@@ -554,6 +674,7 @@ def _frame():
         lid.par.vec2valuex = G['dot'][0]
         lid.par.vec2valuey = G['dot'][1]
         lid.par.vec2valuez = a
+        lid.par.vec2valuew = G.get('chk_vis', 0.0) if _c('cover_hide', True) else 0.0      # 封面（待机）时盖子上的房间整个隐藏
     # --- 写给床上的第二台投影仪（sc_bedscene）：房间放大地图 + 木头手（跟着手电筒圈）+ 找到的光点（物品）亮起 ---
     bed = p.op('sc_bedscene')
     if bed is not None:
@@ -565,7 +686,7 @@ def _frame():
             G['bed_found_t'] = None
         G['bed_da'] = G.get('bed_da', 0.0) + ((1.0 if found else 0.0) - G.get('bed_da', 0.0)) * min(1.0, dt_ * 3.0)
         G['bed_ha'] = G.get('bed_ha', 0.0) + ((1.0 if seen else 0.0) - G.get('bed_ha', 0.0)) * min(1.0, dt_ * 6.0)
-        hide = 0.0 if blank else 1.0
+        hide = 0.0 if blank else (1.0 - G.get('chk_vis', 0.0) if _c('cover_hide', True) else 1.0)      # 封面（待机）时人脸万花筒、天使、光点都隐藏
         bed.par.vec0valuex = now % 1000.0
         bed.par.vec0valuey = 1.0 if _c('bed_flip', True) else 0.0
         bed.par.vec0valuez = 1920.0 / 1200.0
@@ -573,7 +694,7 @@ def _frame():
         bed.par.vec1valuex, bed.par.vec1valuey = _c('bed_angel_pos', (0.5, 0.7))
         bed.par.vec1valuez = _c('bed_angel_size', 0.5)
         bed.par.vec1valuew = 1920.0 / 1080.0
-        zx0, zy0, zx1, zy1 = _c('bed_dotbox', (0.06, 0.28, 0.38, 0.82))     # 光点区：不管盒盖上光点在哪，投到被子上都缩进这个框（默认在左床，没有万花筒的那张）
+        zx0, zy0, zx1, zy1 = _c('bed_dotbox', (0.62, 0.28, 0.94, 0.82))     # 光点区：不管盒盖上光点在哪，投到被子上都缩进这个框（默认在右床，没有万花筒的那张）
         bed.par.vec2valuex = zx0 + (G['dot'][0] - 0.08) / 0.84 * (zx1 - zx0)
         bed.par.vec2valuey = zy0 + (G['dot'][1] - 0.2) / 0.6 * (zy1 - zy0)
         bed.par.vec2valuez = G['bed_da'] * hide * _c('bed_dot_gain', 1.4)
@@ -587,28 +708,128 @@ def _frame():
         bed.par.vec4valuew = R
         bed.par.vec5valuex = _c('bed_hand_size', 0.55)
         bed.par.vec5valuey = _c('bed_hand_bob', 0.012)
-        bed.par.vec6valuex, bed.par.vec6valuey, bed.par.vec6valuez, bed.par.vec6valuew = _c('bed_box', (0.6, 0.2, 0.975, 0.8))   # 人脸万花筒矩形（右床）：x0, y0, x1, y1
+        bed.par.vec6valuex, bed.par.vec6valuey, bed.par.vec6valuez, bed.par.vec6valuew = _c('bed_box', (0.025, 0.2, 0.4, 0.8))   # 人脸万花筒矩形（左床，我的情绪）：x0, y0, x1, y1
         bed.par.vec7valuex = 1.0 if _c('bed_frame', False) else 0.0
         bed.par.vec7valuey = _c('bed_kal', 1.0) * hide
         bed.par.vec8valuex, bed.par.vec8valuey, bed.par.vec8valuez, bed.par.vec8valuew = _c('bed_tbox', (0.06, 0.30, 0.39, 0.40))     # 镜像字的小块：x0, y0, x1, y1
         bed.par.vec7valuez = _c('bed_text', 1.0) * hide * (G['bed_da'] if _c('bed_text_follow', False) else 1.0)     # 镜像字：默认一直显示；bed_text_follow=True 时找到光点才浮现
         bed.par.vec5valuez = 1.0 if _c('bed_room', False) else 0.0       # 默认不画房间（背景黑，之后用 Kantan 把光投到被子和杂物上）
+    # --- 柜门上的书（sc_book，Kantan 形状「书本」）：开场是"封面"（线框书合着），门打开后封面消失；book_play=True 时听故事期间还会显示翻页的线框书 ---
+    bk_ = p.op('sc_book')
+    book_on_ = bk_ is not None and _c('book_mode', True)
+    if book_on_:
+        cover_ = G['state'] == 'intro' and not G.get('door_open') and _cover_on()
+        play_ = _book_on() and G['state'] == 'tell'
+        edit_ = _c('book_edit', False)                                # book_edit=True：编辑模式，书一直显示，方便在 Kantan 里摆位置
+        show_ = cover_ or play_ or edit_
+        G['bk_vis'] = G.get('bk_vis', 0.0) + ((1.0 if show_ else 0.0) - G.get('bk_vis', 0.0)) * min(1.0, dt_ * (5.0 if show_ else 12.0))
+        b_ = G.get('bk')
+        if b_ is None:
+            b_ = G['bk'] = {'t0': -9.0, 'dir': 1.0, 'p': 1.0}
+        if b_['p'] < 1.0:
+            b_['p'] = min(1.0, (now - b_['t0']) / _c('book_flip_s', 1.3))
+        if G.get('bkshape_path') is None:
+            for c_ in op('/project1/kantanMapper/project/allShapes').findChildren(maxDepth=4):
+                sp_ = c_.op('parameters')
+                if sp_ is not None and hasattr(sp_.par, 'Name') and str(sp_.par.Name.eval()).strip() in (_c('book_shape', '翻页书'), '书本'):
+                    G['bkshape_path'] = c_.path
+        bs_ = op(G['bkshape_path']) if G.get('bkshape_path') else None
+        if bs_ is not None:
+            bon_ = show_ or G['bk_vis'] > 0.02
+            if bon_ != G.get('bkshape_on'):
+                G['bkshape_on'] = bon_
+                bs_.par.render = bon_
+        geo_ = p.fetch('bk_geo', (1920, 1080))
+        bk_.par.vec0valuex = b_['p']
+        bk_.par.vec0valuey = b_['dir']
+        bk_.par.vec0valuez = geo_[0] / float(geo_[1])
+        bk_.par.vec0valuew = now % 1000.0
+        bk_.par.vec1valuex = _c('book_line', 1.0) * G['bk_vis']
+        bk_.par.vec1valuey = _c('book_thick', 0.0025)
+        bk_.par.vec1valuez = _c('book_margin', 0.085)
+        bk_.par.vec1valuew = _c('book_lift', 0.06)
+        try:
+            bk_.par.vec2valuex = 1.0 if (cover_ or (edit_ and G['state'] == 'intro')) else 0.0    # 1 = 封面（合着的书）
+            bk_.par.vec2valuey = 1.0 if _c('book_single', True) else 0.0                          # 1 = 单页模式（整个竖屏一张纸，翻页是一条页边从左扫到右）
+        except Exception:
+            pass
+    # --- 被子上的红蓝格子（sc_checker）：待机（封面）时铺满「格子初始」形状，门打开/游戏开始后消失；找光点时手碰到盖子房间里的行李箱，「行李箱」形状亮一下 ---
+    ck_ = p.op('sc_checker')
+    if ck_ is not None:
+        ck_.par.vec0valuex = _c('chk_cells', 14.0)
+        ck_.par.vec0valuey = 1.0
+        ck_.par.vec0valuez = now % 1000.0
+        stand_ = G['state'] == 'intro' and not G.get('door_open')
+        G['chk_vis'] = G.get('chk_vis', 0.0) + ((1.0 if stand_ else 0.0) - G.get('chk_vis', 0.0)) * min(1.0, dt_ * (6.0 if stand_ else 12.0))
+        for i_, nm_ in enumerate(_c('cover_hide_shapes', ('右脸(一直说话)',))):          # 封面（待机）时盖子 Kantan 里这些形状先关掉（右边一直说话的脸），门打开后再显示
+            sh2_ = _bed_shape(G, 'cvh%d_path' % i_, nm_, now, '/project1/kantanMapper')
+            if sh2_ is not None:
+                want2_ = not (G['chk_vis'] > 0.02)
+                if want2_ != G.get('cvh%d_on' % i_):
+                    G['cvh%d_on' % i_] = want2_
+                    sh2_.par.render = want2_
+        cm_, cs_ = p.op('sc_chk_main'), p.op('sc_chk_suit')
+        if cm_ is not None:
+            cm_.par.brightness1 = _c('chk_level', 1.0) * G['chk_vis']
+            sh_ = _bed_shape(G, 'chk_path', _c('chk_shape', '格子初始'), now)
+            if sh_ is not None:
+                on_ = G['chk_vis'] > 0.02
+                if on_ != G.get('chk_on'):
+                    G['chk_on'] = on_
+                    sh_.par.render = on_
+        if cs_ is not None:
+            sx0_, sy0_, sx1_, sy1_ = _c('suit_box', (0.075, 0.208, 0.219, 0.39))       # 盖子房间图里行李箱的位置（盖子 0~1 坐标，y 向上）
+            pad_ = _c('suit_pad', 0.02)
+            hov_ = seen and G['state'] == 'search' and sx0_ - pad_ <= fx <= sx1_ + pad_ and sy0_ - pad_ <= fy <= sy1_ + pad_
+            if hov_:
+                G['suit_hold'] = now + _c('suit_hold', 0.35)
+            tgt_ = 1.0 if (hov_ or now < G.get('suit_hold', 0.0)) else 0.0
+            sa_ = G.get('suit_a', 0.0)
+            G['suit_a'] = sa_ + (tgt_ - sa_) * min(1.0, dt_ * (14.0 if tgt_ > sa_ else 3.0))
+            cs_.par.brightness1 = _c('suit_level', 1.0) * G['suit_a']
+            ss_ = _bed_shape(G, 'suit_path', _c('suit_shape', '行李箱'), now)
+            if ss_ is not None:
+                on2_ = G['suit_a'] > 0.02
+                if on2_ != G.get('suit_on'):
+                    G['suit_on'] = on2_
+                    ss_.par.render = on2_
+    # --- 被子 Kantan 的纹理守护：Kantan 重新加载会清掉脚本贴的纹理，这里每 4 秒检查「人脸万花筒」「光点出现区域」「行李箱」，被清了就贴回去（「格子初始」故意不贴，显示 Kantan 自带的测试线框）。不想要：cfg tex_guard=False ---
+    if p.op('sc_checker') is not None and _c('tex_guard', True) and now - G.get('tg_t', -9.0) > 4.0:
+        G['tg_t'] = now
+        for key_, nm_, tex_ in (('face_path', _c('face_shape', '人脸万花筒'), '/project1/sc_bed_face'), ('dot_path', _c('dot_shape', '光点出现区域'), '/project1/sc_bed_dot'), ('suit_path', _c('suit_shape', '行李箱'), '/project1/sc_chk_suit')):
+            if op(tex_) is None:
+                continue
+            sh3_ = _bed_shape(G, key_, nm_, now)
+            sp3_ = sh3_.op('parameters') if sh3_ is not None else None
+            if sp3_ is not None and hasattr(sp3_.par, 'Texture'):
+                cur3_ = sp3_.par.Texture.eval()
+                if str(getattr(cur3_, 'path', cur3_)) != tex_:
+                    sp3_.par.Texture = tex_
+                    sp3_.par.Showtexture = True
     # --- 左边「我的视角」（sc_my_txt / sc_my）：跟着右边那句话走，没有对应的就不出现 ---
     mt_, ml_ = p.op('sc_my_txt'), p.op('sc_my')
     if mt_ is not None and ml_ is not None and _c('my_follow', True):
         mex_ = p.op('sc_my_exec')
         if mex_ is not None and mex_.par.active.eval():
             mex_.par.active = False                       # 关掉自己循环播放的老脚本，改由琴键驱动
-        my_ = G.get('my')
-        a_ = 0.0
-        if my_ is not None and G['state'] == 'tell':
-            e_ = now - my_[1] - _c('my_delay', 0.6)
-            if e_ >= 0.0:
-                a_ = min(1.0, e_ / 0.6, max(0.0, (my_[2] - e_) / 0.9))
-            if G.get('my_shown') != (my_[0], my_[1]):
-                G['my_shown'] = (my_[0], my_[1])
-                mt_.par.text = chr(10).join(textwrap.wrap(my_[0], int(_c('my_chars', 24))))
-                mt_.par.fontsizex = _c('my_px', 44)
+        cur_, prev_ = G.get('my'), G.get('my_prev')
+        a_, show_ = 0.0, None
+        if cur_ is not None and G['state'] == 'tell':
+            tx_, l0_ = cur_
+            if now >= l0_ + _c('my_delay', 0.0):
+                show_, a_ = tx_, min(1.0, (now - l0_) / 0.15)       # 直接出现（只有极短的淡入，不打字）
+            elif prev_ is not None and prev_[0] and now < l0_ - _c('book_flip_s', 1.3) * 0.4 * (1.0 if _book_on() else 0.0):
+                show_, a_ = prev_[0], 1.0                          # 新一页还没翻过来：旧的留到右边旧的消失的时候
+        if not show_:
+            a_ = 0.0
+        if show_ and G.get('my_shown') != show_:
+            G['my_shown'] = show_
+            mt_.par.text = chr(10).join(textwrap.wrap(show_, int(_c('my_chars', 24))))
+            mt_.par.fontsizex = _c('my_px', 44)
+            try:
+                mt_.par.font = _c('my_font', 'Avenir Next')
+            except Exception:
+                pass
         ml_.par.opacity = max(0.0, a_)
     # --- 提示层（sc_hint_txt，另一种字体、更大）：只在抓到光点后、第一次按键之前显示 ---
     ht_ = p.op('sc_hint_txt')
@@ -616,7 +837,7 @@ def _frame():
         T_ = G['tell']
         want_ = ''
         if G['state'] == 'tell' and T_ is not None and now > T_['t0'] and T_['n'] == 0:
-            want_ = _c('key_hint', 'Each piano key is' + chr(10) + 'a different sentence.' + chr(10) + chr(10) + 'Press one,' + chr(10) + 'then listen.')
+            want_ = ('Wave your hand' + chr(10) + 'to turn the page.') if _c('page_mode', True) else ('Every key' + chr(10) + 'opens a page.' + chr(10) + chr(10) + 'Press one,' + chr(10) + 'then read.')
         if want_ != G.get('last_hint'):
             G['last_hint'] = want_
             ht_.par.text = want_ if want_ else ' '
@@ -629,7 +850,7 @@ def _frame():
         if s != G.get('last_txt'):
             G['last_txt'] = s
             txt.par.text = s
-            txt.par.fontsizex = FONT_PX
+            txt.par.fontsizex = _c('sub_px', FONT_PX) if G['state'] == 'tell' else FONT_PX      # 听故事时（他人视角那块）字号可以单独调
         lv.par.opacity = 1.0
         red_ = G['state'] == 'end' and now - G['state_t'] >= _c('end_angel', END_ANGEL)
         if red_ != G.get('last_red'):
@@ -670,7 +891,7 @@ def _frame():
                     G['pshape_path'] = c_.path
         ps_ = op(G['pshape_path']) if G.get('pshape_path') else None
         if ps_ is not None:
-            pon_ = _c('piano_edit', False) or G['state'] == 'tell' or G.get('piano_vis', 0.0) > 0.02     # piano_edit=True：编辑模式，钢琴形状一直显示，方便在 Kantan 里调
+            pon_ = _c('piano_edit', False) or (G['state'] == 'tell' and not _c('page_mode', True)) or (G.get('piano_vis', 0.0) > 0.02 and not _c('page_mode', True))     # piano_edit=True：编辑模式，钢琴形状一直显示，方便在 Kantan 里调
             if pon_ != G.get('pshape_on'):
                 G['pshape_on'] = pon_
                 ps_.par.render = pon_
@@ -726,10 +947,11 @@ def _frame():
     # --- 写给光点数牌子 ---
     ctx = p.op('sc_count')
     if ctx is not None:
-        cs_ = ' ' if G['state'] == 'intro' else _c('count_label', 'Lights collected') + chr(10) + str(G['count']) + ' / 7'
+        cs_ = ' ' if G['state'] == 'intro' else _c('count_label', 'Lights') + chr(10) + str(G['count']) + ' / 7'
         if cs_ != G.get('last_count'):
             G['last_count'] = cs_
             ctx.par.text = cs_
+            ctx.par.fontsizex = _c('count_px', 34)
     wu_ = me.fetch('watch', 0.0)
     if wu_ and wu_ < 1000000.0:
         wu_ = now + wu_          # store('watch', 6) = 从现在起监视 6 秒

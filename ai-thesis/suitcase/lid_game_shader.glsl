@@ -2,7 +2,7 @@
 // 输入 0 = 当天的房间图（sc_room）
 // uS = (乱的程度 0~1, 时间（秒）, 盖子形状的宽高比, 0)
 // uF = (手电筒圆心 x, y（盖子自己的 0~1 坐标，y 向上）, 半径（以盖子高度为 1）, 手在不在 0/1)
-// uD = (光点 x, y, 亮度 0~1, 0)
+// uD = (光点 x, y, 亮度 0~1, 封面隐藏程度 0~1（1 = 整个盖子画面变黑）)
 uniform vec4 uS;
 uniform vec4 uF;
 uniform vec4 uD;
@@ -44,5 +44,6 @@ void main()
 	float dd = length((uv - uD.xy) * vec2(asp, 1.0));
 	col *= 1.0 - 0.6 * uD.z * exp(-dd * 22.0);
 	col += vec3(1.0, 0.95, 0.7) * uD.z * (1.6 * smoothstep(0.045, 0.0, dd) + 0.7 * exp(-dd * 18.0));
+	col *= 1.0 - clamp(uD.w, 0.0, 1.0);
 	fragColor = TDOutputSwizzle(vec4(col, 1.0));
 }
