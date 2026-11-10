@@ -52,6 +52,8 @@ ap.add_argument("--eps", type=float, default=0.04, help="累积图变化超过�
 ap.add_argument("--seed", type=int, default=1)
 ap.add_argument("--palette", default=None, help="琴键乐器清单（默认 <dir>/palette_lucy.json）")
 ap.add_argument("--no-attn", action="store_true", help="不记录 AI 注意力（不生成 ai_heat.png）")
+ap.add_argument("--gaze", action="store_true", help="打开目光累积（看得越久脸变化越大）。默认关闭：已不再用目光/热力图")
+ap.add_argument("--attn", action="store_true", help="打开 AI 注意力记录。默认关闭")
 ap.add_argument("--no-piano", action="store_true", help="不读琴键")
 ap.add_argument("--keep-dwell", action="store_true", help="换新脸时不清零累积")
 args = ap.parse_args()
@@ -88,6 +90,44 @@ def load_pal():
     return _pal["data"]
 
 
+HEART = os.path.join(args.dir, "heart.json")
+_heart = {"mtime": 0, "data": None}
+
+
+def heart_targets(pal, n):
+    """心率当琴键：TD 写 heart.json（bpm、基准 base、有没有信号）。心率比基准低/高多少，决定"弹"到 order 里的第几个乐器（相邻两个键会一起按，所以是平滑滑过去的）。
+    3 秒没更新、没信号、基准还没记好 -> 不按任何键。palette_lucy.json 里 "heart": {"on","order","range_bpm","width","gain"} 可调。"""
+    cfg = pal.get("heart") or {}
+    if not cfg.get("on", True):
+        return {}
+    try:
+        mt = os.path.getmtime(HEART)
+        if time.time() - mt > 3.0:
+            return {}
+        if mt != _heart["mtime"]:
+            _heart["data"] = json.load(open(HEART, encoding="utf-8"))
+            _heart["mtime"] = mt
+        d = _heart["data"]
+    except Exception:
+        return {}
+    if not d or not d.get("present") or float(d.get("base", 0)) <= 0:
+        return {}
+    order = [int(i) for i in cfg.get("order", []) if 0 <= int(i) < n]
+    if not order:
+        return {}
+    rng = max(3.0, float(cfg.get("range_bpm", 15.0)))
+    width = max(0.5, float(cfg.get("width", 1.0)))
+    gain = float(cfg.get("gain", 1.0))
+    x = max(-1.0, min(1.0, (float(d["bpm"]) - float(d["base"])) / rng))
+    pos = (x + 1.0) * 0.5 * (len(order) - 1)
+    out = {}
+    for k, idx in enumerate(order):
+        w = max(0.0, 1.0 - abs(pos - k) / width)
+        if w > 0:
+            out[idx] = w * gain
+    return out
+
+
 def piano_step(midi, dt):
     """返回 (extra_edits, new_face_trigger)。midi 是 TD 传来的 {通道名: 数值 0-1}。"""
     pal = load_pal()
@@ -104,11 +144,13 @@ def piano_step(midi, dt):
             pedal = max(pedal, float(val))
     off = int(pal.get("note_offset", 0))
     extra, ins_list = {}, pal.get("instruments", [])
+    ht = heart_targets(pal, len(ins_list))      # 心率"按"的虚拟琴键 {乐器序号: 力度 0-1}
     for i, ins in enumerate(ins_list):
         tgt = notes.get(int(ins["note"]) + off, 0.0)
         if tgt > 0:
             fl = float(pal.get("velocity_floor", 0.0))
             tgt = fl + (1.0 - fl) * tgt      # 轻按也至少到 floor（0=不处理）
+        tgt = max(tgt, ht.get(i, 0.0))      # 真琴键和心率取较大的
         cur = levels.get(i, 0.0)
         tau = pal.get("attack_sec", 0.6) if tgt > cur else pal.get("release_sec", 3.0)
         cur += (tgt - cur) * (1 - math.exp(-dt / max(0.05, tau)))
@@ -138,7 +180,7 @@ def piano_step(midi, dt):
     return extra, trig
 
 rec = None
-if args.model == "lucy" and not args.no_attn:
+if args.model == "lucy" and args.attn and not args.no_attn:
     import lucy_attention as AT
     rec = AT.install({})
     print("已装上 AI 注意力记录层（生成时顺手记录，不改变脸）")
@@ -384,7 +426,7 @@ try:
                 print(f"琴键/踏板换新脸：种子 {seed}")
                 whisper("(琴键换脸)")
         gz = params.get("gaze") or {}
-        gaze = (gz.get("x", 0.5), gz.get("y", 0.5)) if gz.get("on", 0) else None
+        gaze = (gz.get("x", 0.5), gz.get("y", 0.5)) if (args.gaze and gz.get("on", 0)) else None      # 默认不用目光
         g.update(gaze, dt)
         changed = last_D is None or (g.D - last_D).abs().max().item() > args.eps
         if not args.no_piano and any(abs(levels.get(i, 0.0) - last_levels.get(i, 0.0)) > 0.06 for i in set(levels) | set(last_levels)):
