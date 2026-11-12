@@ -82,7 +82,19 @@ BSENT = [
     "I just wanted to see."
 ]
 
+def _rec_log(ev):
+    # 录音功能（rec_setup.py）开着时，把"什么时候放了什么声音"记下来，停止时会重新合成成一个音频文件（跟耳机/喇叭无关）
+    try:
+        lst = me.fetch('rec_events', None)
+        t0 = me.fetch('rec_t0', None)
+        if lst is not None and t0 is not None:
+            ev['t'] = round(time.time() - t0, 3)
+            lst.append(ev)
+    except Exception:
+        pass
+
 def _play(name):
+    _rec_log({'k': 'play', 'name': name, 'vol': SFX_VOL})
     try:
         subprocess.Popen(['afplay', '-v', str(SFX_VOL), VOICE + name + '.wav'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     except Exception:
@@ -91,11 +103,19 @@ def _play(name):
 def _new_day(G, now):
     G['dot'] = (random.uniform(0.08, 0.92), random.uniform(0.2, 0.8))
     G['day_start'] = now
+    G['pg_n'] = 0
     G['state'] = 'search'
     G['tell'] = None
+    f_ = BASE + '/game/room_day' + str(G['day'] + 1) + '.png'
     r = op('/project1/sc_room')
-    if r is not None:
-        r.par.file = BASE + '/game/room_day' + str(G['day'] + 1) + '.png'
+    rb_ = op('/project1/sc_room_B')
+    xx_ = op('/project1/sc_room_x')
+    if r is not None and rb_ is not None and xx_ is not None:       # 双缓冲：新的一天先把图读进"后面那张"，几帧后再切过去，换图时就不会闪一下空白（room_xfade_setup.py 装的）
+        front_ = int(xx_.par.cross.eval() + 0.5)
+        (rb_ if front_ == 0 else r).par.file = f_
+        run("op('/project1/sc_room_x').par.cross = %d" % (1 - front_), delayFrames=8)
+    elif r is not None:
+        r.par.file = f_
 
 MY_FILE = BASE + '/my_perspective.txt'
 MY_MAP = [   # (他们那句话里的一小段, 对应「我的视角」第几句（my_perspective.txt 的第几行，从 1 开始）)
@@ -341,6 +361,7 @@ def _book_turn(G, kind, idx, sentence, now):
     if _c('book_dir_flip', False):
         d_ = -d_
     G['bk'] = {'t0': now, 'dir': d_, 'p': 0.0}
+    G['pg_n'] = G.get('pg_n', 0) + 1                       # 这一天翻过的页数：翻过去的线框纸留在右边缘，一天一天叠起来
 
 def _set_my(G, sentence):
     # 这一句对应的「我的视角」：和右边那句同时出现（直接出现，不打字），一直停到右边换成下一句，再一起消失。没有对应的就是空
@@ -572,8 +593,8 @@ def _frame():
     if state == 'intro' and G.get('door_open') and _c('intro_hand_start', True):
         if G.get('door_t') is None:
             G['door_t'] = now
-        elif now - G['door_t'] > _c('intro_auto_s', 10.0):
-            _new_day(G, now)                              # 规则文字显示 intro_auto_s 秒（默认 10）后自动进入游戏，不用按键也不用举手
+        elif now - G['door_t'] > _c('intro_auto_s', 30.0):
+            _new_day(G, now)                              # 规则文字显示 intro_auto_s 秒（默认 30，下面有进度条）后自动进入游戏，不用按键也不用举手
             state = G['state']
     elif state == 'intro' and not G.get('door_open'):
         G.pop('door_t', None)
@@ -630,6 +651,21 @@ def _frame():
                     G['day'] += 1
                     _new_day(G, now)
                     state = G['state']
+    if me.fetch('restart', False):                                  # 按空格：回到开始（封面），这一周重新来过
+        me.store('restart', False)
+        G['week_told'] = []
+        G['day'] = 0
+        G['count'] = 0
+        G['lit'] = [False] * 7
+        G['tell'] = None
+        _new_day(G, now)
+        if _c('intro', True):
+            G['state'] = 'intro'
+            G['intro_t0'] = now
+            G['door_open'] = False
+            G['open_seen'] = False
+            G['open_t0'] = None
+        state = G['state']
     if state == 'end' and now - G['state_t'] > _c('end_angel', END_ANGEL) + _c('sum_delay', 1.5) + sum(len(s_) for s_ in _uniq(G.get('week_told', []))) / _c('sum_cps', SUM_CPS) + _c('sum_hold', SUM_HOLD):
         G['week_told'] = []
         G['day'] = 0
@@ -644,6 +680,7 @@ def _frame():
         state = G['state']
     if state == 'end' and G.get('end_said') != G['week'] and now - G['state_t'] > _c('end_say_delay', 1.2):
         G['end_said'] = G['week']
+        _rec_log({'k': 'say', 'voice': _c('end_voice', 'Zarvox'), 'rate': int(_c('end_rate', 120)), 'text': _c('end_say', 'Congratulations. You found her secret.')})
         try:
             subprocess.Popen(['say', '-v', _c('end_voice', 'Zarvox'), '-r', str(int(_c('end_rate', 120))), _c('end_say', 'Congratulations. You found her secret.')], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         except Exception:
@@ -719,9 +756,21 @@ def _frame():
     book_on_ = bk_ is not None and _c('book_mode', True)
     if book_on_:
         cover_ = G['state'] == 'intro' and not G.get('door_open') and _cover_on()
+        if G['state'] == 'intro' and G.get('door_open') and not G.get('open_seen') and _cover_on():      # 封面按了 Enter（门打开）的那一刻：开始"翻开封面"动画
+            G['open_seen'] = True
+            G['open_t0'] = now
+        if not G.get('door_open'):
+            G['open_seen'] = False
+        open_p_ = 0.0
+        opening_ = False
+        if G.get('open_t0') is not None and G['state'] == 'intro' and G.get('door_open'):
+            open_p_ = min(1.0, (now - G['open_t0']) / _c('cover_open_s', 1.6))
+            opening_ = open_p_ < 1.0
+        if G['state'] != 'intro':
+            G['open_t0'] = None
         play_ = _book_on() and G['state'] == 'tell'
         edit_ = _c('book_edit', False)                                # book_edit=True：编辑模式，书一直显示，方便在 Kantan 里摆位置
-        show_ = cover_ or play_ or edit_
+        show_ = True                                                  # 书一直在：封面 -> 翻开 -> 整本线框书一直留在那里
         G['bk_vis'] = G.get('bk_vis', 0.0) + ((1.0 if show_ else 0.0) - G.get('bk_vis', 0.0)) * min(1.0, dt_ * (5.0 if show_ else 12.0))
         b_ = G.get('bk')
         if b_ is None:
@@ -734,11 +783,30 @@ def _frame():
                 if sp_ is not None and hasattr(sp_.par, 'Name') and str(sp_.par.Name.eval()).strip() in (_c('book_shape', '翻页书'), '书本'):
                     G['bkshape_path'] = c_.path
         bs_ = op(G['bkshape_path']) if G.get('bkshape_path') else None
-        if bs_ is not None:
+        if bs_ is not None and G.get('bklr_paths'):
+            if G.get('bkshape_on') is not False:
+                G['bkshape_on'] = False
+                bs_.par.render = False                                  # 分成左右两半之后，原来整块的书形状一直关着
+        elif bs_ is not None:
             bon_ = show_ or G['bk_vis'] > 0.02
             if bon_ != G.get('bkshape_on'):
                 G['bkshape_on'] = bon_
                 bs_.par.render = bon_
+        if G.get('bklr_paths') is None and now - G.get('bklr_try', -9.0) > 3.0:         # 柜子打开前后距离不一样：书分成「书本左边」「书本右边」两个形状，各画一半
+            G['bklr_try'] = now
+            found_ = {}
+            for c_ in op('/project1/kantanMapper/project/allShapes').findChildren(maxDepth=4):
+                sp_ = c_.op('parameters')
+                if sp_ is not None and hasattr(sp_.par, 'Name') and str(sp_.par.Name.eval()).strip() in ('书本左边', '书本右边'):
+                    found_[str(sp_.par.Name.eval()).strip()] = c_.path
+            G['bklr_paths'] = tuple(found_.values()) if len(found_) == 2 else None
+        if G.get('bklr_paths'):
+            bonl_ = show_ or G['bk_vis'] > 0.02
+            if bonl_ != G.get('bklr_on'):
+                G['bklr_on'] = bonl_
+                for pp_ in G['bklr_paths']:
+                    if op(pp_) is not None:
+                        op(pp_).par.render = bonl_
         geo_ = p.fetch('bk_geo', (1920, 1080))
         bk_.par.vec0valuex = b_['p']
         bk_.par.vec0valuey = b_['dir']
@@ -749,10 +817,25 @@ def _frame():
         bk_.par.vec1valuez = _c('book_margin', 0.085)
         bk_.par.vec1valuew = _c('book_lift', 0.06)
         try:
-            bk_.par.vec2valuex = 1.0 if (cover_ or (edit_ and G['state'] == 'intro')) else 0.0    # 1 = 封面（合着的书）
-            bk_.par.vec2valuey = 1.0 if _c('book_single', True) else 0.0                          # 1 = 单页模式（整个竖屏一张纸，翻页是一条页边从左扫到右）
+            if cover_ or opening_ or (edit_ and G['state'] == 'intro'):
+                bk_.par.vec2valuex, bk_.par.vec2valuew = 1.0, 0.0                                     # 封面：以书脊（形状正中）为轴，从左页翻到右页
+                bk_.par.vec2valuez = open_p_ if opening_ else 0.0
+            else:
+                bk_.par.vec2valuex, bk_.par.vec2valuew = 0.0, 0.0                                     # 整本书的线框一直在：左右两页 + 书脊 + 两边各 4 层纸边，翻页是一张线框纸从左页翻到右页
+                bk_.par.vec2valuey = 0.0
+                bk_.par.vec2valuez = 0.0
         except Exception:
             pass
+        for nm_, hv_ in (('sc_book_L', 1.0), ('sc_book_R', 2.0)):                      # 左右两个输出：参数和 sc_book 完全一样，只是各自只画一半
+            t_ = p.op(nm_)
+            if t_ is not None:
+                try:
+                    for vi_ in range(3):
+                        for ax_ in 'xyzw':
+                            setattr(t_.par, 'vec%dvalue%s' % (vi_, ax_), getattr(bk_.par, 'vec%dvalue%s' % (vi_, ax_)).eval())
+                    t_.par.vec3valuex = hv_
+                except Exception:
+                    pass
     # --- 被子上的红蓝格子（sc_checker）：待机（封面）时铺满「格子初始」形状，门打开/游戏开始后消失；找光点时手碰到盖子房间里的行李箱，「行李箱」形状亮一下 ---
     ck_ = p.op('sc_checker')
     if ck_ is not None:
@@ -921,6 +1004,10 @@ def _frame():
     cov = p.op('sc_intro')
     if cov is not None:
         cv = _intro_text(30) if G['state'] == 'intro' else ' '
+        if G['state'] == 'intro' and G.get('door_open') and G.get('door_t') is not None and _c('intro_bar', True):      # 规则文字下面的进度条：显示还剩多久自动进入游戏（按 Enter 可提前进入）
+            fr_ = min(1.0, max(0.0, (now - G['door_t']) / max(1.0, _c('intro_auto_s', 30.0))))
+            nb_ = int(fr_ * 28)
+            cv = cv + chr(10) + chr(10) + '[' + '=' * nb_ + '.' * (28 - nb_) + ']'
         if cv != G.get('last_cover'):
             G['last_cover'] = cv
             cov.par.text = cv
@@ -978,6 +1065,12 @@ def _bed_display():
     if v is not None:
         return int(v)
     try:
+        for i_, m_ in enumerate(monitors):                       # 优先按分辨率认：1920x1200 的那台投影仪 = 被子，不管 TD 把屏幕排第几（重新插线顺序会变）
+            if sorted((m_.width, m_.height)) == [1200, 1920]:
+                return i_
+    except Exception:
+        pass
+    try:
         import json as _j
         t_ = me.fetch('bd_t', 0.0)
         if time.time() - t_ > 5.0:
@@ -1001,6 +1094,7 @@ def _keep_bed_window(frame):
     b_.par.winoffsetx = b_.par.winoffsety = 0
     b_.par.winw, b_.par.winh = 1920, 1200
     b_.par.borders = False
+    b_.par.alwaysontop = True
     b_.par.winopen.pulse()
     print('sc_game_exec：被子窗口没开，已自动打开（屏幕 %d）' % _bed_display())
 

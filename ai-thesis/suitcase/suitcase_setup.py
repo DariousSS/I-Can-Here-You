@@ -120,7 +120,8 @@ def onFrameEnd(frame):
     if bl is not None:
         bl.par.vec0valuex = s['snd']
         bl.par.vec0valuey = now %% 1000.0
-        bl.par.vec0valuew = s['inv']
+        _cg = p.fetch('cloud_grow', None)                     # cloud_grow.py 会写入：云朵随被窥探的隐私变多而变大；没有就沿用入侵程度
+        bl.par.vec0valuew = s['inv'] if _cg is None else _cg
     cl = p.op('sc_cloud')
     if cl is not None:
         cl.par.opacity = min(1.0, 0.15 + 0.85 * s['inv'] + 0.25 * s['snd'])
@@ -206,7 +207,8 @@ def onFrameEnd(frame):
     ex.par.frameend = True
     ex.par.active = True
     ex.nodeX, ex.nodeY = 1500, -2200
-    pr.par.Texture = '/project1/sc_lid'
+    if p.op('sc_gamelid') is None:                                 # 游戏版盖子（sc_gamelid）存在时不要把盖子纹理改回旧的 sc_lid
+        pr.par.Texture = '/project1/sc_lid'
     pr.par.Showtexture = True
     gate = p.op('sc_maskL') or p.create(levelTOP, 'sc_maskL')      # 左面具：平时空白，入侵时才出现右边那张脸
     gate.inputConnectors[0].connect(p.op('mask_R'))

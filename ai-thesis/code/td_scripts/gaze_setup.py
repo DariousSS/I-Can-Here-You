@@ -244,7 +244,8 @@ def _read_one_hand(st, hs, n, cfg):
             else:
                 closed = hs['fist_cnt'] >= int(cfg.get('fist_frames', 5))
             if closed and not was and st.get('fist_since', 999) > int(cfg['fist_gap_frames']):
-                st['new_face'] = st.get('new_face', 0) + 1      # 任何一只手 张开 -> 握拳：换新脸
+                if cfg.get('fist_newface', False):
+                    st['new_face'] = st.get('new_face', 0) + 1      # 任何一只手 张开 -> 握拳：换新脸（默认关了，改成弹几个音后自动换）
                 st['fist_since'] = 0
                 st['fist_n'] = st.get('fist_n', 0) + 1
             hs['fist_state'] = closed
@@ -325,6 +326,12 @@ def _update_air(st):
             cur = key
             hs['note_cur'] = cur
             hs['air_k'] = r['k'] if key is not None else None
+            if on and key is not None:                                  # 每弹下一个新音符就计数；够 face_every_notes 个就换一张新脸 + 切到下一个场景
+                st['air_note_cnt'] = st.get('air_note_cnt', 0) + 1
+                if st['air_note_cnt'] >= int(cfg.get('face_every_notes', 6)):
+                    st['air_note_cnt'] = 0
+                    st['new_face'] = st.get('new_face', 0) + 1
+                    st['scene_next'] = True
         if not on:
             cur = None
             hs['note_cur'] = None
@@ -382,7 +389,7 @@ def _fx_cfg(st):
                'fist_on': True, 'fist_enter': 1.3, 'fist_exit': 1.55, 'fist_mutes': True, 'fist_gap_frames': 30, 'fist_frames': 5,
                'visual_mode': 'auto', 'crowd_max': 20, 'crowd_min': 3, 'crowd_big': 0.7,
                'scenes': ['crowd', 'mirror', 'attn'], 'scene_auto_sec': 45, 'xfade_speed': 0.06,
-               'pinch_on': True, 'pinch_enter': 0.35, 'pinch_frames': 4, 'pinch_gap_frames': 60,
+               'pinch_on': False, 'face_every_notes': 6, 'fist_newface': False, 'pinch_enter': 0.35, 'pinch_frames': 4, 'pinch_gap_frames': 60,
                'air_pitch_from': 'x', 'air_scale': 'pentatonic', 'air_base': 48, 'air_octaves': 3,
                'air_x_lo': 0.12, 'air_x_hi': 0.88, 'air_flip_x': False, 'air_margin': 0.25, 'screen_w': 0, 'screen_h': 0, 'ball_on': True, 'ball_rise': 0.5, 'ball_hold': 2.2, 'ball_fall': 1.0, 'mapping_on': False, 'win_display': 0, 'auto_open_window': False, 'castle_ball_w': 1920, 'castle_ball_h': 640, 'ball_with_flash': False, 'castle_ball_auto': True, 'ball_auto_min': 0, 'ball_auto_max': 0, 'ball_every_switches': 3, 'ball_need_hand': True, 'ball_hand_sec': 4.0, 'castle_ball_phys_aspect': 0, 'castle_tiles_min': 3, 'hand_on': True, 'hand_need_hand': False, 'hand_target_max_frac': 0.5, 'poke_fx_on': True, 'poke_fx_amp': 1.0, 'puppet_on': True, 'puppet_need_hand': False, 'standard_on': True, 'standard_hand': True, 'std_build_sec': 24.0, 'std_hold_sec': 2.0, 'std_shatter_sec': 1.6, 'std_fade_sec': 1.0, 'mask_on': True, 'mask_R_mode': 'mix', 'mask_always': True, 'angel_dev_link': True, 'angel_always': True, 'angel_birth': True, 'angel_peek': True, 'angel_peek_w': 0.58, 'angel_max_w': 0.58, 'angel_fit_free': False, 'angel_calm_scale': 0.4, 'angel_clip_margin': 6.0, 'angel_anchor': 'castle', 'angel_anchor_gap': 0.07, 'pair_on': True, 'pair_thr': 0.75, 'angel_peek_x': 0.02, 'angel_tilt': 0.30, 'clip_ignore': ['Freeform8', 'Freeform9', 'Freeform10'], 'angel_turn': True, 'angel_clip': True, 'angel_eyes_on': True, 'say_on': True, 'say_hold': 4.8, 'say_gap_min': 11.0, 'say_gap_max': 20.0, 'angel_dev_thresh': 0.80, 'angel_dev_stay': 14.0, 'angel_dev_gap_min': 25.0, 'angel_dev_gap_max': 60.0, 'overlay_w': 2016, 'overlay_h': 1134, 'dev_on': True, 'dev_font': 84, 'mask_swap_min': 7.0, 'mask_swap_max': 14.0, 'mask_gap_min': 25.0, 'mask_gap_max': 70.0, 'mask_hold_min': 8.0, 'mask_hold_max': 16.0, 'mask_fade_sec': 2.0, 'tri_names': ['Freeform16', 'Freeform17'], 'burst_on': False, 'sing_on': True, 'sing_split': 64, 'sing_gain': 1.0, 'sing_mouth_x': 0.5, 'sing_mouth_y': 0.695, 'air_autostart': True, 'board_on': True, 'board_you': 59, 'board_change_min': 10.0, 'board_change_max': 20.0, 'board_swap_min': 5.0, 'board_swap_max': 11.0, 'giant_on': True, 'giant_names': ['Rectangle14', 'Rectangle4', 'Rectangle5'], 'eye2_on': False, 'angel_mode': 'persist', 'rift_on': False, 'rift_thr': 0.70, 'eye2_thr': 0.75, 'eye2_w': 0.22, 'angel_birth_zoom': False, 'std_mosaic_on': True, 'std_mosaic_style': 'oil', 'std_mosaic_max': 80.0, 'std_mosaic_min': 18.0, 'burst_n': 12, 'burst_size_min': 0.28, 'burst_size_max': 0.75, 'burst_dist_min': 0.20, 'burst_dist_max': 0.75, 'burst_sec': 1.4, 'burst_fade_start': 1.8, 'burst_fade_sec': 1.2, 'angel_on': True, 'angel_count': 3, 'angel_max_level': 0.85, 'angel_gap_min': 3.0, 'angel_gap_max': 25.0, 'angel_hold_min': 12.0, 'angel_hold_max': 28.0, 'angel_hop_prob': 0.7, 'angel_castle_weight': 0.5, 'angel_music_gain': 0.30, 'angel_music_sens': 2.5, 'angel_punch': 0.12, 'angel_follow_hand': True, 'puppet_every_switches': 0, 'puppet_auto_min': 0, 'puppet_auto_max': 0, 'puppet_hand_scale': 0.38, 'puppet_scale': 0.36, 'puppet_string_len': 0.17, 'puppet_rot_sign': 1, 'hand_scale': 0.6, 'hand_fps': 10, 'hand_every_switches': 0, 'hand_auto_min': 0, 'hand_auto_max': 0, 'hand_canvas_w': 1920, 'hand_canvas_h': 1080, 'castle_spin_deg_s': 6.0, 'scene_hold': {'mirror': 60, 'face': 12, 'attn': 25, 'crowd': 30}, 'scene_weights': {'face': 1, 'attn': 2, 'crowd': 1}, 'ball_sfx_vol': 0.6}
         try:

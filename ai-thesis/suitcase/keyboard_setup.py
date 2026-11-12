@@ -1,7 +1,7 @@
 # 在 TD 的 Textport 里运行：用电脑键盘临时代替钢琴。
 # 白键（36 个）：数字 1234567890，然后字母 qwertyuiopasdfghjklzxcvbnm（小写，按顺序 = 钢琴从左到右的白键）
 # 黑键（25 个）：按住 Shift 再按字母 Q W E R T Y U I O P A S D F G H J K L Z X C V B N（按顺序 = 钢琴从左到右的黑键）
-# 空格键 = 开始（待机/封面时按空格，游戏规则出现）；空格不会当琴键用。
+# 回车键 Enter = 开始：封面时按一次，书打开、游戏规则出现；规则出现后再按一次，直接进入游戏（不按也会 10 秒后自动进入）。空格键 = 回到开始（封面），这一周重新来过；空格不会当琴键用。
 # 注意：要先点一下 TD 的窗口（让它在最前面）键盘才有用。
 KEYS = '1234567890qwertyuiopasdfghjklzxcvbnm'
 BKEYS = 'QWERTYUIOPASDFGHJKLZXCVBN'
@@ -26,8 +26,15 @@ cb.text = (
     "        g = op('/project1/sc_game_exec')\n"
     "        if g is None:\n"
     "            return\n"
+    "        if key in ('enter', 'return', 'numenter', 'kp_enter') or character in ('\\r', '\\n'):\n"
+    "            G = g.fetch('G', None) or {}\n"
+    "            if G.get('state') == 'intro' and G.get('door_open'):\n"
+    "                g.store('skip_intro', True)\n"
+    "            else:\n"
+    "                g.store('door_open', True)\n"
+    "            return\n"
     "        if character == ' ' or key == 'space':\n"
-    "            g.store('door_open', True)\n"
+    "            g.store('restart', True)\n"
     "            return\n"
     "        if not character or len(character) != 1:\n"
     "            return\n"

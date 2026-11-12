@@ -5,6 +5,7 @@
 uniform vec4 uF;
 uniform vec4 uP;
 uniform vec4 uC;
+uniform vec4 uH;      // uH.x：0 = 整本书画在一个形状里；1 = 这个输出只负责左半边（书本左边）；2 = 只负责右半边（书本右边）。两边共用同一套书脊/翻页坐标，所以翻页能从左边形状翻到右边形状
 out vec4 fragColor;
 
 float seg(vec2 p, vec2 a, vec2 b)
@@ -36,34 +37,144 @@ float flipCurve(vec2 P, float p, float dirx, vec2 lo, vec2 hi, float bulge)
 	return abs(P.x - xc) * 0.9 + (1.0 - inside) * 1e3;
 }
 
+float sdBox(vec2 p, vec2 c, vec2 h, float r)
+{
+	vec2 q = abs(p - c) - h + r;
+	return length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - r;
+}
+
+float hash21(vec2 p)
+{
+	p = fract(p * vec2(123.34, 456.21));
+	p += dot(p, p + 45.32);
+	return fract(p.x * p.y);
+}
+
+// 翻过去的纸留在右边缘：一叠竖线（uF.x = 已经翻过去几张，最多 12 张）
+vec4 stackLines(vec2 Pc, float asp, float n, float amt)
+{
+	float l = 0.0;
+	float th = 0.0012;
+	for (int k = 0; k < 12; k++) {
+		if (float(k) + 0.5 > n) break;
+		float x = asp - 0.018 - float(k) * 0.0068;
+		float d = seg(Pc, vec2(x, 0.05 + 0.002 * float(k)), vec2(x, 0.95 - 0.002 * float(k)));
+		l = max(l, smoothstep(th + 0.0008, th - 0.0008, d) * (0.9 - 0.045 * float(k)));
+	}
+	l *= amt;
+	return vec4(vec3(1.0, 0.93, 0.78) * l, l);
+}
+
 void main()
 {
 	vec2 uv = vUV.st;
+	if (uH.x > 0.5 && uH.x < 1.5) uv.x = uv.x * 0.5;
+	else if (uH.x > 1.5) uv.x = 0.5 + uv.x * 0.5;
 	float asp = max(uF.z, 0.2);
 	if (uC.x > 0.5) {
-		// 合着的书的封面：外框 + 里面两层框 + 左边的书脊（竖线和几道横棱）+ 书名上下的装饰线
+		// 一本摊开的书：书脊（合页）在整个形状正中间，左页 = 封面/翻起的那页，右页 = 盖子。
+		// 封面（uC.w = 0）和故事里每一页（uC.w = 1，一张纸）用同一个动画：以书脊为轴，从左页翻到右页（uC.z = 翻页进度 0~1，0 = 还在左页）。
+		float PI = 3.14159265;
+		float xm = 0.5 * asp;
+		float Wp = xm;
 		vec2 Pc = vec2(uv.x * asp, uv.y);
-		float thc = max(uP.y, 0.0005) * 1.4;
-		float aac = thc * 0.6;
-		float d0 = 0.035;
-		vec2 lo = vec2(d0, d0);
-		vec2 hi = vec2(asp - d0, 1.0 - d0);
-		float l = smoothstep(thc + aac, thc - aac, rectLine(Pc, lo, hi));
-		l = max(l, smoothstep(thc + aac, thc - aac, rectLine(Pc, lo + 0.022, hi - 0.022)) * 0.75);
-		l = max(l, smoothstep(thc * 0.8 + aac, thc * 0.8 - aac, rectLine(Pc, lo + 0.042, hi - 0.042)) * 0.45);
-		float sx = d0 + 0.075;
-		l = max(l, smoothstep(thc + aac, thc - aac, seg(Pc, vec2(sx, d0), vec2(sx, 1.0 - d0))) * 0.9);
-		float ys[6] = float[6](0.10, 0.135, 0.17, 0.83, 0.865, 0.90);
-		for (int i = 0; i < 6; i++) {
-			l = max(l, smoothstep(thc * 0.8 + aac, thc * 0.8 - aac, seg(Pc, vec2(d0, ys[i]), vec2(sx, ys[i]))) * 0.8);
+		float prog = clamp(uC.z, 0.0, 1.0);
+		float pageMode = step(0.5, uC.w);
+		float ee = prog * prog * (3.0 - 2.0 * prog);
+		float a = ee * PI;
+		float ca = cos(a);
+		float sc = max(abs(ca), 0.001);
+		bool back = a > 0.5 * PI;
+		vec2 Pl = Pc;
+		float shade = 1.0;
+		float fadeA = 1.0;
+		if (prog > 0.0005) {
+			float xf = xm - Wp * ca;
+			float inP = back ? (step(xm, Pc.x) * step(Pc.x, xf)) : (step(xf, Pc.x) * step(Pc.x, xm));
+			if (inP < 0.5 || prog > 0.9995) { fragColor = TDOutputSwizzle(stackLines(Pc, asp, uF.x, uP.x)); return; }
+			float tt = clamp(abs(Pc.x - xm) / max(Wp * sc, 1e-4), 0.0, 1.0);
+			float yo = 0.5 + (Pc.y - 0.5) / (1.0 + 0.10 * sin(a) * tt);
+			if (yo < 0.0 || yo > 1.0) { fragColor = TDOutputSwizzle(stackLines(Pc, asp, uF.x, uP.x)); return; }
+			Pl = vec2(back ? tt * Wp : Wp - tt * Wp, yo);
+			float q = a / (0.5 * PI);
+			shade = back ? mix(0.55, 1.0, clamp(q - 1.0, 0.0, 1.0)) : mix(1.0, 0.55, clamp(q * q, 0.0, 1.0));
+			shade *= 1.0 - 0.18 * tt;
+			fadeA = 1.0 - smoothstep(0.80, 1.0, prog);
+		} else {
+			if (pageMode > 0.5 || Pc.x > xm) { fragColor = TDOutputSwizzle(stackLines(Pc, asp, uF.x, uP.x)); return; }
 		}
-		float ox0 = sx + 0.05;
-		float ox1 = asp - d0 - 0.05;
-		l = max(l, smoothstep(thc * 0.8 + aac, thc * 0.8 - aac, seg(Pc, vec2(ox0, 0.66), vec2(ox1, 0.66))) * 0.8);
-		l = max(l, smoothstep(thc * 0.8 + aac, thc * 0.8 - aac, seg(Pc, vec2(ox0, 0.34), vec2(ox1, 0.34))) * 0.8);
-		l = max(l, texture(sTD2DInputs[0], uv).r);                       // 书名
-		float br = 0.88 + 0.12 * sin(uF.w * 2.0);                         // 轻轻呼吸，提醒观众"打开我"
-		fragColor = TDOutputSwizzle(vec4(vec3(1.0, 0.93, 0.78) * l * uP.x * br, clamp(l * uP.x, 0.0, 1.0)));
+		vec3 col;
+		float aOut;
+		if (back || pageMode > 0.5) {
+			// 线框的纸（不填色，白字才看得清）：外框 + 里面一层淡框 + 几条淡淡的行线；纸的自由边亮一点
+			float th = max(uP.y, 0.0005) * 1.2;
+			float aa = th * 0.6;
+			vec2 wl = vec2(0.03, 0.03);
+			vec2 wh = vec2(Wp - 0.03, 0.97);
+			float lw = smoothstep(th + aa, th - aa, rectLine(Pl, wl, wh));
+			lw = max(lw, smoothstep(th + aa, th - aa, rectLine(Pl, wl + 0.014, wh - 0.014)) * 0.35);
+			for (int r = 1; r <= 6; r++) {
+				float yy = wl.y + (wh.y - wl.y) * float(r) / 7.0;
+				lw = max(lw, smoothstep(th * 0.8 + aa, th * 0.8 - aa, seg(Pl, vec2(wl.x + 0.06, yy), vec2(wh.x - 0.06, yy))) * 0.30);
+			}
+			col = vec3(1.0, 0.93, 0.78) * lw;
+			aOut = lw;
+		} else {
+			float thc = max(uP.y, 0.0005) * 1.4;
+			float aac = thc * 0.6;
+			float d0 = 0.035;
+			vec2 lo = vec2(d0, d0);
+			vec2 hi = vec2(Wp - d0, 1.0 - d0);
+			float l = smoothstep(thc + aac, thc - aac, rectLine(Pl, lo, hi));
+			l = max(l, smoothstep(thc + aac, thc - aac, rectLine(Pl, lo + 0.022, hi - 0.022)) * 0.75);
+			l = max(l, smoothstep(thc * 0.8 + aac, thc * 0.8 - aac, rectLine(Pl, lo + 0.042, hi - 0.042)) * 0.45);
+			float sx = Wp - d0 - 0.075;                                      // 书脊在右边（贴着正中间的合页）
+			l = max(l, smoothstep(thc + aac, thc - aac, seg(Pl, vec2(sx, d0), vec2(sx, 1.0 - d0))) * 0.9);
+			float ys[6] = float[6](0.10, 0.135, 0.17, 0.83, 0.865, 0.90);
+			for (int i = 0; i < 6; i++) {
+				l = max(l, smoothstep(thc * 0.8 + aac, thc * 0.8 - aac, seg(Pl, vec2(sx, ys[i]), vec2(Wp - d0, ys[i]))) * 0.8);
+			}
+			float ox0 = d0 + 0.05;
+			float ox1 = sx - 0.05;
+			l = max(l, smoothstep(thc * 0.8 + aac, thc * 0.8 - aac, seg(Pl, vec2(ox0, 0.66), vec2(ox1, 0.66))) * 0.8);
+			l = max(l, smoothstep(thc * 0.8 + aac, thc * 0.8 - aac, seg(Pl, vec2(ox0, 0.34), vec2(ox1, 0.34))) * 0.8);
+			l = max(l, texture(sTD2DInputs[0], vec2(Pl.x / asp + 0.25, Pl.y)).r);      // 书名（在左页正中）
+			float br = 0.88 + 0.12 * sin(uF.w * 2.0);
+			vec2 blo = lo - 0.018;
+			vec2 bhi = hi + 0.018;
+			vec2 cb = (blo + bhi) * 0.5;
+			vec2 hb = (bhi - blo) * 0.5;
+			float dBoard = sdBox(Pl, cb, hb, 0.010);
+			float mBoard = smoothstep(0.003, -0.003, dBoard);
+			float dPages = sdBox(Pl, cb + vec2(-0.011, -0.011), hb - 0.004, 0.006);
+			float mPages = smoothstep(0.003, -0.003, dPages);
+			float stripe = 0.82 + 0.18 * sin(Pl.x * 14.0 + 1.0) * sin(Pl.y * 900.0);
+			float stripe2 = 0.86 + 0.14 * sin(Pl.x * 700.0);
+			vec3 pagesCol = vec3(0.93, 0.89, 0.78) * mix(stripe2, stripe, step(Pl.x, cb.x - hb.x + 0.03)) * 0.85;
+			float grain = hash21(floor(Pl * 520.0)) * 0.06 + hash21(floor(Pl * 90.0)) * 0.03;
+			vec3 clothCol = vec3(0.30, 0.055, 0.085);
+			clothCol *= 0.85 + 0.30 * (1.0 - (Pl.x / Wp) * 0.4 - Pl.y * 0.3);
+			clothCol += grain;
+			float inSpine = smoothstep(sx - 0.004, sx + 0.004, Pl.x);
+			clothCol *= mix(1.0, 0.72, inSpine);
+			float groove = smoothstep(0.006, 0.0, abs(Pl.x - (sx - 0.012)));
+			float ridge = smoothstep(0.004, 0.0, abs(Pl.x - (sx - 0.021)));
+			clothCol = clothCol * (1.0 - 0.45 * groove) + vec3(0.16, 0.05, 0.05) * ridge;
+			float edgeShade = smoothstep(0.0, 0.03, -dBoard);
+			clothCol *= 0.80 + 0.20 * edgeShade;
+			float lm = clamp(l * uP.x, 0.0, 1.0);
+			vec3 gold = vec3(1.0, 0.86, 0.55);
+			vec3 base = mix(pagesCol, clothCol, mBoard);
+			col = mix(base, gold * br, lm * mBoard);
+			aOut = max(mBoard, mPages);
+		}
+		bool wire = back || pageMode > 0.5;
+		aOut *= (wire ? clamp(uP.x, 0.0, 1.0) : clamp(uP.x * 1.4, 0.0, 1.0)) * fadeA;
+		col *= shade;
+		vec4 stk = stackLines(Pc, asp, uF.x, uP.x);
+		vec3 oc = col * aOut + stk.rgb * (1.0 - aOut);
+		float oa = max(aOut, stk.a);
+		fragColor = TDOutputSwizzle(vec4(oc, oa));
 		return;
 	}
 	if (uC.y > 0.5) {
@@ -116,17 +227,17 @@ void main()
 	float d = min(rectLine(P, vec2(x0, y0), vec2(xm, y1)), rectLine(P, vec2(xm, y0), vec2(x1, y1)));
 	float line = smoothstep(th + aa, th - aa, d);
 	// 书的厚度：左右两边各一叠竖着的纸边线（越往外越多一层，亮度只轻轻递减），上下各一道细线收住
-	for (int k = 1; k <= 14; k++) {
-		float o = float(k) * 0.0048;
-		float grow = float(k) * 0.0022;
-		float al = 0.55 - float(k) * 0.025;           // 纸边线比书的轮廓淡
+	for (int k = 1; k <= 4; k++) {
+		float o = float(k) * 0.0075;
+		float grow = float(k) * 0.0030;
+		float al = 0.65 - float(k) * 0.07;           // 纸边线比书的轮廓淡
 		float dL = seg(P, vec2(x0 - o * asp, y0 - grow), vec2(x0 - o * asp, y1 + grow));
 		float dR = seg(P, vec2(x1 + o * asp, y0 - grow), vec2(x1 + o * asp, y1 + grow));
 		line = max(line, smoothstep(th + aa, th - aa, min(dL, dR)) * al);
 	}
-	float kk = 14.0;
-	float dT = seg(P, vec2(x0 - kk * 0.0048 * asp, y1 + kk * 0.0022), vec2(x1 + kk * 0.0048 * asp, y1 + kk * 0.0022));
-	float dB = seg(P, vec2(x0 - kk * 0.0048 * asp, y0 - kk * 0.0022), vec2(x1 + kk * 0.0048 * asp, y0 - kk * 0.0022));
+	float kk = 4.0;
+	float dT = seg(P, vec2(x0 - kk * 0.0075 * asp, y1 + kk * 0.0030), vec2(x1 + kk * 0.0075 * asp, y1 + kk * 0.0030));
+	float dB = seg(P, vec2(x0 - kk * 0.0075 * asp, y0 - kk * 0.0030), vec2(x1 + kk * 0.0075 * asp, y0 - kk * 0.0030));
 	line = max(line, smoothstep(th + aa, th - aa, min(dT, dB)) * 0.3);
 	float ds = seg(P, vec2(xm, y0), vec2(xm, y1));
 	line = max(line, smoothstep(th * 1.3 + aa, th * 1.3 - aa, ds));
